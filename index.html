@@ -48,7 +48,7 @@
   /* HERO — sin caja, palabras flotando con movimiento */
   .hero{padding:80px 24px 80px;text-align:center;position:relative;overflow:hidden;width:100%}
   .audience{font-family:'Geist';font-size:13px;color:var(--red);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:30px;font-weight:600;animation:fadeIn .8s ease}
-  .hero h1{font-weight:900;font-size:clamp(64px,18vw,220px);line-height:.88;letter-spacing:-5px;color:var(--ink);animation:slideIn 1s cubic-bezier(.2,.7,.2,1);margin:0;text-align:center;word-wrap:break-word;overflow-wrap:break-word}
+  .hero h1{font-weight:900;font-size:clamp(52px,11vw,200px);line-height:.92;letter-spacing:-4px;color:var(--ink);animation:slideIn 1s cubic-bezier(.2,.7,.2,1);margin:0;text-align:center;word-break:keep-all;hyphens:none}
   .rotwrap{display:block;margin-top:40px;font-weight:400;font-size:clamp(20px,4vw,38px);letter-spacing:-.6px;color:var(--gray);animation:fadeIn 1.2s ease}
   .rot{display:inline-block;min-width:8ch;color:var(--red);font-weight:700;transition:opacity .35s,transform .35s,filter .35s}
   .rot.swap{opacity:0;transform:translateY(-14px) scale(.94);filter:blur(8px)}
@@ -108,7 +108,7 @@
   .about p{color:var(--ink-2);font-size:clamp(18px,2.4vw,22px);max-width:54ch;line-height:1.55;font-weight:400}
   .about .ph{
     width:240px;height:240px;border-radius:50%;overflow:hidden;
-    filter:grayscale(100%);position:relative;
+    position:relative;
     animation:gentle 7s ease-in-out infinite;
   }
   .about .ph img{width:100%;height:100%;object-fit:cover;display:block}
@@ -171,7 +171,7 @@
 <nav>
   <div class="wrap nav-in">
     <a class="brand" href="#top">
-      <img src="chervo_logo.png" alt="Chervo" style="height:36px;width:auto">
+      <img src="chervo_logo.svg" alt="Chervo" style="height:52px;width:auto">
     </a>
     <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
     <div class="nav-links" id="navlinks">
@@ -185,7 +185,7 @@
 
 <header class="hero" id="top">
   <div class="audience">Tienes una idea o proyecto en mente</div>
-  <h1>¿Buscando ayuda?</h1>
+  <h1>¿Buscando<br>ayuda?</h1>
   <div class="rotwrap">con <span class="rot" id="rot">dibujo de planos</span></div>
 </header>
 
