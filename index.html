@@ -38,6 +38,12 @@
   .nav-links a{color:var(--gray);text-decoration:none;font-size:14px;font-weight:500;transition:.18s;position:relative}
   .nav-links a:hover{color:var(--red)}
   .nav-cta{color:var(--red)!important;font-weight:600!important}
+  .nav-portal{
+    background:var(--ink);color:#fff!important;
+    padding:8px 18px;border-radius:20px;font-size:13px!important;
+    font-weight:600!important;transition:.2s!important;
+  }
+  .nav-portal:hover{background:var(--red)!important;color:#fff!important}
   @media(max-width:760px){
     .nav-links{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(255,255,255,.97);backdrop-filter:blur(14px);flex-direction:column;align-items:flex-start;gap:0;padding:14px 26px 22px}
     .nav-links.open{display:flex}
@@ -179,6 +185,7 @@
       <a href="#sobre">Equipo</a>
       <a href="#clientes">Clientes</a>
       <a href="#contacto" class="nav-cta">Por consultas</a>
+      <a href="/clientes/" class="nav-portal">Área clientes</a>
     </div>
   </div>
 </nav>
