@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clientes — Chervo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root{
+    --bg:#ffffff;--ink:#171717;--gray:#8a8d92;--gray-l:#bcc1c6;
+    --plata-l:#e5e7ea;--red:#fe0000;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:'Geist',sans-serif;-webkit-font-smoothing:antialiased;
+    min-height:100vh;display:flex;flex-direction:column;
+  }
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--plata-l)}
+  .nav-in{max-width:1100px;margin:0 auto;padding:0 26px;display:flex;justify-content:space-between;align-items:center;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+  .brand img{height:44px;width:auto}
+  .back{font-size:13px;color:var(--gray);text-decoration:none;font-weight:500;transition:.2s}
+  .back:hover{color:var(--red)}
+
+  /* MAIN */
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
+  .card{width:100%;max-width:420px}
+  .card-title{font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:6px}
+  .card-sub{color:var(--gray);font-size:15px;margin-bottom:36px}
+
+  /* TABS */
+  .tabs{display:flex;gap:0;border-bottom:2px solid var(--plata-l);margin-bottom:28px}
+  .tab{flex:1;text-align:center;padding:10px;font-size:14px;font-weight:600;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s}
+  .tab.active{color:var(--red);border-bottom-color:var(--red)}
+
+  /* FORM */
+  .form{display:none;flex-direction:column;gap:16px}
+  .form.active{display:flex}
+  label{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px;display:block}
+  input{
+    width:100%;padding:14px 16px;border:1.5px solid var(--plata-l);
+    border-radius:12px;font-family:'Geist',sans-serif;font-size:15px;
+    background:#fff;color:var(--ink);transition:.2s;outline:none;
+  }
+  input:focus{border-color:var(--ink)}
+  input::placeholder{color:var(--gray-l)}
+  .btn{
+    padding:15px;background:var(--ink);color:#fff;border:none;border-radius:12px;
+    font-family:'Geist',sans-serif;font-size:15px;font-weight:700;cursor:pointer;
+    transition:.2s;margin-top:4px;
+  }
+  .btn:hover{background:var(--red)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .msg{font-size:13px;padding:12px 14px;border-radius:10px;display:none}
+  .msg.error{background:#fff0f0;color:#c00;display:block}
+  .msg.ok{background:#f0fff4;color:#090;display:block}
+
+  footer{text-align:center;padding:24px;color:var(--gray);font-size:12px}
+  footer a{color:var(--gray);text-decoration:none}
+  footer a:hover{color:var(--red)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <a class="brand" href="/">
+      <img src="/chervo_logo.svg" alt="Chervo">
+    </a>
+    <a class="back" href="/">← Volver al sitio</a>
+  </div>
+</nav>
+
+<main>
+  <div class="card">
+    <div class="card-title">Área de clientes</div>
+    <div class="card-sub">Accedé a tus archivos y proyectos.</div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="login">Ingresar</div>
+      <div class="tab" data-tab="register">Registrarse</div>
+    </div>
+
+    <!-- LOGIN -->
+    <form class="form active" id="login-form">
+      <div>
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="tu@email.com" required>
+      </div>
+      <div>
+        <label for="login-pass">Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••" required>
+      </div>
+      <div class="msg" id="login-msg"></div>
+      <button class="btn" type="submit" id="login-btn">Ingresar</button>
+    </form>
+
+    <!-- REGISTER -->
+    <form class="form" id="register-form">
+      <div>
+        <label for="reg-name">Tu nombre</label>
+        <input type="text" id="reg-name" placeholder="Ej: Gerardo Neyra" required>
+      </div>
+      <div>
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" placeholder="tu@email.com" required>
+      </div>
+      <div>
+        <label for="reg-pass">Elegí una contraseña</label>
+        <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" required minlength="6">
+      </div>
+      <div class="msg" id="reg-msg"></div>
+      <button class="btn" type="submit" id="reg-btn">Crear cuenta</button>
+    </form>
+  </div>
+</main>
+
+<footer>
+  © 2026 Chervo · <a href="/">chervo-web.vercel.app</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ── CONFIGURACIÓN ──────────────────────────────────────
+  const SUPABASE_URL = 'https://mvuyntiuiwjjjjsshzcb.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_OxcQ-rYPOi9gUdKW8dRwug_Vyu-3oTQ';
+  // ───────────────────────────────────────────────────────
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Si ya está logueado, ir al portal
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session) window.location.href = '/clientes/portal.html';
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.form').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.tab + '-form').classList.add('active');
+    });
+  });
+
+  // LOGIN
+  document.getElementById('login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('login-btn');
+    const msg = document.getElementById('login-msg');
+    btn.disabled = true; btn.textContent = 'Ingresando...';
+    msg.className = 'msg';
+
+    const { error } = await sb.auth.signInWithPassword({
+      email: document.getElementById('login-email').value,
+      password: document.getElementById('login-pass').value
+    });
+
+    if (error) {
+      msg.textContent = 'Email o contraseña incorrectos.';
+      msg.className = 'msg error';
+      btn.disabled = false; btn.textContent = 'Ingresar';
+    } else {
+      window.location.href = '/clientes/portal.html';
+    }
+  });
+
+  // REGISTER
+  document.getElementById('register-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('reg-btn');
+    const msg = document.getElementById('reg-msg');
+    btn.disabled = true; btn.textContent = 'Creando cuenta...';
+    msg.className = 'msg';
+
+    const name  = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const pass  = document.getElementById('reg-pass').value;
+
+    const { data, error } = await sb.auth.signUp({ email, password: pass });
+
+    if (error) {
+      msg.textContent = 'Error: ' + error.message;
+      msg.className = 'msg error';
+      btn.disabled = false; btn.textContent = 'Crear cuenta';
+      return;
+    }
+
+    // Guardar nombre en tabla clients
+    if (data.user) {
+      await sb.from('clients').insert({ id: data.user.id, name, email });
+    }
+
+    msg.textContent = '¡Cuenta creada! Revisá tu email para confirmar y luego ingresá.';
+    msg.className = 'msg ok';
+    btn.disabled = false; btn.textContent = 'Crear cuenta';
+  });
+</script>
+</body>
+</html>

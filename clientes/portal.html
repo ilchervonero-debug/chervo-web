@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Portal — Chervo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root{
+    --bg:#ffffff;--ink:#171717;--ink-2:#2a2a2a;
+    --gray:#8a8d92;--gray-l:#bcc1c6;--plata-l:#e5e7ea;--red:#fe0000;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--plata-l)}
+  .nav-in{max-width:1100px;margin:0 auto;padding:0 26px;display:flex;justify-content:space-between;align-items:center;height:64px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+  .brand img{height:44px;width:auto}
+  .nav-r{display:flex;align-items:center;gap:20px}
+  .user-name{font-size:14px;font-weight:600;color:var(--ink)}
+  .logout-btn{font-size:13px;color:var(--gray);background:none;border:none;cursor:pointer;font-family:'Geist',sans-serif;font-weight:500;transition:.2s;padding:0}
+  .logout-btn:hover{color:var(--red)}
+
+  /* MAIN */
+  main{flex:1;max-width:1100px;margin:0 auto;padding:48px 26px;width:100%}
+
+  /* HEADER */
+  .portal-header{margin-bottom:48px}
+  .greeting{font-size:13px;color:var(--red);font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+  .portal-title{font-weight:800;font-size:clamp(28px,4vw,42px);letter-spacing:-1.2px;color:var(--ink)}
+
+  /* ESTADO — sin archivos aún */
+  .empty{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:80px 24px;
+    border:1.5px dashed var(--plata-l);border-radius:20px;
+    gap:16px;
+  }
+  .empty-icon{font-size:48px;opacity:.3}
+  .empty-title{font-weight:700;font-size:20px;color:var(--ink)}
+  .empty-sub{font-size:15px;color:var(--gray);max-width:36ch;line-height:1.5}
+
+  /* ARCHIVOS — cuando hay Drive URL */
+  .drive-section{display:none;flex-direction:column;gap:24px}
+  .drive-section.show{display:flex}
+  .section-label{font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px}
+  .drive-btn{
+    display:inline-flex;align-items:center;gap:16px;
+    padding:20px 28px;background:var(--plata-l);border-radius:60px;
+    text-decoration:none;color:var(--ink);font-weight:700;font-size:17px;
+    transition:.3s cubic-bezier(.2,.7,.2,1);max-width:480px;position:relative;overflow:hidden;
+  }
+  .drive-btn::before{content:"";position:absolute;inset:0;background:var(--red);transform:translateX(-100%);transition:.4s cubic-bezier(.2,.7,.2,1)}
+  .drive-btn:hover::before{transform:translateX(0)}
+  .drive-btn:hover{color:#fff;transform:scale(1.02)}
+  .drive-btn span{position:relative;z-index:1}
+  .drive-ic{
+    width:46px;height:46px;border-radius:50%;background:var(--red);
+    display:flex;align-items:center;justify-content:center;font-size:20px;
+    flex-shrink:0;transition:.3s;position:relative;z-index:1;
+  }
+  .drive-btn:hover .drive-ic{background:#fff;color:var(--red)}
+  .drive-arrow{font-size:20px;margin-left:auto;transition:.3s;position:relative;z-index:1;color:var(--gray)}
+  .drive-btn:hover .drive-arrow{transform:translateX(8px);color:#fff}
+
+  .info-box{
+    background:var(--plata-l);border-radius:16px;padding:20px 24px;
+    font-size:14px;color:var(--ink-2);line-height:1.6;max-width:560px;
+  }
+  .info-box strong{color:var(--ink);font-weight:600}
+
+  footer{text-align:center;padding:24px;color:var(--gray);font-size:12px;margin-top:auto}
+  footer a{color:var(--gray);text-decoration:none}
+  footer a:hover{color:var(--red)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <a class="brand" href="/">
+      <img src="/chervo_logo.svg" alt="Chervo">
+    </a>
+    <div class="nav-r">
+      <span class="user-name" id="user-name">Cargando...</span>
+      <button class="logout-btn" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="portal-header">
+    <div class="greeting">Portal privado</div>
+    <div class="portal-title" id="portal-title">Hola, bienvenido.</div>
+  </div>
+
+  <!-- Sin archivos aún -->
+  <div class="empty" id="empty-state">
+    <div class="empty-icon">📂</div>
+    <div class="empty-title">Tus archivos están en camino</div>
+    <div class="empty-sub">Cuando Chervo suba material para vos, lo vas a encontrar acá. Te avisará por WhatsApp.</div>
+  </div>
+
+  <!-- Con archivos (Drive URL asignada) -->
+  <div class="drive-section" id="drive-section">
+    <div>
+      <div class="section-label">Tu carpeta de archivos</div>
+      <a class="drive-btn" id="drive-link" href="#" target="_blank" rel="noopener noreferrer">
+        <div class="drive-ic">📁</div>
+        <span>Ver mis archivos en Google Drive</span>
+        <span class="drive-arrow">→</span>
+      </a>
+    </div>
+    <div class="info-box">
+      <strong>¿Cómo funciona?</strong><br>
+      Chervo sube tus planos, renders y documentación directamente a esta carpeta. Podés descargar lo que necesites cuando quieras. El contenido es tuyo — compartilo solo con quien vos elijas.
+    </div>
+  </div>
+</main>
+
+<footer>
+  © 2026 Chervo · <a href="/">chervo-web.vercel.app</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ── CONFIGURACIÓN ──────────────────────────────────────
+  const SUPABASE_URL = 'https://mvuyntiuiwjjjjsshzcb.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_OxcQ-rYPOi9gUdKW8dRwug_Vyu-3oTQ';
+  // ───────────────────────────────────────────────────────
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = '/clientes/'; return; }
+
+    const user = session.user;
+
+    // Obtener datos del cliente
+    const { data: client } = await sb.from('clients')
+      .select('name, drive_url')
+      .eq('id', user.id)
+      .single();
+
+    const name = client?.name || user.email.split('@')[0];
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('portal-title').textContent = `Hola, ${name}.`;
+
+    // Mostrar archivos si tiene Drive URL asignada
+    if (client?.drive_url) {
+      document.getElementById('empty-state').style.display = 'none';
+      const section = document.getElementById('drive-section');
+      section.classList.add('show');
+      document.getElementById('drive-link').href = client.drive_url;
+    }
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    window.location.href = '/clientes/';
+  });
+
+  init();
+</script>
+</body>
+</html>
