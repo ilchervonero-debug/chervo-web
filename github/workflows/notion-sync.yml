@@ -1,0 +1,39 @@
+name: Sync Notion → Web
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # cada 6 horas
+  workflow_dispatch:        # botón manual en GitHub Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install @notionhq/client
+
+      - name: Generate index.html from Notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          DB_SERVICIOS: 8822741eb67d47ada80f5bb204970cfe
+          DB_CLIENTES: 5dd1555ed05540c3b88dd0a543d70f86
+          DB_HERO: a0b4a685217e49a2a4914a16c27116c0
+          DB_CONTACTO: b52fe47a2b034ad3af600fcdf22a1213
+        run: node generate.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "chervo-bot"
+          git config user.email "ilchervonero@gmail.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "sync: update from Notion" && git push
