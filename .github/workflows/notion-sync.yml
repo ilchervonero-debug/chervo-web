@@ -19,7 +19,8 @@ jobs:
         with:
           node-version: '20'
 
-    
+    - name: Debug generate.js
+        run: head -10 generate.js
         
       - name: Generate index.html from Notion
         env:
