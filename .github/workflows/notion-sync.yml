@@ -1,9 +1,9 @@
-name: Sync Notion → Web
+name: Sync Notion to Web
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # cada 6 horas
-  workflow_dispatch:        # botón manual en GitHub Actions
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -17,11 +17,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
-    - name: Debug generate.js
-        run: head -10 generate.js
-        
+      - name: Show generate.js
+        run: head -3 generate.js
+
       - name: Generate index.html from Notion
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
@@ -36,4 +36,4 @@ jobs:
           git config user.name "chervo-bot"
           git config user.email "ilchervonero@gmail.com"
           git add index.html
-          git diff --cached --quiet || git commit -m "sync: update from Notion" && git push
+          git diff --cached --quiet || (git commit -m "sync: update from Notion" && git push)
