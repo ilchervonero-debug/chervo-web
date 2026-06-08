@@ -218,7 +218,7 @@ function getText(prop) {
   const words=` + palabrasJS + `;
   let i=0;const rot=document.getElementById('rot');
   setInterval(()=>{rot.classList.add('swap');setTimeout(()=>{i=(i+1)%words.length;rot.textContent=words[i];rot.classList.remove('swap')},350)},2400);
-  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:0,rootMargin:'0px 0px -10px 0px'});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   document.querySelectorAll('.serv[data-item]').forEach(b=>b.addEventListener('click',()=>{
     const msg=encodeURIComponent('Hola Chervo, me gustaria una cotizacion para: '+b.dataset.item+'.');
