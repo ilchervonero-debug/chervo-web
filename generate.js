@@ -132,7 +132,7 @@ function getText(prop) {
   .rot.swap{opacity:0;transform:translateY(-14px) scale(.94);filter:blur(8px)}
   @keyframes slideIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-  .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;pointer-events:none;z-index:-1}
+  .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.07;pointer-events:none;z-index:-1}
   .blob-1{width:380px;height:380px;background:var(--red);top:-100px;right:-80px;animation:float 14s ease-in-out infinite}
   .blob-2{width:300px;height:300px;background:var(--plata);bottom:-80px;left:-60px;animation:float 18s ease-in-out infinite reverse}
   @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,30px) scale(1.1)}}
