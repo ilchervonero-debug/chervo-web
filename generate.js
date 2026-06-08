@@ -283,7 +283,7 @@ function getText(prop) {
 
 <section class="servicios" id="servicios">
   <div class="wrap">
-    <div class="serv-list reveal">
+    <div class="serv-list">
 ` + serviciosHTML + `
     </div>
   </div>
