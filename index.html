@@ -1,60 +1,59 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chervo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root { --bg: #f5f4f0; --fg: #1a1a1a; --muted: #6b6b6b; --line: #e0ddd6; }
-html { scroll-behavior: smooth; }
-body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.6; }
-a { color: inherit; text-decoration: none; }
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; background: var(--bg); border-bottom: 1px solid var(--line); }
-.nav-logo img { height: 28px; }
-.nav-links { display: flex; gap: 2rem; font-size: 0.85rem; color: var(--muted); }
-.nav-links a:hover { color: var(--fg); }
-.nav-cta { font-size: 0.85rem; font-weight: 500; }
-#top { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 2rem 4rem; max-width: 900px; margin: 0 auto; }
-.hero-sub { font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem; }
-.hero-title { font-size: clamp(3rem, 8vw, 6rem); font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; }
-.hero-rotating { display: inline-block; color: var(--muted); font-weight: 300; }
-.ticker-wrap { overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.8rem 0; margin: 3rem 0; }
-.ticker { display: flex; gap: 2rem; white-space: nowrap; animation: ticker 30s linear infinite; font-size: 0.78rem; color: var(--muted); letter-spacing: 0.08em; }
-@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-section { padding: 5rem 2rem; max-width: 900px; margin: 0 auto; }
-.section-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2rem; }
-#problema { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
-#problema h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1rem; }
-#problema p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
-#servicios { border-top: 1px solid var(--line); }
-.service-item { display: flex; align-items: center; gap: 1.5rem; padding: 1.2rem 0; border-bottom: 1px solid var(--line); }
-.service-num { font-size: 0.75rem; color: var(--muted); width: 2rem; flex-shrink: 0; }
-.service-info { flex: 1; }
-.service-info h3 { font-size: 0.95rem; font-weight: 500; }
-.service-info p { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
-.service-arrow { font-size: 1rem; color: var(--muted); transition: color 0.2s; }
-.service-arrow:hover { color: var(--fg); }
-#sobre { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; border-top: 1px solid var(--line); }
-#sobre img { width: 100%; aspect-ratio: 3/4; object-fit: cover; }
-#sobre p { font-size: 0.9rem; color: var(--muted); line-height: 1.8; }
-#clientes { border-top: 1px solid var(--line); }
-#clientes ul { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
-#clientes li { font-size: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--line); }
-#contacto { border-top: 1px solid var(--line); }
-.contact-links { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
-.contact-link { display: flex; align-items: center; gap: 1rem; font-size: 1rem; font-weight: 500; padding: 1rem 0; border-bottom: 1px solid var(--line); }
-.contact-link span { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
-footer { border-top: 1px solid var(--line); padding: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--muted); max-width: 900px; margin: 0 auto; }
-.fab { position: fixed; bottom: 2rem; right: 2rem; background: var(--fg); color: var(--bg); width: 3rem; height: 3rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 200; }
-@media (max-width: 640px) { #problema, #sobre { grid-template-columns: 1fr; gap: 2rem; } .nav-links { display: none; } }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chervo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #f5f4f0; --fg: #1a1a1a; --muted: #6b6b6b; --line: #e0ddd6; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.6; }
+    a { color: inherit; text-decoration: none; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; background: var(--bg); border-bottom: 1px solid var(--line); }
+    .nav-logo img { height: 28px; }
+    .nav-links { display: flex; gap: 2rem; font-size: 0.85rem; color: var(--muted); }
+    .nav-links a:hover { color: var(--fg); }
+    .nav-cta { font-size: 0.85rem; font-weight: 500; }
+    #top { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 2rem 4rem; max-width: 900px; margin: 0 auto; }
+    .hero-sub { font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem; }
+    .hero-title { font-size: clamp(3rem, 8vw, 6rem); font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; }
+    .hero-rotating { display: inline-block; color: var(--muted); font-weight: 300; }
+    .ticker-wrap { overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.8rem 0; margin: 3rem 0; }
+    .ticker { display: flex; gap: 2rem; white-space: nowrap; animation: ticker 30s linear infinite; font-size: 0.78rem; color: var(--muted); letter-spacing: 0.08em; }
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    section { padding: 5rem 2rem; max-width: 900px; margin: 0 auto; }
+    .section-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2rem; }
+    #problema { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+    #problema h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1rem; }
+    #problema p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+    #servicios { border-top: 1px solid var(--line); }
+    .service-item { display: flex; align-items: center; gap: 1.5rem; padding: 1.2rem 0; border-bottom: 1px solid var(--line); }
+    .service-num { font-size: 0.75rem; color: var(--muted); width: 2rem; flex-shrink: 0; }
+    .service-info { flex: 1; }
+    .service-info h3 { font-size: 0.95rem; font-weight: 500; }
+    .service-info p { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+    .service-arrow { font-size: 1rem; color: var(--muted); transition: color 0.2s; }
+    .service-arrow:hover { color: var(--fg); }
+    #sobre { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; border-top: 1px solid var(--line); }
+    #sobre img { width: 100%; aspect-ratio: 3/4; object-fit: cover; }
+    #sobre p { font-size: 0.9rem; color: var(--muted); line-height: 1.8; }
+    #clientes { border-top: 1px solid var(--line); }
+    #clientes ul { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
+    #clientes li { font-size: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--line); }
+    #contacto { border-top: 1px solid var(--line); }
+    .contact-links { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
+    .contact-link { display: flex; align-items: center; gap: 1rem; font-size: 1rem; font-weight: 500; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+    .contact-link span { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
+    footer { border-top: 1px solid var(--line); padding: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--muted); max-width: 900px; margin: 0 auto; }
+    .fab { position: fixed; bottom: 2rem; right: 2rem; background: var(--fg); color: var(--bg); width: 3rem; height: 3rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 200; }
+    @media (max-width: 640px) { #problema, #sobre { grid-template-columns: 1fr; gap: 2rem; } .nav-links { display: none; } }
+  </style>
 </head>
 <body>
-
 <nav>
   <a href="#top" class="nav-logo"><img src="chervo_logo.svg" alt="Chervo"></a>
   <div class="nav-links">
@@ -66,113 +65,27 @@ footer { border-top: 1px solid var(--line); padding: 2rem; display: flex; justif
   </div>
   <a href="#contacto" class="nav-cta">Por consultas</a>
 </nav>
-
 <div id="top">
   <p class="hero-sub">Tienes una idea o proyecto en mente</p>
-  <h1 class="hero-title">¿Buscando&nbsp;ayuda?<br><span class="hero-rotating" id="rotating-word">con dibujo de planos</span></h1>
+  <h1 class="hero-title">¿Buscando ayuda?<br><span class="hero-rotating" id="rotating-word">con dibujo de planos</span></h1>
 </div>
-
-<div class="ticker-wrap">
-  <div class="ticker">
-    <span>DIBUJO 2D &amp; 3D</span> · <span>RENDERS</span> · <span>DRONE</span> · <span>VIDEO</span> · <span>DECLARACIONES JURADAS</span> · <span>PRESUPUESTOS</span> · <span>METRADOS</span> · <span>INTENDENCIA &amp; BPS</span> · <span>ASESORÍAS</span> · <span>SOFTWARE REMOTO</span> · <span>DIBUJO 2D &amp; 3D</span> · <span>RENDERS</span> · <span>DRONE</span> · <span>VIDEO</span> · <span>DECLARACIONES JURADAS</span> · <span>PRESUPUESTOS</span> · <span>METRADOS</span> · <span>INTENDENCIA &amp; BPS</span> · <span>ASESORÍAS</span> · <span>SOFTWARE REMOTO</span> ·
-  </div>
-</div>
-
+<div class="ticker-wrap"><div class="ticker"><span>DIBUJO 2D & 3D</span> · <span>RENDERS</span> · <span>DRONE</span> · <span>VIDEO</span> · <span>DECLARACIONES JURADAS</span> · <span>PRESUPUESTOS</span> · <span>METRADOS</span> · <span>INTENDENCIA & BPS</span> · <span>ASESORÍAS</span> · <span>SOFTWARE REMOTO</span> · <span>DIBUJO 2D & 3D</span> · <span>RENDERS</span> · <span>DRONE</span> · <span>VIDEO</span> · <span>DECLARACIONES JURADAS</span> · <span>PRESUPUESTOS</span> · <span>METRADOS</span> · <span>INTENDENCIA & BPS</span> · <span>ASESORÍAS</span> · <span>SOFTWARE REMOTO</span></div></div>
 <section id="problema">
-  <div>
-    <h2>El Problema</h2>
-    <p>Tienes una idea y no sabes por dónde empezar. Tienes trabajo atrasado y necesitas retomarlo. Te falta tiempo para una entrega. Quieres armar un proyecto y no tienes personal suficiente.</p>
-  </div>
-  <div>
-    <h2>La Solución</h2>
-    <p>Te ofrecemos <strong>20 años de experiencia</strong> en diseño y construcción, trabajando con estudios de arquitectura y arquitectos freelance. Desarrollamos proyectos desde la idea hasta su documentación para entrega a clientes y entidades gubernamentales.</p>
-  </div>
+  <div><h2>El Problema</h2><p>Tienes una idea y no sabes por dónde empezar. Tienes trabajo atrasado y necesitas retomarlo. Te falta tiempo para una entrega. Quieres armar un proyecto y no tienes personal suficiente.</p></div>
+  <div><h2>La Solución</h2><p>Te ofrecemos <strong>20 años de experiencia</strong> en diseño y construcción, trabajando con estudios de arquitectura y arquitectos freelance. Desarrollamos proyectos desde la idea hasta su documentación para entrega a clientes y entidades gubernamentales.</p></div>
 </section>
-
 <section id="servicios">
   <p class="section-label">Servicios</p>
-
-  <div class="service-item">
-    <span class="service-num">01</span>
-    <div class="service-info"><h3>Dibujo 2D y 3D</h3><p>Plantas, cortes, vistas, modelado.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">02</span>
-    <div class="service-info"><h3>Intendencia &amp; BPS</h3><p>Carpetas listas para presentar.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">03</span>
-    <div class="service-info"><h3>Declaraciones juradas</h3><p>Armado y gestión de DDJJ.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">04</span>
-    <div class="service-info"><h3>Renders</h3><p>Imágenes de presentación.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">05</span>
-    <div class="service-info"><h3>Drone</h3><p>Fotos aéreas y registro de obra.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">06</span>
-    <div class="service-info"><h3>Edición de video</h3><p>Recorridos y video de obra.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">07</span>
-    <div class="service-info"><h3>Retoque fotográfico</h3><p>Post-producción y fotomontajes.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">08</span>
-    <div class="service-info"><h3>Documentación de obra</h3><p>Memoria, pliegos y avance.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">09</span>
-    <div class="service-info"><h3>Presupuestos</h3><p>Claros, ordenados, listos para firmar.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">10</span>
-    <div class="service-info"><h3>Metrados</h3><p>Cómputo métrico por rubro.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">11</span>
-    <div class="service-info"><h3>Asesorías</h3><p>Gestión y viabilidad de proyectos.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
-  <div class="service-item">
-    <span class="service-num">12</span>
-    <div class="service-info"><h3>Software remoto</h3><p>AutoCAD, Revit, SketchUp.</p></div>
-    <span class="service-arrow">→</span>
-  </div>
+  
 </section>
-
 <section id="sobre">
   <img src="chervo_retrato.jpg" alt="Chervo equipo">
-  <div>
-    <p class="section-label">Un equipo para ti</p>
-    <p>Somos un equipo con más de 20 años de experiencia en representación de ideas y desarrollo de proyectos. Nos ajustamos a tus necesidades y a tu presupuesto.</p>
-  </div>
+  <div><p class="section-label">Un equipo para ti</p><p>Somos un equipo con más de 20 años de experiencia en representación de ideas y desarrollo de proyectos. Nos ajustamos a tus necesidades y a tu presupuesto.</p></div>
 </section>
-
 <section id="clientes">
   <p class="section-label">Clientes</p>
-  <ul>
-    <li>Arq. Gerardo Neyra</li>
-    <li>Arq. Victoria Silva Goñi</li>
-    <li>Arq. José Miguel Entenza</li>
-    <li>Arq. Karina Lucas</li>
-    <li>Casariego Automóviles</li>
-  </ul>
+  <ul></ul>
 </section>
-
 <section id="contacto">
   <p class="section-label">Por consultas</p>
   <div class="contact-links">
@@ -180,38 +93,20 @@ footer { border-top: 1px solid var(--line); padding: 2rem; display: flex; justif
     <a href="mailto:ilchervonero@gmail.com" class="contact-link">✉ Correo <span>ilchervonero@gmail.com →</span></a>
   </div>
 </section>
-
 <footer>
   <span>© 2026 Chervo · IlChervoNero</span>
-  <div style="display:flex;gap:1.5rem">
-    <a href="https://wa.me/59892459376">WhatsApp</a>
-    <a href="mailto:ilchervonero@gmail.com">Correo</a>
-  </div>
+  <div style="display:flex;gap:1.5rem"><a href="https://wa.me/59892459376">WhatsApp</a><a href="mailto:ilchervonero@gmail.com">Correo</a></div>
 </footer>
-
 <a href="https://wa.me/59892459376" class="fab">✆</a>
-
 <script>
-const palabras = [
-  "con dibujo de planos",
-  "con renders",
-  "con documentación",
-  "con presupuestos",
-  "con trámites",
-  "con metrados"
-];
-let i = 0;
-const el = document.getElementById('rotating-word');
-el.style.transition = 'opacity 0.3s';
-setInterval(() => {
-  el.style.opacity = '0';
-  setTimeout(() => {
-    i = (i + 1) % palabras.length;
-    el.textContent = palabras[i];
-    el.style.opacity = '1';
-  }, 300);
-}, 2500);
+  const palabras = ["con dibujo de planos"];
+  let i = 0;
+  const el = document.getElementById('rotating-word');
+  setInterval(() => {
+    el.style.opacity = '0';
+    setTimeout(() => { i = (i + 1) % palabras.length; el.textContent = palabras[i]; el.style.opacity = '1'; }, 300);
+  }, 2500);
+  el.style.transition = 'opacity 0.3s';
 </script>
-
 </body>
 </html>
