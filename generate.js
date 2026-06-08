@@ -57,7 +57,6 @@ function getText(prop) {
 }
 
 function getCheck(prop) { return prop?.checkbox === true; }
-function getNum(prop) { return prop?.number ?? 999; }
 
 (async () => {
   const ordenSort = [{ property: "Orden", direction: "ascending" }];
@@ -72,8 +71,8 @@ function getNum(prop) { return prop?.number ?? 999; }
   const servicios = serviciosRaw.filter(p => getCheck(p.properties["Activo"]));
   const clientes = clientesRaw.filter(p => getCheck(p.properties["Visible"]));
 
-  const heroTitulo = hero["hero_titulo"] || "¿Buscando ayuda?";
-  const heroPalabras = (hero["hero_palabras_rotativas"] || "con dibujo de planos").split(",").map(s => s.trim());
+  const heroPalabras = (hero["hero_palabras_rotativas"] || "dibujo de planos,renders,retoque fotográfico,fotos con drone,edición de video,documentación de obra,presupuestos,metrados,trámites municipales,declaraciones juradas,modelado 3D,asesorías")
+    .split(",").map(s => s.trim());
   const whatsapp = contacto["whatsapp"] || "+598 92 459 376";
   const email = contacto["email"] || "ilchervonero@gmail.com";
   const waNum = whatsapp.replace(/\D/g, "");
@@ -82,136 +81,295 @@ function getNum(prop) { return prop?.number ?? 999; }
     const nombre = getText(p.properties["Nombre"]);
     const desc = getText(p.properties["Descripcion"]);
     const num = String(i + 1).padStart(2, "0");
-    return `
-      <div class="service-item">
-        <span class="service-num">${num}</span>
-        <div class="service-info">
-          <h3>${nombre}</h3>
-          <p>${desc}</p>
-        </div>
-        <a href="https://wa.me/${waNum}?text=Hola,%20consulta%20sobre%20${encodeURIComponent(nombre)}" class="service-arrow">→</a>
-      </div>`;
+    return `      <div class="serv" data-item="${nombre}"><div class="serv-num">${num}</div><div class="serv-title">${nombre}</div><div class="serv-desc">${desc}</div><div class="serv-arrow">→</div></div>`;
   }).join("\n");
 
   const clientesHTML = clientes.map(p => {
     const nombre = getText(p.properties["Nombre"]);
-    return `<li>${nombre}</li>`;
+    const rol = getText(p.properties["Rol"]);
+    const roleSpan = rol ? `<span class="role">${rol}</span>` : "";
+    return `      <div class="cl">${roleSpan}${nombre}</div>`;
   }).join("\n");
 
   const palabrasJS = JSON.stringify(heroPalabras);
-  const tickerItems = ["DIBUJO 2D & 3D", "RENDERS", "DRONE", "VIDEO", "DECLARACIONES JURADAS", "PRESUPUESTOS", "METRADOS", "INTENDENCIA & BPS", "ASESORÍAS", "SOFTWARE REMOTO"];
-  const tickerHTML = [...tickerItems, ...tickerItems].map(t => `<span>${t}</span>`).join(" · ");
 
   const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chervo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --bg: #f5f4f0; --fg: #1a1a1a; --muted: #6b6b6b; --line: #e0ddd6; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.6; }
-    a { color: inherit; text-decoration: none; }
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; background: var(--bg); border-bottom: 1px solid var(--line); }
-    .nav-logo img { height: 28px; }
-    .nav-links { display: flex; gap: 2rem; font-size: 0.85rem; color: var(--muted); }
-    .nav-links a:hover { color: var(--fg); }
-    .nav-cta { font-size: 0.85rem; font-weight: 500; }
-    #top { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 2rem 4rem; max-width: 900px; margin: 0 auto; }
-    .hero-sub { font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem; }
-    .hero-title { font-size: clamp(3rem, 8vw, 6rem); font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; }
-    .hero-rotating { display: inline-block; color: var(--muted); font-weight: 300; }
-    .ticker-wrap { overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.8rem 0; margin: 3rem 0; }
-    .ticker { display: flex; gap: 2rem; white-space: nowrap; animation: ticker 30s linear infinite; font-size: 0.78rem; color: var(--muted); letter-spacing: 0.08em; }
-    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-    section { padding: 5rem 2rem; max-width: 900px; margin: 0 auto; }
-    .section-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2rem; }
-    #problema { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
-    #problema h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1rem; }
-    #problema p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
-    #servicios { border-top: 1px solid var(--line); }
-    .service-item { display: flex; align-items: center; gap: 1.5rem; padding: 1.2rem 0; border-bottom: 1px solid var(--line); }
-    .service-num { font-size: 0.75rem; color: var(--muted); width: 2rem; flex-shrink: 0; }
-    .service-info { flex: 1; }
-    .service-info h3 { font-size: 0.95rem; font-weight: 500; }
-    .service-info p { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
-    .service-arrow { font-size: 1rem; color: var(--muted); transition: color 0.2s; }
-    .service-arrow:hover { color: var(--fg); }
-    #sobre { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; border-top: 1px solid var(--line); }
-    #sobre img { width: 100%; aspect-ratio: 3/4; object-fit: cover; }
-    #sobre p { font-size: 0.9rem; color: var(--muted); line-height: 1.8; }
-    #clientes { border-top: 1px solid var(--line); }
-    #clientes ul { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
-    #clientes li { font-size: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--line); }
-    #contacto { border-top: 1px solid var(--line); }
-    .contact-links { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
-    .contact-link { display: flex; align-items: center; gap: 1rem; font-size: 1rem; font-weight: 500; padding: 1rem 0; border-bottom: 1px solid var(--line); }
-    .contact-link span { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
-    footer { border-top: 1px solid var(--line); padding: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--muted); max-width: 900px; margin: 0 auto; }
-    .fab { position: fixed; bottom: 2rem; right: 2rem; background: var(--fg); color: var(--bg); width: 3rem; height: 3rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 200; }
-    @media (max-width: 640px) { #problema, #sobre { grid-template-columns: 1fr; gap: 2rem; } .nav-links { display: none; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chervo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root{
+    --bg:#ffffff;
+    --ink:#171717;
+    --ink-2:#2a2a2a;
+    --gray:#8a8d92;
+    --gray-l:#bcc1c6;
+    --plata:#aab0b6;
+    --plata-l:#e5e7ea;
+    --red:#fe0000;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:'Geist',sans-serif;line-height:1.55;font-size:16px;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:0 26px;position:relative}
+
+  nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.85);backdrop-filter:blur(14px)}
+  .nav-in{display:flex;justify-content:space-between;align-items:center;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+  .brand svg{height:28px}
+  .brand b{font-weight:600;font-size:17px}
+  .burger{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;gap:5px;padding:8px}
+  .burger span{width:22px;height:2px;background:var(--ink);display:block;transition:.2s}
+  .nav-links{display:flex;align-items:center;gap:26px}
+  .nav-links a{color:var(--gray);text-decoration:none;font-size:14px;font-weight:500;transition:.18s;position:relative}
+  .nav-links a:hover{color:var(--red)}
+  .nav-cta{color:var(--red)!important;font-weight:600!important}
+  .nav-portal{
+    background:var(--ink);color:#fff!important;
+    padding:8px 18px;border-radius:20px;font-size:13px!important;
+    font-weight:600!important;transition:.2s!important;
+  }
+  .nav-portal:hover{background:var(--red)!important;color:#fff!important}
+  @media(max-width:760px){
+    .nav-links{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(255,255,255,.97);backdrop-filter:blur(14px);flex-direction:column;align-items:flex-start;gap:0;padding:14px 26px 22px}
+    .nav-links.open{display:flex}
+    .nav-links a{width:100%;padding:14px 0;font-size:18px}
+  }
+  @media(min-width:761px){.burger{display:none}}
+
+  .hero{padding:80px 24px 80px;text-align:center;position:relative;overflow:hidden;width:100%}
+  .audience{font-family:'Geist';font-size:13px;color:var(--red);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:30px;font-weight:600;animation:fadeIn .8s ease}
+  .hero h1{font-weight:900;font-size:clamp(52px,11vw,200px);line-height:.92;letter-spacing:-4px;color:var(--ink);animation:slideIn 1s cubic-bezier(.2,.7,.2,1);margin:0;text-align:center;word-break:keep-all;hyphens:none}
+  .rotwrap{display:block;margin-top:40px;font-weight:400;font-size:clamp(20px,4vw,38px);letter-spacing:-.6px;color:var(--gray);animation:fadeIn 1.2s ease}
+  .rot{display:inline-block;min-width:8ch;color:var(--red);font-weight:700;transition:opacity .35s,transform .35s,filter .35s}
+  .rot.swap{opacity:0;transform:translateY(-14px) scale(.94);filter:blur(8px)}
+  @keyframes slideIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+  .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;pointer-events:none;z-index:-1}
+  .blob-1{width:380px;height:380px;background:var(--red);top:-100px;right:-80px;animation:float 14s ease-in-out infinite}
+  .blob-2{width:300px;height:300px;background:var(--plata);bottom:-80px;left:-60px;animation:float 18s ease-in-out infinite reverse}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,30px) scale(1.1)}}
+
+  .ps{padding:60px 0 100px;text-align:center;position:relative}
+  .ps .blk{max-width:680px;margin:0 auto 70px}
+  .ps .blk:last-child{margin-bottom:0}
+  .ps h2{font-weight:800;font-size:clamp(28px,4.5vw,40px);letter-spacing:-1.2px;margin-bottom:20px}
+  .ps h2 b{color:var(--red);font-weight:800}
+  .ps p{color:var(--ink-2);font-size:18px;line-height:1.6;max-width:54ch;margin:0 auto}
+  .ps p b{color:var(--red);font-weight:600}
+
+  .marquee{padding:24px 0;overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,transparent 0%,var(--plata-l) 12%,var(--plata-l) 88%,transparent 100%)}
+  .marquee .track{display:inline-block;animation:scroll 28s linear infinite;font-weight:700;font-size:clamp(20px,3vw,28px);letter-spacing:-.5px;color:var(--ink)}
+  .marquee span em{color:var(--red);font-style:normal;margin:0 20px;font-weight:900}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  .servicios{padding:100px 0}
+  .serv-list{display:flex;flex-direction:column;gap:0}
+  .serv{
+    display:flex;align-items:baseline;gap:24px;
+    padding:30px 0;cursor:pointer;
+    position:relative;transition:.3s cubic-bezier(.2,.7,.2,1);
+    border-bottom:1px solid var(--plata-l);
+  }
+  .serv:hover{padding-left:30px;border-color:var(--red)}
+  .serv:hover .serv-num{color:var(--red);transform:rotate(-8deg) scale(1.15)}
+  .serv:hover .serv-title{color:var(--red);letter-spacing:-1.5px}
+  .serv:hover .serv-desc{opacity:1;transform:translateX(0)}
+  .serv:hover .serv-arrow{transform:translateX(12px) scale(1.4);color:var(--red)}
+  .serv-num{font-weight:700;font-size:18px;color:var(--gray-l);width:48px;flex-shrink:0;transition:.3s}
+  .serv-title{font-weight:800;font-size:clamp(28px,5vw,56px);letter-spacing:-2px;line-height:1;color:var(--ink);transition:.3s;flex:1}
+  .serv-desc{position:absolute;right:60px;top:50%;transform:translate(20px,-50%);color:var(--gray);font-size:15px;max-width:34ch;text-align:right;opacity:0;transition:.3s;pointer-events:none}
+  .serv-arrow{font-size:28px;color:var(--gray-l);transition:.3s;flex-shrink:0;display:inline-block}
+  @media(max-width:760px){
+    .serv-desc{display:none}
+    .serv-title{font-size:26px;letter-spacing:-1px}
+    .serv:hover{padding-left:8px}
+  }
+
+  .about{padding:50px 0 40px;position:relative;overflow:hidden}
+  .about-in{display:grid;grid-template-columns:1fr 240px;gap:60px;align-items:center}
+  @media(max-width:760px){.about-in{grid-template-columns:1fr;text-align:center;gap:40px}.about .ph{margin:0 auto}}
+  .about .k{font-family:'Geist';font-size:clamp(20px,3vw,28px);color:var(--red);font-weight:600;letter-spacing:-.5px;margin-bottom:18px;display:block}
+  .about p{color:var(--ink-2);font-size:clamp(18px,2.4vw,22px);max-width:54ch;line-height:1.55;font-weight:400}
+  .about .ph{width:240px;height:240px;border-radius:50%;overflow:hidden;position:relative;animation:gentle 7s ease-in-out infinite}
+  .about .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  @keyframes gentle{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+  .clients{padding:50px 0 80px;text-align:center;position:relative}
+  .clients h2{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-1px;margin-bottom:50px;color:var(--ink)}
+  .client-cloud{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 32px;max-width:900px;margin:0 auto}
+  .cl{font-weight:700;font-size:clamp(20px,3vw,32px);letter-spacing:-.8px;color:var(--gray);transition:.3s;cursor:default}
+  .cl:hover{color:var(--red);transform:translateY(-4px)}
+  .cl .role{font-size:.55em;color:var(--gray-l);font-weight:500;letter-spacing:0;margin-right:8px;text-transform:uppercase}
+
+  .contact{padding:100px 0 60px;text-align:center;position:relative}
+  .contact h2{font-weight:900;font-size:clamp(48px,9vw,110px);letter-spacing:-3.5px;line-height:.95;margin-bottom:50px;color:var(--ink)}
+  .ch-buttons{display:flex;flex-direction:column;gap:18px;max-width:520px;margin:0 auto}
+  .ch-btn{
+    display:flex;align-items:center;gap:18px;padding:22px 28px;
+    background:var(--plata-l);border-radius:60px;text-decoration:none;color:var(--ink);
+    transition:.3s cubic-bezier(.2,.7,.2,1);text-align:left;position:relative;overflow:hidden;
+  }
+  .ch-btn::before{content:"";position:absolute;inset:0;background:var(--red);transform:translateX(-100%);transition:.4s cubic-bezier(.2,.7,.2,1)}
+  .ch-btn:hover::before{transform:translateX(0)}
+  .ch-btn:hover{color:#fff;transform:scale(1.02)}
+  .ch-btn:hover .ch-ic{background:#fff;color:var(--red)}
+  .ch-btn:hover .ch-arrow{transform:translateX(8px);color:#fff}
+  .ch-ic,.ch-tx,.ch-arrow{position:relative;z-index:1}
+  .ch-ic{width:50px;height:50px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;transition:.3s}
+  .ch-tx{flex:1}
+  .ch-tx .lbl{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;transition:.3s}
+  .ch-btn:hover .ch-tx .lbl{color:rgba(255,255,255,.7)}
+  .ch-tx .val{font-weight:700;font-size:19px;letter-spacing:-.3px}
+  .ch-arrow{font-size:24px;color:var(--gray);transition:.3s}
+
+  footer{padding:50px 0;text-align:center;color:var(--gray);font-size:13px}
+  footer a{color:var(--gray);text-decoration:none;margin:0 10px;transition:.2s}
+  footer a:hover{color:var(--red)}
+
+  .reveal{opacity:0;transform:translateY(28px);transition:.8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  .wa-float{
+    position:fixed;right:20px;bottom:20px;z-index:70;
+    background:var(--red);color:#fff;width:58px;height:58px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:26px;
+    text-decoration:none;box-shadow:0 10px 30px rgba(254,0,0,.4);
+    animation:pulse 2.4s infinite;transition:.3s;
+  }
+  .wa-float:hover{transform:scale(1.12) rotate(8deg)}
+  @keyframes pulse{0%,100%{box-shadow:0 10px 30px rgba(254,0,0,.4)}50%{box-shadow:0 10px 30px rgba(254,0,0,.7),0 0 0 14px rgba(254,0,0,0)}}
+</style>
 </head>
 <body>
+
 <nav>
-  <a href="#top" class="nav-logo"><img src="chervo_logo.svg" alt="Chervo"></a>
-  <div class="nav-links">
-    <a href="#servicios">Servicios</a>
-    <a href="#sobre">Equipo</a>
-    <a href="#clientes">Clientes</a>
-    <a href="#contacto">Por consultas</a>
-    <a href="/clientes/">Área clientes</a>
+  <div class="wrap nav-in">
+    <a class="brand" href="#top">
+      <img src="chervo_logo.svg" alt="Chervo" style="height:52px;width:auto">
+    </a>
+    <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
+    <div class="nav-links" id="navlinks">
+      <a href="#servicios">Servicios</a>
+      <a href="#sobre">Equipo</a>
+      <a href="#clientes">Clientes</a>
+      <a href="#contacto" class="nav-cta">Por consultas</a>
+      <a href="/clientes/" class="nav-portal">Área clientes</a>
+    </div>
   </div>
-  <a href="#contacto" class="nav-cta">Por consultas</a>
 </nav>
-<div id="top">
-  <p class="hero-sub">Tienes una idea o proyecto en mente</p>
-  <h1 class="hero-title">${heroTitulo}<br><span class="hero-rotating" id="rotating-word">${heroPalabras[0]}</span></h1>
-</div>
-<div class="ticker-wrap"><div class="ticker">${tickerHTML}</div></div>
-<section id="problema">
-  <div><h2>El Problema</h2><p>Tienes una idea y no sabes por dónde empezar. Tienes trabajo atrasado y necesitas retomarlo. Te falta tiempo para una entrega. Quieres armar un proyecto y no tienes personal suficiente.</p></div>
-  <div><h2>La Solución</h2><p>Te ofrecemos <strong>20 años de experiencia</strong> en diseño y construcción, trabajando con estudios de arquitectura y arquitectos freelance. Desarrollamos proyectos desde la idea hasta su documentación para entrega a clientes y entidades gubernamentales.</p></div>
-</section>
-<section id="servicios">
-  <p class="section-label">Servicios</p>
-  ${serviciosHTML}
-</section>
-<section id="sobre">
-  <img src="chervo_retrato.jpg" alt="Chervo equipo">
-  <div><p class="section-label">Un equipo para ti</p><p>Somos un equipo con más de 20 años de experiencia en representación de ideas y desarrollo de proyectos. Nos ajustamos a tus necesidades y a tu presupuesto.</p></div>
-</section>
-<section id="clientes">
-  <p class="section-label">Clientes</p>
-  <ul>${clientesHTML}</ul>
-</section>
-<section id="contacto">
-  <p class="section-label">Por consultas</p>
-  <div class="contact-links">
-    <a href="https://wa.me/${waNum}" class="contact-link">✆ WhatsApp <span>${whatsapp} →</span></a>
-    <a href="mailto:${email}" class="contact-link">✉ Correo <span>${email} →</span></a>
+
+<header class="hero" id="top">
+  <div class="audience">Tienes una idea o proyecto en mente</div>
+  <h1>¿Buscando<br>ayuda?</h1>
+  <div class="rotwrap">con <span class="rot" id="rot">${heroPalabras[0]}</span></div>
+</header>
+
+<section class="ps">
+  <div class="wrap">
+    <div class="blk reveal">
+      <h2>El Problema</h2>
+      <p>Tienes una idea y no sabes por dónde empezar. Tienes trabajo atrasado y necesitas retomarlo. Te falta tiempo para una entrega. Quieres armar un proyecto y no tienes personal suficiente.</p>
+    </div>
+    <div class="blk reveal">
+      <h2>La Solución</h2>
+      <p>Te ofrecemos <b>20 años de experiencia</b> en diseño y construcción, trabajando con estudios de arquitectura y arquitectos freelance. Desarrollamos proyectos desde la idea hasta su documentación para entrega a clientes y entidades gubernamentales.</p>
+    </div>
   </div>
 </section>
+
+<div class="marquee">
+  <div class="track">
+    <span>DIBUJO 2D &amp; 3D<em>·</em>RENDERS<em>·</em>DRONE<em>·</em>VIDEO<em>·</em>DECLARACIONES JURADAS<em>·</em>PRESUPUESTOS<em>·</em>METRADOS<em>·</em>INTENDENCIA &amp; BPS<em>·</em>ASESORÍAS<em>·</em>SOFTWARE REMOTO<em>·</em></span>
+    <span>DIBUJO 2D &amp; 3D<em>·</em>RENDERS<em>·</em>DRONE<em>·</em>VIDEO<em>·</em>DECLARACIONES JURADAS<em>·</em>PRESUPUESTOS<em>·</em>METRADOS<em>·</em>INTENDENCIA &amp; BPS<em>·</em>ASESORÍAS<em>·</em>SOFTWARE REMOTO<em>·</em></span>
+  </div>
+</div>
+
+<section class="servicios" id="servicios">
+  <div class="wrap">
+    <div class="serv-list reveal">
+${serviciosHTML}
+    </div>
+  </div>
+</section>
+
+<section class="about" id="sobre">
+  <div class="wrap about-in reveal">
+    <div>
+      <span class="k">Un equipo para ti</span>
+      <p>Somos un equipo con más de 20 años de experiencia en representación de ideas y desarrollo de proyectos. Nos ajustamos a tus necesidades y a tu presupuesto.</p>
+    </div>
+    <div class="ph"><img src="chervo_retrato.jpg" alt="Chervo"></div>
+  </div>
+</section>
+
+<section class="clients" id="clientes">
+  <div class="wrap reveal">
+    <h2>Clientes</h2>
+    <div class="client-cloud">
+${clientesHTML}
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contacto">
+  <div class="wrap reveal">
+    <h2>Por consultas</h2>
+    <div class="ch-buttons">
+      <a class="ch-btn" href="https://wa.me/${waNum}" target="_blank" rel="noopener">
+        <div class="ch-ic">✆</div>
+        <div class="ch-tx"><div class="lbl">WhatsApp</div><div class="val">${whatsapp}</div></div>
+        <div class="ch-arrow">→</div>
+      </a>
+      <a class="ch-btn" href="mailto:${email}">
+        <div class="ch-ic">✉</div>
+        <div class="ch-tx"><div class="lbl">Correo</div><div class="val">${email}</div></div>
+        <div class="ch-arrow">→</div>
+      </a>
+    </div>
+  </div>
+</section>
+
 <footer>
-  <span>© 2026 Chervo · IlChervoNero</span>
-  <div style="display:flex;gap:1.5rem"><a href="https://wa.me/${waNum}">WhatsApp</a><a href="mailto:${email}">Correo</a></div>
+  <div class="wrap">
+    © 2026 Chervo · IlChervoNero ·
+    <a href="https://wa.me/${waNum}" target="_blank" rel="noopener">WhatsApp</a> ·
+    <a href="mailto:${email}">Correo</a>
+  </div>
 </footer>
-<a href="https://wa.me/${waNum}" class="fab">✆</a>
+
+<a class="wa-float" href="https://wa.me/${waNum}" target="_blank" rel="noopener" aria-label="WhatsApp">✆</a>
+
 <script>
-  const palabras = ${palabrasJS};
-  let i = 0;
-  const el = document.getElementById('rotating-word');
-  setInterval(() => {
-    el.style.opacity = '0';
-    setTimeout(() => { i = (i + 1) % palabras.length; el.textContent = palabras[i]; el.style.opacity = '1'; }, 300);
-  }, 2500);
-  el.style.transition = 'opacity 0.3s';
+  const burger=document.getElementById('burger'),nav=document.getElementById('navlinks');
+  burger.addEventListener('click',()=>nav.classList.toggle('open'));
+  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));
+
+  const words=${palabrasJS};
+  let i=0;const rot=document.getElementById('rot');
+  setInterval(()=>{
+    rot.classList.add('swap');
+    setTimeout(()=>{i=(i+1)%words.length;rot.textContent=words[i];rot.classList.remove('swap')},350);
+  },2400);
+
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  document.querySelectorAll('.serv[data-item]').forEach(b=>b.addEventListener('click',()=>{
+    const msg=encodeURIComponent(\`Hola Chervo, me gustaría una cotización para: \${b.dataset.item}.\`);
+    window.open(\`https://wa.me/${waNum}?text=\${msg}\`,'_blank');
+  }));
 </script>
+
 </body>
 </html>`;
 
