@@ -2,9 +2,10 @@ const fs = require("fs");
 const https = require("https");
 
 const TOKEN = process.env.NOTION_TOKEN;
-const DB_SERVICIOS = process.env.DB_SERVICIOS;
-const DB_CLIENTES  = process.env.DB_CLIENTES;
-const DB_CONFIG    = process.env.DB_CONFIG;
+const DB_SERVICIOS    = process.env.DB_SERVICIOS;
+const DB_CLIENTES     = process.env.DB_CLIENTES;
+const DB_CONFIG       = process.env.DB_CONFIG;
+const DB_APLICACIONES = process.env.DB_APLICACIONES;
 
 function notionRequest(path, body) {
   return new Promise((resolve, reject) => {
@@ -58,10 +59,11 @@ function getText(prop) {
 (async () => {
   const byOrden = [{ property: "Orden", direction: "ascending" }];
 
-  const [serviciosRaw, clientesRaw, config] = await Promise.all([
+  const [serviciosRaw, clientesRaw, config, appsRaw] = await Promise.all([
     queryDB(DB_SERVICIOS, byOrden),
     queryDB(DB_CLIENTES),
     getConfig(DB_CONFIG),
+    queryDB(DB_APLICACIONES, byOrden),
   ]);
 
   const heroPalabras = (config["hero_palabras_rotativas"] ||
@@ -84,6 +86,19 @@ function getText(prop) {
     const rol    = getText(p.properties["Rol"]);
     const span   = rol ? '<span class="role">' + rol + '</span>' : "";
     return '      <div class="cl">' + span + nombre + '</div>';
+  }).join("\n");
+
+  const appsActivas = appsRaw.filter(p => p.properties["Activo"]?.checkbox === true);
+  const appsHTML = appsActivas.map(p => {
+    const nombre = getText(p.properties["Nombre"]);
+    const desc   = getText(p.properties["Descripcion"]);
+    const url    = p.properties["URL"]?.url || "#";
+    const icono  = getText(p.properties["Icono"]) || "⚙";
+    return '      <a class="app-card" href="' + url + '" target="_blank" rel="noopener">'
+      + '<div class="app-ic">' + icono + '</div>'
+      + '<div class="app-info"><div class="app-name">' + nombre + '</div><div class="app-desc">' + desc + '</div></div>'
+      + '<div class="app-arrow">→</div>'
+      + '</a>';
   }).join("\n");
 
   const palabrasJS = JSON.stringify(heroPalabras);
@@ -182,7 +197,19 @@ function getText(prop) {
   .reveal.in{opacity:1;transform:none}
   .wa-float{position:fixed;right:20px;bottom:20px;z-index:70;background:var(--red);color:#fff;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;text-decoration:none;box-shadow:0 10px 30px rgba(254,0,0,.4);animation:pulse 2.4s infinite;transition:.3s}
   .wa-float:hover{transform:scale(1.12) rotate(8deg)}
-  @keyframes pulse{0%,100%{box-shadow:0 10px 30px rgba(254,0,0,.4)}50%{box-shadow:0 10px 30px rgba(254,0,0,.7),0 0 0 14px rgba(254,0,0,0)}}`;
+  @keyframes pulse{0%,100%{box-shadow:0 10px 30px rgba(254,0,0,.4)}50%{box-shadow:0 10px 30px rgba(254,0,0,.7),0 0 0 14px rgba(254,0,0,0)}}
+  .apps{padding:80px 0}
+  .apps h2{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-1px;margin-bottom:40px;color:var(--ink)}
+  .app-grid{display:flex;flex-direction:column;gap:0}
+  .app-card{display:flex;align-items:center;gap:20px;padding:22px 0;text-decoration:none;color:var(--ink);border-bottom:1px solid var(--plata-l);transition:.3s cubic-bezier(.2,.7,.2,1)}
+  .app-card:hover{padding-left:20px;border-color:var(--red)}
+  .app-card:hover .app-arrow{transform:translateX(8px);color:var(--red)}
+  .app-ic{font-size:28px;width:52px;height:52px;background:var(--plata-l);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.3s}
+  .app-card:hover .app-ic{background:var(--red);color:#fff}
+  .app-info{flex:1}
+  .app-name{font-weight:700;font-size:20px;letter-spacing:-.4px;margin-bottom:4px}
+  .app-desc{color:var(--gray);font-size:14px}
+  .app-arrow{font-size:22px;color:var(--gray-l);transition:.3s;flex-shrink:0}`;
 
   const JS = `
   const burger=document.getElementById('burger'),nav=document.getElementById('navlinks');
@@ -219,6 +246,7 @@ function getText(prop) {
       <a href="#servicios">Servicios</a>
       <a href="#sobre">Equipo</a>
       <a href="#clientes">Clientes</a>
+      <a href="#apps">Apps</a>
       <a href="#contacto" class="nav-cta">Por consultas</a>
       <a href="/clientes/" class="nav-portal">Area clientes</a>
     </div>
@@ -276,6 +304,15 @@ function getText(prop) {
     <h2>Clientes</h2>
     <div class="client-cloud">
 ` + clientesHTML + `
+    </div>
+  </div>
+</section>
+
+<section class="apps" id="apps">
+  <div class="wrap reveal">
+    <h2>Aplicaciones</h2>
+    <div class="app-grid">
+` + appsHTML + `
     </div>
   </div>
 </section>
