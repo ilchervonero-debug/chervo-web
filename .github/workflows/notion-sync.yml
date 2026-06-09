@@ -27,8 +27,8 @@ jobs:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           DB_SERVICIOS: 8822741eb67d47ada80f5bb204970cfe
           DB_CLIENTES: 5dd1555ed05540c3b88dd0a543d70f86
-          DB_HERO: a0b4a685217e49a2a4914a16c27116c0
-          DB_CONTACTO: b52fe47a2b034ad3af600fcdf22a1213
+          DB_CONFIG: 94457ed98d444bc190f630e7c4276fda
+          DB_APLICACIONES: 50ef93197a294f13990ab130f3ffa9c8
         run: node generate.js
 
       - name: Commit and push if changed
