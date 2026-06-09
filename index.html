@@ -33,7 +33,7 @@
   .rot.swap{opacity:0;transform:translateY(-14px) scale(.94);filter:blur(8px)}
   @keyframes slideIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-  .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;pointer-events:none;z-index:-1}
+  .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.07;pointer-events:none;z-index:-1}
   .blob-1{width:380px;height:380px;background:var(--red);top:-100px;right:-80px;animation:float 14s ease-in-out infinite}
   .blob-2{width:300px;height:300px;background:var(--plata);bottom:-80px;left:-60px;animation:float 18s ease-in-out infinite reverse}
   @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,30px) scale(1.1)}}
@@ -162,7 +162,7 @@
 
 <section class="servicios" id="servicios">
   <div class="wrap">
-    <div class="serv-list reveal">
+    <div class="serv-list">
 
     </div>
   </div>
@@ -231,7 +231,7 @@
   const words=["dibujo de planos","renders","retoque fotografico","fotos con drone","edicion de video","documentacion de obra","presupuestos","metrados","tramites municipales","declaraciones juradas","modelado 3D","asesorias"];
   let i=0;const rot=document.getElementById('rot');
   setInterval(()=>{rot.classList.add('swap');setTimeout(()=>{i=(i+1)%words.length;rot.textContent=words[i];rot.classList.remove('swap')},350)},2400);
-  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:0,rootMargin:'0px 0px -10px 0px'});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   document.querySelectorAll('.serv[data-item]').forEach(b=>b.addEventListener('click',()=>{
     const msg=encodeURIComponent('Hola Chervo, me gustaria una cotizacion para: '+b.dataset.item+'.');
