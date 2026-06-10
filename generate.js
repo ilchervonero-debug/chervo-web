@@ -62,12 +62,20 @@ function getText(prop) {
 (async () => {
   const byOrden = [{ property: "Orden", direction: "ascending" }];
 
-  const [serviciosRaw, clientesRaw, config, appsRaw] = await Promise.all([
+  const resultados = await Promise.allSettled([
     queryDB(DB_SERVICIOS, byOrden),
     queryDB(DB_CLIENTES),
     getConfig(DB_CONFIG),
     queryDB(DB_APLICACIONES, byOrden),
   ]);
+  const nombres = ["Servicios", "Clientes", "Configuracion", "Aplicaciones"];
+  resultados.forEach((r, i) => {
+    console.log(`${nombres[i]}: ${r.status === "fulfilled" ? "OK" : "FALLO - " + r.reason.message}`);
+  });
+  if (resultados.some(r => r.status === "rejected")) {
+    throw new Error("una o mas bases de Notion fallaron, ver detalle arriba");
+  }
+  const [serviciosRaw, clientesRaw, config, appsRaw] = resultados.map(r => r.value);
 
   if (serviciosRaw.length === 0) throw new Error("DB Servicios devolvio 0 filas: no se publica una pagina vacia");
   if (clientesRaw.length === 0)  throw new Error("DB Clientes devolvio 0 filas: no se publica una pagina vacia");
