@@ -25,10 +25,11 @@ jobs:
       - name: Generate index.html from Notion
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          DB_SERVICIOS: 72c5dd1bfa924029888fa38f5d8fe227
-          DB_CLIENTES: aa3c4fd2ad4d4ebb939fd2a91c241fa8
-          DB_CONFIG: 94457ed98d444bc190f630e7c4276fda
-          DB_APLICACIONES: 50ef93197a294f13990ab130f3ffa9c8
+          DB_SERVICIOS: ea31d8ef34204bef9382e1349cc6abc0
+          DB_CLIENTES: 8067c2e0ce674abc8ebd945d8e5e5fa2
+          DB_HERO: b8d90928c7404c32b83ee5928d343fd0
+          DB_CONTACTO: 4b0d6741c2f64906b92efc71bdc014bc
+          DB_APLICACIONES: 7b5718476b0b4eacbab7082ddee0431a
         run: node generate.js
 
       - name: Commit and push if changed

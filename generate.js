@@ -4,7 +4,8 @@ const https = require("https");
 const TOKEN = process.env.NOTION_TOKEN;
 const DB_SERVICIOS    = process.env.DB_SERVICIOS;
 const DB_CLIENTES     = process.env.DB_CLIENTES;
-const DB_CONFIG       = process.env.DB_CONFIG;
+const DB_HERO         = process.env.DB_HERO;
+const DB_CONTACTO     = process.env.DB_CONTACTO;
 const DB_APLICACIONES = process.env.DB_APLICACIONES;
 
 function notionRequest(path, body) {
@@ -64,21 +65,26 @@ function getText(prop) {
 
   const resultados = await Promise.allSettled([
     queryDB(DB_SERVICIOS, byOrden),
-    queryDB(DB_CLIENTES),
-    getConfig(DB_CONFIG),
+    queryDB(DB_CLIENTES, byOrden),
+    getConfig(DB_HERO),
+    getConfig(DB_CONTACTO),
     queryDB(DB_APLICACIONES, byOrden),
   ]);
-  const nombres = ["Servicios", "Clientes", "Configuracion", "Aplicaciones"];
+  const nombres = ["Servicios", "Clientes", "Hero", "Contacto", "Aplicaciones"];
   resultados.forEach((r, i) => {
     console.log(`${nombres[i]}: ${r.status === "fulfilled" ? "OK" : "FALLO - " + r.reason.message}`);
   });
   if (resultados.some(r => r.status === "rejected")) {
     throw new Error("una o mas bases de Notion fallaron, ver detalle arriba");
   }
-  const [serviciosRaw, clientesRaw, config, appsRaw] = resultados.map(r => r.value);
+  const [serviciosTodos, clientesTodos, heroConfig, contactoConfig, appsRaw] = resultados.map(r => r.value);
+  const config = { ...heroConfig, ...contactoConfig };
 
-  if (serviciosRaw.length === 0) throw new Error("DB Servicios devolvio 0 filas: no se publica una pagina vacia");
-  if (clientesRaw.length === 0)  throw new Error("DB Clientes devolvio 0 filas: no se publica una pagina vacia");
+  const serviciosRaw = serviciosTodos.filter(p => p.properties["Activo"]?.checkbox === true);
+  const clientesRaw  = clientesTodos.filter(p => p.properties["Visible"]?.checkbox === true);
+
+  if (serviciosRaw.length === 0) throw new Error("DB Servicios devolvio 0 filas activas: no se publica una pagina vacia");
+  if (clientesRaw.length === 0)  throw new Error("DB Clientes devolvio 0 filas visibles: no se publica una pagina vacia");
 
   const heroPalabras = (config["hero_palabras_rotativas"] ||
     "dibujo de planos,renders,retoque fotografico,fotos con drone,edicion de video,documentacion de obra,presupuestos,metrados,tramites municipales,declaraciones juradas,modelado 3D,asesorias")
@@ -97,7 +103,7 @@ function getText(prop) {
 
   const clientesHTML = clientesRaw.map(p => {
     const nombre = getText(p.properties["Nombre"]);
-    const rol    = getText(p.properties["Rol"]);
+    const rol    = getText(p.properties["Titulo"]);
     const span   = rol ? '<span class="role">' + rol + '</span>' : "";
     return '      <div class="cl">' + span + nombre + '</div>';
   }).join("\n");
