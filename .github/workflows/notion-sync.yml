@@ -25,8 +25,8 @@ jobs:
       - name: Generate index.html from Notion
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          DB_SERVICIOS: 8822741eb67d47ada80f5bb204970cfe
-          DB_CLIENTES: 5dd1555ed05540c3b88dd0a543d70f86
+          DB_SERVICIOS: 72c5dd1bfa924029888fa38f5d8fe227
+          DB_CLIENTES: aa3c4fd2ad4d4ebb939fd2a91c241fa8
           DB_CONFIG: 94457ed98d444bc190f630e7c4276fda
           DB_APLICACIONES: 50ef93197a294f13990ab130f3ffa9c8
         run: node generate.js

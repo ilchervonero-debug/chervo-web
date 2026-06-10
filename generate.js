@@ -35,6 +35,9 @@ function notionRequest(path, body) {
 async function queryDB(dbId, sorts) {
   const body = sorts ? { sorts } : {};
   const res = await notionRequest(`/v1/databases/${dbId}/query`, body);
+  if (res.object === "error") {
+    throw new Error(`Notion API error en DB ${dbId}: ${res.code} - ${res.message}`);
+  }
   return res.results || [];
 }
 
@@ -65,6 +68,9 @@ function getText(prop) {
     getConfig(DB_CONFIG),
     queryDB(DB_APLICACIONES, byOrden),
   ]);
+
+  if (serviciosRaw.length === 0) throw new Error("DB Servicios devolvio 0 filas: no se publica una pagina vacia");
+  if (clientesRaw.length === 0)  throw new Error("DB Clientes devolvio 0 filas: no se publica una pagina vacia");
 
   const heroPalabras = (config["hero_palabras_rotativas"] ||
     "dibujo de planos,renders,retoque fotografico,fotos con drone,edicion de video,documentacion de obra,presupuestos,metrados,tramites municipales,declaraciones juradas,modelado 3D,asesorias")
@@ -352,5 +358,8 @@ function getText(prop) {
 </html>`;
 
   fs.writeFileSync("index.html", html, "utf8");
-  console.log("generado index.html desde Notion");
-})();
+  console.log(`generado index.html desde Notion (${serviciosRaw.length} servicios, ${clientesRaw.length} clientes, ${appsActivas.length} apps)`);
+})().catch(err => {
+  console.error("ERROR:", err.message);
+  process.exit(1);
+});
