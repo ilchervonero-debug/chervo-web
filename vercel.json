@@ -1,4 +1,6 @@
 {
+  "buildCommand": "echo 'sitio estatico: index.html ya viene generado por GitHub Actions'",
+  "outputDirectory": ".",
   "headers": [
     {
       "source": "/(.*\\.html|)",
