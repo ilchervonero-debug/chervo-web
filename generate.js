@@ -145,7 +145,7 @@ function getText(prop) {
   @media(max-width:760px){.nav-links{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(255,255,255,.97);backdrop-filter:blur(14px);flex-direction:column;align-items:flex-start;gap:0;padding:14px 26px 22px}.nav-links.open{display:flex}.nav-links a{width:100%;padding:14px 0;font-size:18px}}
   @media(min-width:761px){.burger{display:none}}
   .hero{padding:80px 24px;text-align:center;position:relative;overflow:hidden;width:100%}
-  .audience{font-size:13px;color:var(--red);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:30px;font-weight:600;animation:fadeIn .8s ease}
+  .audience{font-size:clamp(17px,2.6vw,24px);color:var(--red);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:30px;font-weight:600;animation:fadeIn .8s ease}
   .hero h1{font-weight:900;font-size:clamp(52px,11vw,200px);line-height:.92;letter-spacing:-4px;color:var(--ink);animation:slideIn 1s cubic-bezier(.2,.7,.2,1);margin:0;text-align:center;word-break:keep-all;hyphens:none}
   .rotwrap{display:block;margin-top:40px;font-weight:400;font-size:clamp(20px,4vw,38px);letter-spacing:-.6px;color:var(--gray);animation:fadeIn 1.2s ease}
   .rot{display:inline-block;min-width:8ch;color:var(--red);font-weight:700;transition:opacity .35s,transform .35s,filter .35s}
