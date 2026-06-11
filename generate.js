@@ -55,8 +55,8 @@ async function getConfig(dbId) {
 
 function getText(prop) {
   if (!prop) return "";
-  if (prop.title)     return prop.title[0]?.plain_text    || "";
-  if (prop.rich_text) return prop.rich_text[0]?.plain_text || "";
+  if (prop.title)     return (prop.title[0]?.plain_text     || "").trim();
+  if (prop.rich_text) return (prop.rich_text[0]?.plain_text || "").trim();
   return "";
 }
 
