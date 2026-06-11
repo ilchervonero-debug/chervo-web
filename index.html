@@ -137,7 +137,7 @@
   <div class="blob blob-2"></div>
   <div class="audience">Tienes una idea o proyecto en mente</div>
   <h1>Buscando<br>ayuda?</h1>
-  <div class="rotwrap">con <span class="rot" id="rot">con dibujo de planos</span></div>
+  <div class="rotwrap">con <span class="rot" id="rot">dibujo de planos</span></div>
 </header>
 
 <section class="ps">
@@ -244,7 +244,7 @@
   const burger=document.getElementById('burger'),nav=document.getElementById('navlinks');
   burger.addEventListener('click',()=>nav.classList.toggle('open'));
   nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));
-  const words=["con dibujo de planos","con renders","con presupuestos","con trámites","con documentación"];
+  const words=["dibujo de planos","renders","presupuestos","trámites","documentación"];
   let i=0;const rot=document.getElementById('rot');
   setInterval(()=>{rot.classList.add('swap');setTimeout(()=>{i=(i+1)%words.length;rot.textContent=words[i];rot.classList.remove('swap')},350)},2400);
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:0,rootMargin:'0px 0px -10px 0px'});
