@@ -6,10 +6,10 @@
   "scope": "/apps/ilme/",
   "display": "standalone",
   "background_color": "#F2F2F0",
-  "theme_color": "#7B1D1D",
+  "theme_color": "#FF3333",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23F2F2F0' width='192' height='192'/><text x='96' y='120' font-size='100' text-anchor='middle' fill='%237B1D1D' font-family='system-ui' font-weight='bold'>📓</text></svg>",
+      "src": "/apps/ilme/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
