@@ -35,7 +35,7 @@
   .solapa.sel{color:var(--tinta);border-bottom-color:var(--rojo)}
   .fin{
     display:none;margin-left:auto;align-self:center;border:none;cursor:pointer;
-    background:var(--tinta);color:#fff;border-radius:8px;
+    background:var(--rojo);color:#fff;border-radius:8px;
     font-size:.78rem;padding:6px 13px;font-family:inherit;font-weight:600;
   }
   .fin.ver{display:block}
@@ -255,7 +255,7 @@
 <div class="solapas">
   <button class="solapa sel" id="solAgenda">Agenda</button>
   <button class="solapa" id="solMemory">Memory</button>
-  <button class="fin" id="btnFin">✕</button>
+  <button class="fin" id="btnFin">✓</button>
 </div>
 
 <header id="cabAgenda">
@@ -580,14 +580,14 @@ function setModo(m){
 document.getElementById('solAgenda').onclick=()=>setModo('agenda');
 document.getElementById('solMemory').onclick=()=>setModo('memoria');
 
-// botón terminar/guardar de Memory (✕ arriba a la derecha): fija la memoria en edición
+// botón terminar/guardar de Memory (✓ arriba a la derecha): fija la memoria en edición
 const btnFin=document.getElementById('btnFin');
 btnFin.onclick=()=>{
   memoEdit=null;
   if(document.activeElement&&document.activeElement.blur) document.activeElement.blur();
   save(); pintarMemos();
   btnFin.textContent='✓ guardado';
-  setTimeout(()=>{ btnFin.textContent='✕'; },1200);
+  setTimeout(()=>{ btnFin.textContent='✓'; },1200);
 };
 
 function pintarTodo(){ pintarMes(); pintarPanel(); pintarStrip(); pintarDia(); }
