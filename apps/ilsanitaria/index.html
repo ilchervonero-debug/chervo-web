@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>iLSanitaria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--rojo:#fe0000;--tinta:#2b2b2b;--gris:#8a8a8a;--suave:#f6f6f6;--linea:#ececec;--ok:#1a9e4b}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Geist',system-ui,sans-serif;background:#fff;color:var(--tinta);max-width:600px;margin:0 auto;padding:20px 16px 40px}
+.mono{font-family:'Geist Mono',monospace}
+header{display:flex;align-items:baseline;justify-content:space-between}
+h1{font-size:22px;font-weight:700;letter-spacing:-.5px}
+h1 span{color:var(--rojo)}
+.sub{font-size:12px;color:var(--gris);margin:2px 0 16px}
+
+/* ---- home ---- */
+.menu{display:flex;flex-direction:column;gap:10px}
+.mod{display:flex;align-items:center;gap:14px;text-align:left;background:var(--suave);border:none;
+  padding:16px 18px;border-radius:20px;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;
+  animation:pop .4s ease both}
+.mod:active{transform:scale(.97);background:#fdeaea}
+@media(hover:hover){.mod:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.08)}
+.mod:hover .fl{transform:translateX(4px)}}
+
+.mod .m-n{font-family:'Geist Mono',monospace;font-size:13px;color:#fff;font-weight:600;background:var(--rojo);
+  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 3px 8px rgba(254,0,0,.3)}
+.mod b{display:block;font-size:16px;font-weight:700;color:var(--tinta)}
+.mod i{display:block;font-style:normal;font-size:12px;color:var(--gris);margin-top:2px}
+.mod .fl{margin-left:auto;color:var(--rojo);font-size:18px;transition:transform .15s ease}
+.mod:active b{color:var(--rojo)}
+#volver{display:none;position:fixed;top:16px;right:16px;z-index:50;border:none;background:var(--rojo);color:#fff;
+  width:44px;height:44px;border-radius:50%;font-size:20px;font-weight:600;cursor:pointer;
+  box-shadow:0 4px 14px rgba(254,0,0,.35);align-items:center;justify-content:center}
+#volver.show{display:flex}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.mod:nth-child(1){animation-delay:.03s}.mod:nth-child(2){animation-delay:.07s}
+.mod:nth-child(3){animation-delay:.11s}.mod:nth-child(4){animation-delay:.15s}
+.mod:nth-child(5){animation-delay:.19s}.mod:nth-child(6){animation-delay:.23s}
+.mod:nth-child(7){animation-delay:.27s}.mod:nth-child(8){animation-delay:.31s}
+@media(prefers-reduced-motion:reduce){.mod{animation:none}}
+.vista{display:none}
+.v-tit{font-size:18px;font-weight:700;margin:6px 56px 18px 0;min-height:44px;display:flex;align-items:center}
+.v-tit .m-n{font-family:'Geist Mono',monospace;font-size:12px;color:var(--rojo);margin-right:8px}
+
+/* ---- comunes ---- */
+.modo{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.modo button{border:none;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;background:var(--suave);color:var(--gris)}
+.modo button.on{background:var(--rojo);color:#fff}
+.campo{margin-bottom:14px}
+.campo label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--gris);margin-bottom:5px}
+.campo input,.campo select{width:100%;font-family:'Geist Mono',monospace;font-size:20px;font-weight:600;border:none;background:var(--suave);border-radius:22px;padding:13px 18px;color:var(--tinta);outline:none;appearance:none}
+.campo input:focus{background:#fdeaea}
+.campo input:disabled{background:#fbe3e3;color:var(--rojo);-webkit-text-fill-color:var(--rojo)}
+.out{margin-top:16px;background:var(--suave);border-radius:22px;padding:18px 20px}
+.out .big{font-size:32px;font-weight:700;letter-spacing:-1px}
+.out .big small{font-size:15px;color:var(--gris);font-weight:500}
+.out .fila{font-size:14px;margin-top:8px}
+.out .fila b{color:var(--rojo)}
+.chk{font-size:13px;font-weight:600;margin-top:10px}
+.aviso{font-size:11px;color:var(--gris);margin-top:18px;line-height:1.5}
+
+/* ---- desagües: cadena ---- */
+.perfil{background:var(--suave);border-radius:14px;padding:10px 8px 4px;margin-bottom:16px}
+.perfil svg{width:100%;display:block}
+.cam{display:flex;align-items:center;gap:10px;padding:10px 2px;flex-wrap:wrap}
+.cam .tag{font-family:'Geist Mono',monospace;font-size:12px;font-weight:600;background:var(--tinta);color:#fff;border-radius:999px;padding:5px 11px}
+.cam input{font-family:'Geist Mono',monospace;font-size:15px;font-weight:600;width:88px;border:none;background:var(--suave);border-radius:999px;padding:8px 14px;color:var(--tinta);outline:none;text-align:right}
+.cam input:focus{background:#fdeaea}
+.cam .prof{font-size:13px;color:var(--gris)}
+.cam .fixt{font-size:10px;color:var(--rojo);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.cam .salto{font-size:11px;color:var(--gris)}
+* .tramo{}
+.tramo{background:#fff;border-radius:20px;padding:12px 12px 10px;margin:2px 0;box-shadow:0 1px 10px rgba(0,0,0,.05);border-left:3px solid var(--rojo)}
+.tramo.off{border-left-color:#ddd;opacity:.55}
+.t-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.t-nom{font-size:14px;font-weight:700}
+.t-acc{display:flex;gap:8px;align-items:center}
+.t-acc button{border:none;background:var(--suave);border-radius:999px;font-size:11px;font-weight:600;padding:7px 13px;color:var(--gris);cursor:pointer}
+.t-acc button.on{background:var(--tinta);color:#fff}
+.t-acc .del{color:var(--rojo)}
+.t-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.t-grid label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--gris);margin-bottom:3px}
+.t-grid input{width:100%;font-family:'Geist Mono',monospace;font-size:16px;font-weight:600;border:none;background:var(--suave);border-radius:16px;padding:9px 12px;color:var(--tinta);outline:none}
+.t-grid input:focus{background:#fdeaea}
+.wc{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--gris)}
+.wc input{width:17px;height:17px;accent-color:var(--rojo)}
+.t-res{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px}
+.t-res b{font-size:14px}
+.t-res .dia b{color:var(--rojo)}
+.t-res .lbl{color:var(--gris);font-size:10px;text-transform:uppercase;letter-spacing:.06em;display:block}
+.art-btn{border:none;background:var(--suave);border-radius:999px;font-size:11px;font-weight:600;padding:8px 14px;color:var(--tinta);cursor:pointer;margin-top:8px}
+.art-btn.on{background:var(--rojo);color:#fff}
+.art-panel{margin-top:8px;border-top:1px solid var(--linea)}
+.art-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--linea)}
+.art-row .nom{font-size:13px;font-weight:500}
+.art-row .det{font-size:10px;color:var(--gris)}
+.art-row .ctr{display:flex;align-items:center;gap:11px}
+.art-row .ctr button{width:30px;height:30px;border-radius:50%;border:none;background:var(--suave);font-size:16px;font-weight:600;color:var(--tinta);cursor:pointer}
+.art-row .ctr button:active{background:var(--rojo);color:#fff}
+.art-row .qty{min-width:16px;text-align:center;font-size:14px;font-weight:600}
+.linea-v{width:3px;height:14px;background:var(--linea);margin-left:22px}
+/* calculadora */
+.calc-disp{font-family:'Geist Mono',monospace;font-size:46px;font-weight:600;text-align:right;
+  padding:24px 8px;min-height:96px;word-break:break-all;line-height:1.1}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ck{border:none;border-radius:999px;aspect-ratio:1;font-size:24px;font-weight:600;font-family:'Geist',sans-serif;
+  background:var(--suave);color:var(--tinta);cursor:pointer;transition:transform .1s ease,filter .1s ease}
+.ck:active{transform:scale(.92);filter:brightness(.95)}
+.ck.op{background:#ffe2e2;color:var(--rojo)}
+.ck.op.on{background:var(--rojo);color:#fff}
+.ck.fn{background:#eee;color:var(--gris)}
+.ck.eq{background:var(--rojo);color:#fff}
+.ck.zero{aspect-ratio:auto;grid-column:span 2;border-radius:999px}
+/* extra */
+.add{width:100%;border:none;background:var(--suave);border-radius:999px;padding:14px;font-size:14px;font-weight:600;color:var(--tinta);cursor:pointer;margin-top:12px}
+.add:active{background:var(--rojo);color:#fff}
+.tot{margin-top:20px;padding-top:14px;border-top:2px solid var(--tinta)}
+.tot h2{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gris);margin-bottom:10px}
+.tot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;font-size:13px}
+.tot-grid b{font-size:17px;display:block}
+.tot-grid .lbl{color:var(--gris);font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+
+/* ---- pluviales ---- */
+.baj{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--linea)}
+.baj:first-child{border-top:none}
+.baj .tag{font-family:'Geist Mono',monospace;font-size:12px;font-weight:600;background:var(--tinta);color:#fff;border-radius:999px;padding:5px 11px}
+.baj input{flex:1;font-family:'Geist Mono',monospace;font-size:17px;font-weight:600;border:none;background:var(--suave);border-radius:999px;padding:10px 16px;color:var(--tinta);outline:none}
+.baj input:focus{background:#fdeaea}
+.baj .r{font-family:'Geist Mono',monospace;font-size:13px;font-weight:600;color:var(--rojo);min-width:54px;text-align:right}
+.baj .del{border:none;background:none;color:var(--rojo);font-size:15px;cursor:pointer;padding:4px}
+</style>
+</head>
+<body>
+
+<header><h1>iL<span>Sanitaria</span></h1><div class="mono" style="font-size:11px;color:var(--rojo);font-weight:600">v3.6</div></header>
+<div class="sub">Cálculo hidráulico sanitario · Chervo</div>
+
+<button id="volver" aria-label="Inicio">←</button>
+
+<!-- ================= HOME ================= -->
+<div id="home">
+  <div class="menu">
+    <button class="mod" data-v="vDes"><span class="m-n">01</span><span><b>Desagües por tramos</b><i>Primaria / secundaria · cámaras encadenadas · perfil</i></span><span class="fl">→</span></button>
+    <button class="mod" data-v="vPlu"><span class="m-n">02</span><span><b>Pluviales</b><i>Superficie de techo → bajadas y colector al 2%</i></span><span class="fl">→</span></button>
+    <button class="mod" data-v="vPen"><span class="m-n">03</span><span><b>Pendiente rápida</b><i>Longitud ↔ caída · verificación por diámetro</i></span><span class="fl">→</span></button>
+    <button class="mod" data-v="vRes"><span class="m-n">04</span><span><b>Reserva de agua</b><i>Dotación diaria · m³ de tanque · cisterna + elevado</i></span><span class="fl">→</span></button>
+  <button class="mod" data-v="vPre"><span class="m-n">05</span><span><b>Presión por gravedad</b><i>Altura de tanque → m.c.a. y verificación por artefacto</i></span><span class="fl">→</span></button>
+  <button class="mod" data-v="vGeo"><span class="m-n">06</span><span><b>Geometría y volúmenes</b><i>Tanques en m³ · Pitágoras · regla de 3 · círculo</i></span><span class="fl">→</span></button>
+  <button class="mod" data-v="vAgua"><span class="m-n">07</span><span><b>pH y salinidad</b><i>Escala de pH y concentración de sal — para clase</i></span><span class="fl">→</span></button>
+    <button class="mod" data-v="vCalc"><span class="m-n">08</span><span><b>Calculadora</b><i>Operaciones básicas · porcentajes</i></span><span class="fl">→</span></button>
+  </div>
+</div>
+
+<!-- ================= 01 DESAGÜES ================= -->
+<div class="vista" id="vDes">
+  <div class="v-tit"><span class="m-n">01</span>Desagües por tramos</div>
+  <div class="modo">
+    <button id="bPrim" class="on">Primaria · cámaras</button>
+    <button id="bSec">Secundaria · interior</button>
+  </div>
+  <div class="perfil"><svg id="svg" viewBox="0 0 600 200" preserveAspectRatio="none"></svg></div>
+  <div id="cadena"></div>
+  <button class="add" id="add">+ Agregar tramo</button>
+  <div class="tot"><h2>Totales</h2><div class="tot-grid" id="totales"></div></div>
+  <div class="aviso">Profundidades desde nivel de terreno (terreno horizontal). Tocá la profundidad de cualquier cámara para fijarla: los tramos siguientes encadenan desde ahí. Tramos en NO no suman metraje. Primaria: mínimo Ø110 con inodoro aguas arriba (serie PVC Uruguay); secundaria: nodos PP (pileta de patio), arranque ~0,25 m. Verificar contra ordenanza de la intendencia.</div>
+</div>
+
+<!-- ================= 02 PLUVIALES ================= -->
+<div class="vista" id="vPlu">
+  <div class="v-tit"><span class="m-n">02</span>Pluviales</div>
+  <div class="campo"><label>Intensidad de lluvia de diseño (mm/h)</label><input type="number" inputmode="numeric" id="uInt" value="150"></div>
+  <div id="bajadas"></div>
+  <button class="add" id="addBaj">+ Agregar bajada</button>
+  <div class="out">
+    <div class="big" id="uTot">—</div>
+    <div class="fila" id="uCau"></div>
+    <div class="fila" id="uCol"></div>
+  </div>
+  <div class="aviso">Superficie en proyección horizontal por bajada. Capacidades referenciales a 150 mm/h: bajada Ø75 ≈ 75 m², Ø110 ≈ 190 m², Ø160 ≈ 560 m² (serie PVC Uruguay). Colector horizontal calculado al 2 % de pendiente. Para otras intensidades la capacidad se ajusta proporcionalmente. Verificar contra ordenanza local.</div>
+</div>
+
+<!-- ================= 03 PENDIENTE ================= -->
+<div class="vista" id="vPen">
+  <div class="v-tit"><span class="m-n">03</span>Pendiente rápida</div>
+  <div class="modo">
+    <button class="pm on" data-m="caida">Calcular caída</button>
+    <button class="pm" data-m="pend">Calcular pendiente</button>
+  </div>
+  <div class="campo"><label>Longitud del tramo (m)</label><input type="number" inputmode="decimal" id="pLon" placeholder="0.00"></div>
+  <div class="campo" id="pCP"><label>Pendiente (%)</label><input type="number" inputmode="decimal" id="pPen" placeholder="2"></div>
+  <div class="campo" id="pCC" style="display:none"><label>Caída disponible (cm)</label><input type="number" inputmode="decimal" id="pCai" placeholder="0"></div>
+  <div class="campo"><label>Diámetro</label><div class="modo" id="pDias" style="margin-bottom:0"></div></div>
+  <div style="height:80px;margin:6px 0"><svg viewBox="0 0 400 80" preserveAspectRatio="none" style="width:100%;height:100%">
+    <line x1="20" y1="25" x2="380" y2="25" stroke="#ececec" stroke-width="2" stroke-dasharray="4 4"/>
+    <line id="pTubo" x1="20" y1="25" x2="380" y2="25" stroke="#fe0000" stroke-width="6" stroke-linecap="round"/>
+  </svg></div>
+  <div class="out" style="border-top:none;padding-top:0">
+    <div class="big" id="pVal">—</div>
+    <div class="fila mono" id="pAlt"></div>
+    <div class="chk" id="pChk"></div>
+  </div>
+</div>
+
+<!-- ================= 04 RESERVA ================= -->
+<div class="vista" id="vRes">
+  <div class="v-tit"><span class="m-n">04</span>Reserva de agua</div>
+  <div class="campo"><label>Personas</label><input type="number" inputmode="numeric" id="rPer" value="4"></div>
+  <div class="campo"><label>Dotación (L / persona / día)</label><input type="number" inputmode="numeric" id="rDot" value="200"></div>
+  <div class="campo"><label>Días de reserva</label><input type="number" inputmode="decimal" step="0.5" id="rDias" value="1"></div>
+  <div class="out">
+    <div class="big" id="rTot">—</div>
+    <div class="fila" id="rM3"></div>
+    <div class="fila" id="rTan"></div>
+    <div class="fila" id="rSplit"></div>
+  </div>
+  <div class="aviso">Dotación residencial referencial 150–200 L/persona/día. Con bombeo, criterio usual: cisterna inferior ⅔ + tanque elevado ⅓ de la reserva total. Verificar dotación exigida por OSE / intendencia según destino.</div>
+</div>
+
+<!-- ================= 05 PRESIÓN ================= -->
+<div class="vista" id="vPre">
+  <div class="v-tit"><span class="m-n">05</span>Presión por gravedad</div>
+  <div class="campo"><label>Altura: fondo de tanque sobre el artefacto (m)</label><input type="number" inputmode="decimal" step="0.1" id="gAlt" placeholder="0.0"></div>
+  <div class="campo"><label>Pérdida estimada por fricción (m.c.a.)</label><input type="number" inputmode="decimal" step="0.1" id="gPer" value="0.5"></div>
+  <div class="campo"><label>Artefacto a verificar</label><select id="gArt"></select></div>
+  <div class="out">
+    <div class="big" id="gVal">—</div>
+    <div class="fila mono" id="gBar"></div>
+    <div class="chk" id="gChk"></div>
+  </div>
+  <div class="aviso">1 m.c.a. = 0,098 bar ≈ 0,1 kgf/cm². Presiones mínimas referenciales: canilla/ducha común 2 m.c.a., calefón eléctrico 2 m.c.a., calentador instantáneo (gas/eléctrico) 6 m.c.a., ducha con termostática 10 m.c.a. La pérdida por fricción real depende del recorrido y diámetros — el valor por defecto es estimativo para vivienda. Verificar requisito del fabricante.</div>
+</div>
+
+<!-- ================= 06 GEOMETRÍA ================= -->
+<div class="vista" id="vGeo">
+  <div class="v-tit"><span class="m-n">06</span>Geometría y volúmenes</div>
+  <div class="modo">
+    <button class="gm on" data-g="gRect">Tanque rect.</button>
+    <button class="gm" data-g="gCil">Tanque cilíndrico</button>
+    <button class="gm" data-g="gPit">Pitágoras</button>
+    <button class="gm" data-g="gR3">Regla de 3</button>
+    <button class="gm" data-g="gCir">Círculo</button>
+  </div>
+
+  <div class="gpan" id="gRect">
+    <div class="aviso" style="margin:0 0 12px">Poné los litros que querés guardar y te da un tanque cúbico. Después cambiá el largo o el ancho a gusto: el alto se recalcula solo para mantener los litros.</div>
+    <div class="campo"><label>Litros a guardar</label><input type="number" inputmode="numeric" id="qLit" placeholder="1000"></div>
+    <div class="campo"><label>Largo (m)</label><input type="number" inputmode="decimal" step="0.01" id="qL"></div>
+    <div class="campo"><label>Ancho (m)</label><input type="number" inputmode="decimal" step="0.01" id="qA"></div>
+    <div class="campo"><label>Alto / profundidad (m)</label><input type="number" inputmode="decimal" step="0.01" id="qH"></div>
+    <div class="out"><div class="big" id="qOut">—</div><div class="fila mono" id="qDet"></div></div>
+  </div>
+
+  <div class="gpan" id="gCil" style="display:none">
+    <div class="aviso" style="margin:0 0 12px">Volumen = π × radio² × altura. Poné los litros y te da una proporción pareja. Cambiá el diámetro: la altura se ajusta sola para mantener los litros.</div>
+    <div class="campo"><label>Litros a guardar</label><input type="number" inputmode="numeric" id="cLit" placeholder="1000"></div>
+    <div class="campo"><label>Diámetro (m)</label><input type="number" inputmode="decimal" step="0.01" id="cD"></div>
+    <div class="campo"><label>Altura (m)</label><input type="number" inputmode="decimal" step="0.01" id="cH"></div>
+    <div class="out"><div class="big" id="cOut">—</div><div class="fila mono" id="cDet"></div></div>
+  </div>
+
+  <div class="gpan" id="gPit" style="display:none">
+    <div class="aviso" style="margin:0 0 12px">a² + b² = c². Llená los dos lados que conocés. El tercero se bloquea solo y muestra el resultado. La diagonal (c) es siempre el lado largo. Para escuadrar una obra: 3–4–5.</div>
+    <div class="campo"><label>Cateto a (m)</label><input type="number" inputmode="decimal" step="0.01" id="tA"></div>
+    <div class="campo"><label>Cateto b (m)</label><input type="number" inputmode="decimal" step="0.01" id="tB"></div>
+    <div class="campo"><label>Diagonal c (m)</label><input type="number" inputmode="decimal" step="0.01" id="tC"></div>
+    <div class="out"><div class="big" id="tOut">—</div><div class="fila mono" id="tDet"></div></div>
+  </div>
+
+  <div class="gpan" id="gR3" style="display:none">
+    <div class="aviso" style="margin:0 0 12px">Si A corresponde a B, entonces C corresponde a X. Ej: 25 kg de portland rinden 90 L de mezcla → ¿cuánto rinden 40 kg?</div>
+    <div class="campo"><label>A</label><input type="number" inputmode="decimal" id="r3A"></div>
+    <div class="campo"><label>corresponde a B</label><input type="number" inputmode="decimal" id="r3B"></div>
+    <div class="campo"><label>C</label><input type="number" inputmode="decimal" id="r3C"></div>
+    <div class="out"><div class="big" id="r3Out">—</div><div class="fila mono" id="r3Det"></div></div>
+  </div>
+
+  <div class="gpan" id="gCir" style="display:none">
+    <div class="aviso" style="margin:0 0 12px">Ingresá UN solo dato (el que tengas) y calcula todos los demás.</div>
+    <div class="campo"><label>Diámetro (m)</label><input type="number" inputmode="decimal" step="0.01" id="kD"></div>
+    <div class="campo"><label>Radio (m)</label><input type="number" inputmode="decimal" step="0.01" id="kR"></div>
+    <div class="campo"><label>Perímetro (m)</label><input type="number" inputmode="decimal" step="0.01" id="kP"></div>
+    <div class="campo"><label>Área (m²)</label><input type="number" inputmode="decimal" step="0.01" id="kA"></div>
+    <div class="out"><div class="fila mono" id="kOut" style="font-size:16px;line-height:1.9">—</div></div>
+  </div>
+</div>
+
+<!-- ================= 07 pH y SALINIDAD ================= -->
+<div class="vista" id="vAgua">
+  <div class="v-tit"><span class="m-n">07</span>pH y salinidad</div>
+  <div class="modo">
+    <button class="am on" data-a="aPH">Escala de pH</button>
+    <button class="am" data-a="aSal">Salinidad</button>
+  </div>
+
+  <div class="apan" id="aPH">
+    <div class="aviso" style="margin:0 0 12px">El pH mide qué tan ácida o alcalina es una solución, de 0 a 14. 7 es neutro (agua pura). Menos de 7 = ácido, más de 7 = alcalino. Cada número es 10 veces más fuerte que el siguiente.</div>
+    <div class="campo"><label>Valor de pH (0 a 14)</label><input type="number" inputmode="decimal" step="0.1" min="0" max="14" id="phVal" value="7"></div>
+    <div style="height:26px;border-radius:13px;margin:6px 0 4px;background:linear-gradient(90deg,#e53935,#fb8c00,#fdd835,#7cb342,#43a047,#00897b,#3949ab)"></div>
+    <div style="position:relative;height:22px"><div id="phMark" style="position:absolute;font-size:20px;transform:translateX(-50%)">▲</div></div>
+    <div class="out" style="border-top:none;padding-top:0">
+      <div class="big" id="phOut">—</div>
+      <div class="fila mono" id="phDet"></div>
+    </div>
+  </div>
+
+  <div class="apan" id="aSal" style="display:none">
+    <div class="aviso" style="margin:0 0 12px">Salinidad = gramos de sal disuelta por litro de agua. Referencia: agua dulce &lt;0,5 g/L · salobre 0,5–30 · agua de mar ≈ 35 g/L. Calcula concentración o cuánta sal hace falta.</div>
+    <div class="modo">
+      <button class="slm on" data-s="conc">Hallar concentración</button>
+      <button class="slm" data-s="sal">Hallar sal a agregar</button>
+    </div>
+    <div class="campo"><label>Sal (gramos)</label><input type="number" inputmode="decimal" id="slG"></div>
+    <div class="campo"><label>Agua (litros)</label><input type="number" inputmode="decimal" id="slL"></div>
+    <div class="campo" id="slCC" style="display:none"><label>Concentración deseada (g/L)</label><input type="number" inputmode="decimal" id="slC"></div>
+    <div class="out"><div class="big" id="slOut">—</div><div class="fila mono" id="slDet"></div></div>
+  </div>
+</div>
+
+<!-- ================= 08 CALCULADORA ================= -->
+<div class="vista" id="vCalc">
+  <div class="v-tit"><span class="m-n">08</span>Calculadora</div>
+  <div class="calc-disp" id="cd">0</div>
+  <div class="calc-grid">
+    <button class="ck fn" data-k="C">C</button>
+    <button class="ck fn" data-k="±">±</button>
+    <button class="ck fn" data-k="%">%</button>
+    <button class="ck op" data-k="/">÷</button>
+    <button class="ck" data-k="7">7</button>
+    <button class="ck" data-k="8">8</button>
+    <button class="ck" data-k="9">9</button>
+    <button class="ck op" data-k="*">×</button>
+    <button class="ck" data-k="4">4</button>
+    <button class="ck" data-k="5">5</button>
+    <button class="ck" data-k="6">6</button>
+    <button class="ck op" data-k="-">−</button>
+    <button class="ck" data-k="1">1</button>
+    <button class="ck" data-k="2">2</button>
+    <button class="ck" data-k="3">3</button>
+    <button class="ck op" data-k="+">+</button>
+    <button class="ck zero" data-k="0">0</button>
+    <button class="ck" data-k=".">,</button>
+    <button class="ck eq" data-k="=">=</button>
+  </div>
+</div>
+
+<script>
+/* ============ datos comunes ============ */
+const TABLA=[{d:40,ud:3},{d:50,ud:6},{d:63,ud:12},{d:75,ud:20},{d:110,ud:180},{d:160,ud:700},{d:200,ud:1400}];
+const PMIN={40:3,50:3,63:3,75:2.5,110:2,160:1,200:1};
+const ARTEFACTOS=[
+ {n:"Inodoro",ud:6,wc:true},{n:"Lavatorio",ud:2},{n:"Bidet",ud:2},{n:"Ducha",ud:3},
+ {n:"Bañera",ud:4},{n:"Pileta de cocina",ud:3},{n:"Pileta de lavadero",ud:3},
+ {n:"Lavarropas",ud:3},{n:"Lavavajillas",ud:3},{n:"Rejilla de piso",ud:2}];
+const nuevoArts=()=>ARTEFACTOS.map(()=>0);
+const udArts=a=>a.reduce((s,q,i)=>s+q*ARTEFACTOS[i].ud,0);
+const wcArts=a=>ARTEFACTOS.some((x,i)=>x.wc&&a[i]>0);
+const fmt=(n,d=2)=>n.toFixed(d).replace('.',',');
+
+/* ============ navegación ============ */
+const VISTAS=['vDes','vPlu','vPen','vRes','vPre','vGeo','vAgua','vCalc'];
+function ir(v){
+  document.getElementById('home').style.display=v?'none':'block';
+  document.getElementById('volver').classList.toggle('show',!!v);
+  VISTAS.forEach(x=>document.getElementById(x).style.display=x===v?'block':'none');
+}
+document.querySelectorAll('.mod').forEach(b=>b.onclick=()=>ir(b.dataset.v));
+document.getElementById('volver').onclick=()=>ir(null);
+ir(null);
+
+/* ============ 01 DESAGÜES ============ */
+let red='prim';
+const NODO=()=>red==='prim'?'C':'PP';
+let profInicial=0.45;
+let tramos=[{L:5,p:2,ud:0,wc:false,contar:true,fix:null,arts:nuevoArts(),open:true}];
+tramos[0].arts[0]=1; // arranca con 1 inodoro de ejemplo
+
+function calcular(){
+  let out=[],prof=profInicial,udAc=0,wcUp=false;
+  tramos.forEach(t=>{
+    udAc+=(+t.ud||0)+udArts(t.arts);wcUp=wcUp||t.wc||wcArts(t.arts);
+    const caida=(+t.L||0)*(+t.p||0)/100, llega=prof+caida;
+    let fila=TABLA.find(x=>udAc<=x.ud)||TABLA[6];
+    if(red==='prim'&&wcUp&&fila.d<110)fila=TABLA.find(x=>x.d===110);
+    const profDestino=t.fix!==null?t.fix:llega;
+    out.push({sale:prof,caida,llega,profDestino,salto:profDestino-llega,dia:fila.d,udAc,
+              pmin:PMIN[fila.d],cumple:(+t.p||0)>=PMIN[fila.d],desborde:udAc>1400});
+    prof=profDestino;
+  });
+  return out;
+}
+const cadena=document.getElementById('cadena');
+function render(){
+  const R=calcular();
+  let h=`<div class="cam"><span class="tag">${NODO()}1</span>
+    <input type="number" inputmode="decimal" step="0.01" value="${profInicial}" data-c="ini">
+    <span class="prof">m de profundidad (arranque)</span></div>`;
+  tramos.forEach((t,i)=>{
+    const r=R[i];
+    h+=`<div class="linea-v"></div>
+    <div class="tramo ${t.contar?'':'off'}">
+      <div class="t-head"><span class="t-nom">${NODO()}${i+1} → ${NODO()}${i+2}</span>
+        <div class="t-acc">
+          <button class="${t.contar?'on':''}" data-i="${i}" data-a="contar">${t.contar?'SÍ':'NO'} cuenta</button>
+          <button class="del" data-i="${i}" data-a="del">✕</button>
+        </div></div>
+      <div class="t-grid">
+        <div><label>Distancia m</label><input type="number" inputmode="decimal" step="0.1" value="${t.L}" data-i="${i}" data-k="L"></div>
+        <div><label>Pendiente %</label><input type="number" inputmode="decimal" step="0.1" value="${t.p}" data-i="${i}" data-k="p"></div>
+        <div><label>UD extra</label><input type="number" inputmode="numeric" value="${t.ud}" data-i="${i}" data-k="ud"></div>
+      </div>
+      <button class="art-btn ${t.open?'on':''}" data-i="${i}" data-a="arts">⌂ Artefactos en ${NODO()}${i+1} (${t.arts.reduce((a,b)=>a+b,0)}) · ${udArts(t.arts)} UD</button>
+      ${t.open?`<div class="art-panel">${ARTEFACTOS.map((a,j)=>`
+        <div class="art-row"><div><div class="nom">${a.n}</div><div class="det mono">${a.ud} UD${a.wc?' · primaria':''}</div></div>
+        <div class="ctr"><button data-i="${i}" data-j="${j}" data-o="-1">−</button><span class="qty mono">${t.arts[j]}</span><button data-i="${i}" data-j="${j}" data-o="1">+</button></div></div>`).join('')}</div>`:''}
+      ${red==='prim'&&!wcArts(t.arts)?`<div class="wc"><input type="checkbox" ${t.wc?'checked':''} data-i="${i}" data-k="wc" id="wc${i}"><label for="wc${i}">Inodoro aguas arriba (manual)</label></div>`:''}
+      <div class="t-res">
+        <span><span class="lbl">Caída</span><b class="mono">${fmt(r.caida*100,1)} cm</b></span>
+        <span class="dia"><span class="lbl">Ø sugerido</span><b class="mono">${r.desborde?'>1400 UD':'Ø'+r.dia}</b></span>
+        <span><span class="lbl">UD acum.</span><b class="mono">${r.udAc}</b></span>
+        <span><span class="lbl">Pend. mín</span><b class="mono" style="color:${r.cumple?'var(--ok)':'var(--rojo)'}">${r.cumple?'✓':'✗'} ${r.pmin}%</b></span>
+      </div></div>
+    <div class="linea-v"></div>
+    <div class="cam"><span class="tag">${NODO()}${i+2}</span>
+      <input type="number" inputmode="decimal" step="0.01" value="${fmt(r.profDestino).replace(',','.')}" data-i="${i}" data-k="fix">
+      <span class="prof">m</span>
+      ${t.fix!==null?'<span class="fixt">fijada</span>':''}
+      ${r.salto>0.005?`<span class="salto">salto ${fmt(r.salto*100,0)} cm</span>`:''}</div>`;
+  });
+  cadena.innerHTML=h;
+  renderTotales(R);renderPerfil(R);
+}
+function renderTotales(R){
+  const porDia={};let mTot=0;
+  tramos.forEach((t,i)=>{if(t.contar){const d=R[i].dia;porDia[d]=(porDia[d]||0)+(+t.L||0);mTot+=(+t.L||0);}});
+  const profMax=Math.max(profInicial,...R.map(r=>r.profDestino));
+  const artTot=tramos.reduce((s,t)=>s+t.arts.reduce((a,b)=>a+b,0),0);
+  let h=`<div><span class="lbl">Cámaras</span><b>${tramos.length+1}</b></div>
+  <div><span class="lbl">Artefactos</span><b>${artTot}</b></div>
+  <div><span class="lbl">Caño total (contado)</span><b class="mono">${fmt(mTot,1)} m</b></div>
+  <div><span class="lbl">Prof. máxima</span><b class="mono">${fmt(profMax)} m</b></div>
+  <div><span class="lbl">Caída total</span><b class="mono">${fmt(((R.at(-1)?.profDestino??profInicial)-profInicial)*100,0)} cm</b></div>`;
+  Object.keys(porDia).sort((a,b)=>a-b).forEach(d=>{h+=`<div><span class="lbl">Caño Ø${d}</span><b class="mono">${fmt(porDia[d],1)} m</b></div>`;});
+  document.getElementById('totales').innerHTML=h;
+}
+function renderPerfil(R){
+  const svg=document.getElementById('svg');
+  const W=600,H=200,mL=30,mR=20,mT=28,mB=24;
+  const Ltot=tramos.reduce((s,t)=>s+(+t.L||0),0)||1;
+  const pMax=Math.max(profInicial,...R.map(r=>r.profDestino),0.6);
+  const X=m=>mL+(m/Ltot)*(W-mL-mR), Y=p=>mT+(p/pMax)*(H-mT-mB);
+  let s=`<line x1="${mL-14}" y1="${mT}" x2="${W-mR+10}" y2="${mT}" stroke="#bbb" stroke-width="1.5"/>`;
+  for(let x=mL-14;x<W-mR;x+=14)s+=`<line x1="${x}" y1="${mT}" x2="${x-6}" y2="${mT-7}" stroke="#ccc" stroke-width="1"/>`;
+  let xAc=0;const cams=[{x:0,p:profInicial}];
+  R.forEach((r,i)=>{xAc+=(+tramos[i].L||0);cams.push({x:xAc,p:r.profDestino});});
+  xAc=0;
+  R.forEach((r,i)=>{
+    const x1=X(xAc),x2=X(xAc+(+tramos[i].L||0));
+    s+=`<line x1="${x1+7}" y1="${Y(r.sale)}" x2="${x2-7}" y2="${Y(r.llega)}" stroke="${tramos[i].contar?'#fe0000':'#ccc'}" stroke-width="5" stroke-linecap="round"/>`;
+    s+=`<text x="${(x1+x2)/2}" y="${(Y(r.sale)+Y(r.llega))/2-8}" font-size="10" font-family="Geist Mono" fill="#8a8a8a" text-anchor="middle">${tramos[i].p}% Ø${r.dia}</text>`;
+    xAc+=(+tramos[i].L||0);
+  });
+  cams.forEach((c,i)=>{
+    const x=X(c.x);
+    s+=`<rect x="${x-7}" y="${mT}" width="14" height="${Y(c.p)-mT+8}" fill="#fff" stroke="#2b2b2b" stroke-width="1.5" rx="2"/>`;
+    s+=`<text x="${x}" y="${mT-12}" font-size="11" font-weight="600" font-family="Geist Mono" fill="#2b2b2b" text-anchor="middle">${NODO()}${i+1}</text>`;
+    s+=`<text x="${x}" y="${Y(c.p)+20}" font-size="9" font-family="Geist Mono" fill="#8a8a8a" text-anchor="middle">−${fmt(c.p)}</text>`;
+  });
+  svg.innerHTML=s;
+}
+document.getElementById('add').onclick=()=>{tramos.push({L:5,p:2,ud:0,wc:false,contar:true,fix:null,arts:nuevoArts(),open:false});render();};
+document.getElementById('bPrim').onclick=()=>{red='prim';profInicial=0.45;
+  bPrim.classList.add('on');bSec.classList.remove('on');render();};
+document.getElementById('bSec').onclick=()=>{red='sec';profInicial=0.25;tramos.forEach(t=>t.wc=false);
+  bSec.classList.add('on');bPrim.classList.remove('on');render();};
+cadena.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const i=+b.dataset.i;
+  if(b.dataset.a==='del'){tramos.splice(i,1);render();return;}
+  if(b.dataset.a==='contar'){tramos[i].contar=!tramos[i].contar;render();return;}
+  if(b.dataset.a==='arts'){tramos[i].open=!tramos[i].open;render();return;}
+  if(b.dataset.j!==undefined){
+    const j=+b.dataset.j;
+    tramos[i].arts[j]=Math.max(0,tramos[i].arts[j]+ +b.dataset.o);
+    render();return;
+  }
+});
+cadena.addEventListener('change',e=>{
+  const el=e.target;if(el.tagName!=='INPUT')return;
+  if(el.dataset.c==='ini'){profInicial=parseFloat(el.value)||0;render();return;}
+  const i=+el.dataset.i,k=el.dataset.k;
+  if(k==='wc')tramos[i].wc=el.checked;
+  else if(k==='fix'){
+    const v=parseFloat(el.value),auto=calcular()[i].llega;
+    tramos[i].fix=(isNaN(v)||Math.abs(v-auto)<0.005)?null:v;
+  }else tramos[i][k]=parseFloat(el.value)||0;
+  render();
+});
+
+/* ============ 02 PLUVIALES ============ */
+// capacidad de bajada en m² a 150 mm/h (referencial); escala inversa con intensidad
+const BAJ=[{d:63,m2:40},{d:75,m2:75},{d:110,m2:190},{d:160,m2:560}];
+// colector horizontal 2%: capacidad en m² a 150 mm/h (referencial)
+const COL=[{d:110,m2:250},{d:160,m2:750},{d:200,m2:1350}];
+let bajadas=[{m2:40}];
+const bDiv=document.getElementById('bajadas');
+function renderPlu(){
+  let h='';
+  bajadas.forEach((b,i)=>{
+    h+=`<div class="baj"><span class="tag">B${i+1}</span>
+    <input type="number" inputmode="decimal" placeholder="m² de techo" value="${b.m2||''}" data-b="${i}">
+    <span class="r" id="bR${i}"></span>
+    <button class="del" data-d="${i}">✕</button></div>`;
+  });
+  bDiv.innerHTML=h;
+  calcPlu();
+}
+function calcPlu(){
+  const I=+document.getElementById('uInt').value||150;
+  const k=I/150; // factor de intensidad
+  let tot=0;
+  bajadas.forEach((b,i)=>{
+    const m2=+b.m2||0;tot+=m2;
+    const eq=m2*k; // superficie equivalente a 150
+    const f=BAJ.find(x=>eq<=x.m2);
+    document.getElementById('bR'+i).textContent=m2?(f?'Ø'+f.d:'>Ø160'):'—';
+  });
+  const caudal=tot*I/3600; // L/s  (m²·mm/h → L/h /3600)
+  const eqT=tot*k;
+  const fc=COL.find(x=>eqT<=x.m2);
+  document.getElementById('uTot').innerHTML=tot?tot.toLocaleString('es-UY')+' <small>m² de techo</small>':'—';
+  document.getElementById('uCau').innerHTML=tot?'Caudal de diseño <b class="mono">'+fmt(caudal,1)+' L/s</b> a '+I+' mm/h':'';
+  document.getElementById('uCol').innerHTML=tot?'Colector al 2 %: <b class="mono">'+(fc?'Ø'+fc.d:'>Ø200 — dividir')+'</b>':'';
+}
+document.getElementById('addBaj').onclick=()=>{bajadas.push({m2:0});renderPlu();};
+bDiv.addEventListener('input',e=>{if(e.target.dataset.b!==undefined){bajadas[+e.target.dataset.b].m2=e.target.value;calcPlu();}});
+bDiv.addEventListener('click',e=>{const b=e.target.closest('.del');if(b){bajadas.splice(+b.dataset.d,1);renderPlu();}});
+document.getElementById('uInt').addEventListener('input',calcPlu);
+renderPlu();
+
+/* ============ 03 PENDIENTE ============ */
+let pModo='caida',pDia=110;
+const pD=document.getElementById('pDias');
+Object.keys(PMIN).forEach(d=>{
+  const b=document.createElement('button');
+  b.textContent='Ø'+d;if(d==='110')b.classList.add('on');
+  b.onclick=()=>{pD.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');pDia=+d;calcP();};
+  pD.appendChild(b);
+});
+document.querySelectorAll('.pm').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.pm').forEach(x=>x.classList.remove('on'));b.classList.add('on');pModo=b.dataset.m;
+  document.getElementById('pCP').style.display=pModo==='caida'?'block':'none';
+  document.getElementById('pCC').style.display=pModo==='pend'?'block':'none';calcP();
+});
+['pLon','pPen','pCai'].forEach(id=>document.getElementById(id).addEventListener('input',calcP));
+function calcP(){
+  const L=parseFloat(document.getElementById('pLon').value);
+  const V=document.getElementById('pVal'),A=document.getElementById('pAlt'),C=document.getElementById('pChk');
+  let pct=null;
+  if(pModo==='caida'){
+    const p=parseFloat(document.getElementById('pPen').value);
+    if(!L||isNaN(p)){V.textContent='—';A.textContent='';C.textContent='';tubo(0);return;}
+    pct=p;V.innerHTML=fmt(L*p,1)+' <small>cm de caída</small>';
+    A.textContent='pendiente 1:'+(p>0?Math.round(100/p):'∞');
+  }else{
+    const c=parseFloat(document.getElementById('pCai').value);
+    if(!L||isNaN(c)){V.textContent='—';A.textContent='';C.textContent='';tubo(0);return;}
+    pct=c/L;V.innerHTML=fmt(pct)+' <small>% de pendiente</small>';
+    A.textContent='1:'+(pct>0?Math.round(100/pct):'∞')+' · '+c+' cm en '+L+' m';
+  }
+  const ok=pct>=PMIN[pDia];
+  C.textContent=(ok?'✓ Cumple':'✗ Bajo')+' mínima de Ø'+pDia+' ('+PMIN[pDia]+' %)';
+  C.style.color=ok?'var(--ok)':'var(--rojo)';
+  tubo(pct);
+}
+function tubo(p){document.getElementById('pTubo').setAttribute('y2',25+Math.min(45,p*8));}
+calcP();
+
+/* ============ 04 RESERVA ============ */
+const TANQUES=[3000,2000,1100,600,300];
+function calcReserva(){
+  const per=+document.getElementById('rPer').value||0;
+  const dot=+document.getElementById('rDot').value||0;
+  const dias=+document.getElementById('rDias').value||0;
+  const L=per*dot*dias;
+  if(!L){document.getElementById('rTot').textContent='—';
+    ['rM3','rTan','rSplit'].forEach(id=>document.getElementById(id).textContent='');return;}
+  document.getElementById('rTot').innerHTML=L.toLocaleString('es-UY')+' <small>litros</small>';
+  document.getElementById('rM3').innerHTML='<b>'+fmt(L/1000)+' m³</b> de reserva total · consumo diario '+(per*dot).toLocaleString('es-UY')+' L';
+  let resto=L,combo=[];
+  TANQUES.forEach(t=>{const n=Math.floor(resto/t);if(n){combo.push(n+'× '+t.toLocaleString('es-UY')+' L');resto-=n*t;}});
+  if(resto>0)combo.push('1× '+TANQUES.filter(t=>t>=resto).pop().toLocaleString('es-UY')+' L');
+  document.getElementById('rTan').innerHTML='Tanques sugeridos: <b>'+combo.join(' + ')+'</b>';
+  document.getElementById('rSplit').innerHTML='Con bombeo: cisterna <b>'+fmt(L*2/3/1000)+' m³</b> + elevado <b>'+fmt(L/3/1000)+' m³</b>';
+}
+['rPer','rDot','rDias'].forEach(id=>document.getElementById(id).addEventListener('input',calcReserva));
+calcReserva();
+
+/* ============ 08 CALCULADORA ============ */
+(function(){
+  let cur='0',prev=null,op=null,fresh=false;
+  const disp=document.getElementById('cd');
+  const show=()=>{disp.textContent=(''+cur).replace('.',',');};
+  const ops={'+':(a,b)=>a+b,'-':(a,b)=>a-b,'*':(a,b)=>a*b,'/':(a,b)=>b===0?'Error':a/b};
+  function marcar(k){document.querySelectorAll('#vCalc .ck.op').forEach(b=>b.classList.toggle('on',k&&b.dataset.k===k));}
+  document.querySelectorAll('#vCalc .ck').forEach(btn=>btn.onclick=()=>{
+    const k=btn.dataset.k;
+    if(/[0-9]/.test(k)){cur=(cur==='0'||fresh)?k:cur+k;fresh=false;marcar(null);}
+    else if(k==='.'){if(fresh){cur='0.';fresh=false;}else if(!cur.includes('.'))cur+='.';marcar(null);}
+    else if(k==='C'){cur='0';prev=null;op=null;fresh=false;marcar(null);}
+    else if(k==='±'){cur=(parseFloat(cur)*-1).toString();}
+    else if(k==='%'){cur=(parseFloat(cur)/100).toString();}
+    else if(['+','-','*','/'].includes(k)){
+      if(op&&!fresh){const r=ops[op](parseFloat(prev),parseFloat(cur));cur=(''+r);}
+      prev=cur;op=k;fresh=true;marcar(k);
+    }
+    else if(k==='='){
+      if(op){const r=ops[op](parseFloat(prev),parseFloat(cur));cur=(''+r);op=null;prev=null;fresh=true;marcar(null);}
+    }
+    show();
+  });
+})();
+
+/* ============ 06 GEOMETRÍA ============ */
+document.querySelectorAll('.gm').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.gm').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('.gpan').forEach(p=>p.style.display='none');
+  document.getElementById(b.dataset.g).style.display='block';
+});
+const v=id=>{const x=parseFloat(document.getElementById(id).value);return isNaN(x)?null:x;};
+
+// tanque rectangular: litros fijos, lados ajustan altura
+let qLock=false;
+function qShow(L,A,H){
+  document.getElementById('qOut').innerHTML=fmt(L*A*H*1000,0).replace(',','')+' <small>litros</small>';
+  document.getElementById('qDet').textContent=fmt(L)+' × '+fmt(A)+' × '+fmt(H)+' m  ·  '+fmt(L*A*H)+' m³';
+}
+function qFromLit(){
+  const lit=v('qLit');if(!lit){return;}
+  const lado=Math.cbrt(lit/1000); // cubo
+  document.getElementById('qL').value=fmt(lado).replace(',','.');
+  document.getElementById('qA').value=fmt(lado).replace(',','.');
+  document.getElementById('qH').value=fmt(lado).replace(',','.');
+  qShow(lado,lado,lado);
+}
+function qFromSide(){
+  const lit=v('qLit'),L=v('qL'),A=v('qA');
+  if(!lit||!L||!A||L<=0||A<=0){return;}
+  const H=(lit/1000)/(L*A);
+  document.getElementById('qH').value=fmt(H).replace(',','.');
+  qShow(L,A,H);
+}
+document.getElementById('qLit').addEventListener('input',qFromLit);
+document.getElementById('qL').addEventListener('input',qFromSide);
+document.getElementById('qA').addEventListener('input',qFromSide);
+document.getElementById('qH').addEventListener('input',()=>{
+  // si tocan el alto, recalculan litros (modo libre)
+  const L=v('qL'),A=v('qA'),H=v('qH');
+  if(L&&A&&H){document.getElementById('qLit').value=Math.round(L*A*H*1000);qShow(L,A,H);}
+});
+
+// tanque cilíndrico: litros fijos, Ø ajusta altura
+function cShow(D,H){
+  const m3=Math.PI*Math.pow(D/2,2)*H;
+  document.getElementById('cOut').innerHTML=Math.round(m3*1000).toLocaleString('es-UY')+' <small>litros</small>';
+  document.getElementById('cDet').textContent='Ø '+fmt(D)+' m · alto '+fmt(H)+' m  ·  '+fmt(m3)+' m³';
+}
+function cFromLit(){
+  const lit=v('cLit');if(!lit)return;
+  // proporción pareja: altura = diámetro
+  const D=Math.cbrt((4*lit/1000)/Math.PI);
+  document.getElementById('cD').value=fmt(D).replace(',','.');
+  document.getElementById('cH').value=fmt(D).replace(',','.');
+  cShow(D,D);
+}
+function cFromD(){
+  const lit=v('cLit'),D=v('cD');
+  if(!lit||!D||D<=0)return;
+  const H=(lit/1000)/(Math.PI*Math.pow(D/2,2));
+  document.getElementById('cH').value=fmt(H).replace(',','.');
+  cShow(D,H);
+}
+document.getElementById('cLit').addEventListener('input',cFromLit);
+document.getElementById('cD').addEventListener('input',cFromD);
+document.getElementById('cH').addEventListener('input',()=>{
+  const D=v('cD'),H=v('cH');
+  if(D&&H){document.getElementById('cLit').value=Math.round(Math.PI*Math.pow(D/2,2)*H*1000);cShow(D,H);}
+});
+
+// pitágoras: la incógnita se bloquea sola
+const tIds=['tA','tB','tC'];
+function llenoT(id){return document.getElementById(id).value.trim()!=='';}
+function pitCalc(){
+  const O=document.getElementById('tOut'),D=document.getElementById('tDet');
+  const llenos=tIds.filter(llenoT);
+  tIds.forEach(id=>{
+    const el=document.getElementById(id);
+    const esIncog=llenos.length===2&&!llenoT(id);
+    el.disabled=esIncog;el.style.opacity=esIncog?'0.5':'1';
+  });
+  if(llenos.length!==2){O.textContent='—';D.textContent='';return;}
+  const a=v('tA'),b=v('tB'),c=v('tC');
+  if(!llenoT('tC')){
+    const r=Math.sqrt(a*a+b*b);O.innerHTML=fmt(r)+' <small>m · diagonal</small>';D.textContent='√('+fmt(a)+'² + '+fmt(b)+'²)';
+  }else if(!llenoT('tB')){
+    if(c<=a){O.textContent='la diagonal debe ser el lado largo';D.textContent='';return;}
+    const r=Math.sqrt(c*c-a*a);O.innerHTML=fmt(r)+' <small>m · cateto b</small>';D.textContent='√('+fmt(c)+'² − '+fmt(a)+'²)';
+  }else{
+    if(c<=b){O.textContent='la diagonal debe ser el lado largo';D.textContent='';return;}
+    const r=Math.sqrt(c*c-b*b);O.innerHTML=fmt(r)+' <small>m · cateto a</small>';D.textContent='√('+fmt(c)+'² − '+fmt(b)+'²)';
+  }
+}
+tIds.forEach(id=>document.getElementById(id).addEventListener('input',pitCalc));
+pitCalc();
+
+// regla de 3
+function calcR3(){
+  const A=v('r3A'),B=v('r3B'),C=v('r3C');
+  const O=document.getElementById('r3Out'),D=document.getElementById('r3Det');
+  if(A&&B!==null&&C!==null&&A!==0){
+    const X=B*C/A;
+    O.innerHTML=fmt(X)+' <small>= X</small>';
+    D.textContent=A+' → '+B+'  ·  '+C+' → '+fmt(X);
+  }else{O.textContent='—';D.textContent='';}
+}
+['r3A','r3B','r3C'].forEach(id=>document.getElementById(id).addEventListener('input',calcR3));
+
+// círculo
+let kLock=false;
+function calcK(e){
+  if(kLock)return;kLock=true;
+  const src=e.target.id;const x=v(src);
+  let r=null;
+  if(x){
+    if(src==='kD')r=x/2;
+    if(src==='kR')r=x;
+    if(src==='kP')r=x/(2*Math.PI);
+    if(src==='kA')r=Math.sqrt(x/Math.PI);
+  }
+  const set=(id,val)=>{if(id!==src)document.getElementById(id).value=val===null?'':fmt(val).replace(',','.');};
+  if(r){
+    set('kD',r*2);set('kR',r);set('kP',2*Math.PI*r);set('kA',Math.PI*r*r);
+    document.getElementById('kOut').innerHTML='Ø <b>'+fmt(r*2)+'</b> m · radio <b>'+fmt(r)+'</b> m<br>perímetro <b>'+fmt(2*Math.PI*r)+'</b> m · área <b>'+fmt(Math.PI*r*r)+'</b> m²';
+  }else{['kD','kR','kP','kA'].forEach(id=>set(id,null));document.getElementById('kOut').textContent='—';}
+  kLock=false;
+}
+['kD','kR','kP','kA'].forEach(id=>document.getElementById(id).addEventListener('input',calcK));
+
+/* ============ 07 pH y SALINIDAD ============ */
+document.querySelectorAll('.am').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.am').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('.apan').forEach(p=>p.style.display='none');
+  document.getElementById(b.dataset.a).style.display='block';
+});
+function calcPH(){
+  const p=parseFloat(document.getElementById('phVal').value);
+  const O=document.getElementById('phOut'),D=document.getElementById('phDet'),M=document.getElementById('phMark');
+  if(isNaN(p)||p<0||p>14){O.textContent='0 a 14';D.textContent='';return;}
+  M.style.left=(p/14*100)+'%';
+  let t,col;
+  if(p<7){t='Ácido';col='#e53935';}else if(p>7){t='Alcalino';col='#3949ab';}else{t='Neutro';col='#43a047';}
+  O.innerHTML='pH '+fmt(p,1)+' · <span style="color:'+col+'">'+t+'</span>';
+  const dif=Math.abs(p-7);
+  D.textContent = dif<0.05?'agua pura, ni ácido ni base':(Math.pow(10,dif)).toFixed(0)+'× '+(p<7?'más ácido':'más alcalino')+' que el neutro';
+}
+document.getElementById('phVal').addEventListener('input',calcPH);calcPH();
+
+let salModo='conc';
+document.querySelectorAll('.slm').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.slm').forEach(x=>x.classList.remove('on'));b.classList.add('on');salModo=b.dataset.s;
+  document.getElementById('slG').parentElement.style.display=salModo==='conc'?'block':'none';
+  document.getElementById('slCC').style.display=salModo==='sal'?'block':'none';
+  calcSal();
+});
+function clasif(c){return c<0.5?'agua dulce':c<30?'agua salobre':c<50?'≈ agua de mar':'salmuera';}
+function calcSal(){
+  const O=document.getElementById('slOut'),D=document.getElementById('slDet');
+  const L=v('slL');
+  if(salModo==='conc'){
+    const g=v('slG');
+    if(g&&L&&L>0){const c=g/L;O.innerHTML=fmt(c)+' <small>g/L</small>';D.textContent=clasif(c)+' · '+g+' g en '+L+' L';}
+    else{O.textContent='—';D.textContent='';}
+  }else{
+    const c=v('slC');
+    if(c&&L&&L>0){const g=c*L;O.innerHTML=fmt(g,0)+' <small>g de sal</small>';D.textContent='para '+c+' g/L en '+L+' L · '+clasif(c);}
+    else{O.textContent='—';D.textContent='';}
+  }
+}
+['slG','slL','slC'].forEach(id=>document.getElementById(id).addEventListener('input',calcSal));calcSal();
+
+/* ============ 05 PRESIÓN ============ */
+const ARTS=[
+ {n:'Canilla / pileta',min:2},
+ {n:'Ducha común',min:2},
+ {n:'Calefón eléctrico',min:2},
+ {n:'Calentador instantáneo',min:6},
+ {n:'Ducha termostática',min:10},
+ {n:'Lavarropas',min:3}
+];
+const gArt=document.getElementById('gArt');
+ARTS.forEach((a,i)=>{const o=document.createElement('option');o.value=i;o.textContent=a.n+' · mín '+a.min+' m.c.a.';gArt.appendChild(o);});
+function calcG(){
+  const alt=parseFloat(document.getElementById('gAlt').value);
+  const per=parseFloat(document.getElementById('gPer').value)||0;
+  const art=ARTS[+gArt.value];
+  const V=document.getElementById('gVal'),B=document.getElementById('gBar'),C=document.getElementById('gChk');
+  if(isNaN(alt)){V.textContent='—';B.textContent='';C.textContent='';return;}
+  const disp=alt-per;
+  V.innerHTML=fmt(disp,1)+' <small>m.c.a. disponibles</small>';
+  B.textContent='≈ '+fmt(disp*0.098)+' bar · '+fmt(disp*0.1)+' kgf/cm²';
+  const ok=disp>=art.min;
+  C.textContent=(ok?'✓ Alcanza para ':'✗ Insuficiente para ')+art.n.toLowerCase()+' (mín '+art.min+' m.c.a.)';
+  C.style.color=ok?'var(--ok)':'var(--rojo)';
+}
+['gAlt','gPer'].forEach(id=>document.getElementById(id).addEventListener('input',calcG));
+gArt.addEventListener('change',calcG);
+calcG();
+</script>
+</body>
+</html>
