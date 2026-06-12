@@ -44,9 +44,19 @@ jobs:
           EOF
           npx cap add android
 
+      - name: Alinear versiones de Kotlin (fix duplicate classes)
+        run: |
+          cat >> /tmp/cap/android/app/build.gradle <<'EOF'
+
+          dependencies {
+              implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+          }
+          EOF
+
       - name: Compilar APK debug
         run: |
           cd /tmp/cap/android
+          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Publicar APK en apps/ilme
