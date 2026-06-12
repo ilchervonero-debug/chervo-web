@@ -1,0 +1,59 @@
+name: Build APK iLMe
+
+on:
+  push:
+    paths:
+      - 'apps/ilme/index.html'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Armar proyecto Capacitor
+        run: |
+          mkdir -p /tmp/cap/www
+          cd /tmp/cap
+          cp "$GITHUB_WORKSPACE/apps/ilme/index.html" www/index.html
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.ilchervo.ilme",
+            "appName": "iLMe",
+            "webDir": "www",
+            "backgroundColor": "#F2F2F0"
+          }
+          EOF
+          npx cap add android
+
+      - name: Compilar APK debug
+        run: |
+          cd /tmp/cap/android
+          ./gradlew assembleDebug
+
+      - name: Publicar APK en apps/ilme
+        run: |
+          cp /tmp/cap/android/app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/apps/ilme/iLMe.apk"
+          cd "$GITHUB_WORKSPACE"
+          git config user.name "chervo-bot"
+          git config user.email "ilchervonero@gmail.com"
+          git add apps/ilme/iLMe.apk
+          git diff --cached --quiet || (git commit -m "apk: build iLMe desde apps/ilme/index.html" && git push)
