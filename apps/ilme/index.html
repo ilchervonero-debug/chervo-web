@@ -192,6 +192,8 @@
     border:none;background:var(--tinta);color:#fff;width:42px;height:42px;
     border-radius:12px;font-size:1.2rem;cursor:pointer;flex-shrink:0;
   }
+  #btnVoz.escuchando{background:var(--rojo);animation:pulsoVoz 1s infinite}
+  @keyframes pulsoVoz{0%,100%{opacity:1}50%{opacity:.55}}
   .aviso{font-size:.66rem;color:#ADADA9;text-align:center;margin-top:6px;display:none}
   .aviso.ver{display:block}
 
@@ -694,25 +696,48 @@ document.querySelectorAll('.tipo').forEach(b=>{
     }
   };
 });
-// ── Speech-to-text ──
-const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(SpeechRecognition){
+// ── Dictado por voz (voz a texto) ──
+(function(){
+  const btnVoz=document.getElementById('btnVoz');
+  const inp=document.getElementById('inp');
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const avisar=(msg)=>{ const orig=inp.placeholder; inp.placeholder=msg; setTimeout(()=>{ if(inp.placeholder===msg) inp.placeholder=(tipoSel==='recordatorio'?'Recordatorio…':'Escribí o pegá un link…'); },3500); };
+
+  // El dictado del navegador exige contexto seguro (https o localhost). En file:// no hay micrófono.
+  if(!SpeechRecognition){
+    btnVoz.onclick=()=>avisar('Tu navegador no soporta dictado por voz');
+    return;
+  }
+  if(!window.isSecureContext){
+    btnVoz.onclick=()=>avisar('El micrófono solo anda por https — usá ilchervo.com');
+    return;
+  }
+
   const recognition=new SpeechRecognition();
   recognition.lang='es-ES';
-  document.getElementById('btnVoz').onclick=()=>{
-    recognition.start();
-    document.getElementById('btnVoz').style.opacity='0.5';
+  recognition.interimResults=true;
+  recognition.continuous=false;
+  let escuchando=false, base='';
+
+  btnVoz.onclick=()=>{
+    if(escuchando){ recognition.stop(); return; }
+    base=inp.value.trim();
+    try{ recognition.start(); }catch(e){ /* ya estaba activo */ }
   };
+  recognition.onstart=()=>{ escuchando=true; btnVoz.classList.add('escuchando'); };
+  recognition.onend=()=>{ escuchando=false; btnVoz.classList.remove('escuchando'); inp.focus(); };
   recognition.onresult=e=>{
-    let transcript='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      transcript+=e.results[i][0].transcript;
-    }
-    document.getElementById('inp').value=transcript;
-    document.getElementById('btnVoz').style.opacity='1';
+    let txt='';
+    for(let i=0;i<e.results.length;i++) txt+=e.results[i][0].transcript;
+    inp.value=(base?base+' ':'')+txt;
   };
-  recognition.onerror=()=>{ document.getElementById('btnVoz').style.opacity='1'; };
-}
+  recognition.onerror=ev=>{
+    escuchando=false; btnVoz.classList.remove('escuchando');
+    if(ev.error==='not-allowed'||ev.error==='service-not-allowed') avisar('Permití el micrófono en el navegador');
+    else if(ev.error==='no-speech') avisar('No te escuché, probá de nuevo');
+    else if(ev.error!=='aborted') avisar('No pude usar el micrófono');
+  };
+})();
 
 function agregar(){
   const id=Date.now()+''+Math.random().toString(36).slice(2,6);
