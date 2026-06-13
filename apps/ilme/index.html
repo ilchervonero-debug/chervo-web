@@ -571,10 +571,10 @@ function pintarMemos(focoId){
       cab.appendChild(e);
     }
     const accs=document.createElement('span'); accs.className='accs';
-    const pen=document.createElement('button'); pen.className='acc'; pen.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+    const pen=document.createElement('button'); pen.className='acc'; pen.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
     pen.onclick=()=>{ memoEdit=m.id; pintarMemos(m.id); };
     accs.appendChild(pen);
-    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--rojo)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
     x.onclick=()=>{
       aBorrados({id:m.id,tipo:'memo',txt:m.txt,creado:m.creado},{tipo:'memo'});
       data.memos=data.memos.filter(y=>y.id!==m.id);
@@ -754,7 +754,7 @@ function pintarBorrados(){
     t.appendChild(document.createTextNode(b.txt||'(vacío)'));
     const r=document.createElement('button'); r.className='acc'; r.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6a6 6 0 0 0 6 6h3"/><polyline points="21 4 12 13 3 4"/></svg>';
     r.onclick=()=>restaurar(b);
-    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--rojo)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
     x.onclick=()=>{ data.borrados=data.borrados.filter(y=>y!==b); save(); pintarBorrados(); };
     row.appendChild(t); row.appendChild(r); row.appendChild(x);
     l.appendChild(row);
