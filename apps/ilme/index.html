@@ -574,7 +574,7 @@ function pintarMemos(focoId){
     const pen=document.createElement('button'); pen.className='acc'; pen.textContent='E'; pen.style.fontSize='1rem'; pen.style.fontWeight='600';
     pen.onclick=()=>{ memoEdit=m.id; pintarMemos(m.id); };
     accs.appendChild(pen);
-    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--rojo)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7B1D1D" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
     x.onclick=()=>{
       aBorrados({id:m.id,tipo:'memo',txt:m.txt,creado:m.creado},{tipo:'memo'});
       data.memos=data.memos.filter(y=>y.id!==m.id);
@@ -754,7 +754,7 @@ function pintarBorrados(){
     t.appendChild(document.createTextNode(b.txt||'(vacío)'));
     const r=document.createElement('button'); r.className='acc'; r.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6a6 6 0 0 0 6 6h3"/><polyline points="21 4 12 13 3 4"/></svg>';
     r.onclick=()=>restaurar(b);
-    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--rojo)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7B1D1D" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
     x.onclick=()=>{ data.borrados=data.borrados.filter(y=>y!==b); save(); pintarBorrados(); };
     row.appendChild(t); row.appendChild(r); row.appendChild(x);
     l.appendChild(row);
