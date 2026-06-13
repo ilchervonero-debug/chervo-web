@@ -138,12 +138,17 @@
   .link-card .lk-dom{display:flex;align-items:center;gap:7px;font-size:.72rem;color:var(--gris)}
   .link-card img{width:14px;height:14px;border-radius:3px}
   .link-card .lk-url{font-size:.84rem;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .acciones{display:flex;gap:2px;flex-shrink:0}
+  .acciones{display:flex;gap:4px;flex-shrink:0;align-items:center}
   .acc{
     border:none;background:none;color:var(--gris);cursor:pointer;
-    font-size:.95rem;padding:3px 6px;border-radius:6px;opacity:.55;
+    padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    transition:background .12s,color .12s;
   }
-  .acc:active{background:var(--fondo-2);opacity:1}
+  .acc svg{width:17px;height:17px;display:block;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .acc:hover{background:var(--fondo-2);color:var(--tinta)}
+  .acc:active{background:var(--linea)}
+  .acc.del{color:var(--rojo)}
+  .acc.del:hover{background:rgba(123,29,29,.1);color:var(--rojo)}
 
   /* rutinas */
   .rut-grupo{font-size:.68rem;color:var(--gris);text-transform:uppercase;letter-spacing:.1em;margin:16px 0 4px;font-weight:600}
@@ -471,6 +476,23 @@ function pintarStrip(){
 function esURL(s){ return /^https?:\/\/\S+$/i.test(s.trim()) || /^www\.\S+\.\S+/i.test(s.trim()); }
 function dominio(u){ try{ return new URL(u.startsWith('http')?u:'https://'+u).hostname.replace('www.',''); }catch(e){ return u; } }
 
+// ── Íconos SVG (estilo Feather, minimalista) ──
+const ICON = {
+  remarcar: '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  mover:    '<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+  borrar:   '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+  editar:   '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  restaurar:'<svg viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>'
+};
+// Crea un botón de acción con ícono SVG. `del=true` lo pinta rojo.
+function btnAcc(iconKey, fn, del){
+  const b=document.createElement('button');
+  b.className='acc'+(del?' del':'');
+  b.innerHTML=ICON[iconKey];
+  b.onclick=fn;
+  return b;
+}
+
 function filaItem(it, onChk, onRem, onMan, onDel){
   const row=document.createElement('div');
   const ahora=new Date(); const hActual=String(ahora.getHours()).padStart(2,'0')+':'+String(ahora.getMinutes()).padStart(2,'0');
@@ -503,8 +525,9 @@ function filaItem(it, onChk, onRem, onMan, onDel){
     const r=document.createElement('span'); r.className='rut-racha'; r.textContent='×'+it.racha; row.appendChild(r);
   }
   const acc=document.createElement('div'); acc.className='acciones';
-  const mk=(s,fn)=>{ if(!fn)return; const b=document.createElement('button'); b.className='acc'; b.textContent=s; b.onclick=fn; acc.appendChild(b); };
-  mk('~',onRem); mk('→',onMan); mk('✕',onDel);
+  if(onRem) acc.appendChild(btnAcc('remarcar',onRem));
+  if(onMan) acc.appendChild(btnAcc('mover',onMan));
+  if(onDel) acc.appendChild(btnAcc('borrar',onDel,true));
   row.appendChild(acc);
   return row;
 }
@@ -571,17 +594,13 @@ function pintarMemos(focoId){
       cab.appendChild(e);
     }
     const accs=document.createElement('span'); accs.className='accs';
-    const pen=document.createElement('button'); pen.className='acc'; pen.textContent='✏'; pen.style.fontSize='1.2rem'; pen.style.opacity='1'; pen.style.color='var(--tinta)';
-    pen.onclick=()=>{ memoEdit=m.id; pintarMemos(m.id); };
-    accs.appendChild(pen);
-    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7B1D1D" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-    x.onclick=()=>{
+    accs.appendChild(btnAcc('editar',()=>{ memoEdit=m.id; pintarMemos(m.id); }));
+    accs.appendChild(btnAcc('borrar',()=>{
       aBorrados({id:m.id,tipo:'memo',txt:m.txt,creado:m.creado},{tipo:'memo'});
       data.memos=data.memos.filter(y=>y.id!==m.id);
       if(memoEdit===m.id) memoEdit=null;
       save(); pintarMemos();
-    };
-    accs.appendChild(x);
+    },true));
     cab.appendChild(accs);
     b.appendChild(cab);
     const ed=document.createElement('div'); ed.className='memo-txt';
@@ -752,10 +771,8 @@ function pintarBorrados(){
     const o=document.createElement('span'); o.className='bi-org'; o.textContent=org+' · '+fmtFH(b._ts);
     t.appendChild(o);
     t.appendChild(document.createTextNode(b.txt||'(vacío)'));
-    const r=document.createElement('button'); r.className='acc'; r.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6a6 6 0 0 0 6 6h3"/><polyline points="21 4 12 13 3 4"/></svg>';
-    r.onclick=()=>restaurar(b);
-    const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7B1D1D" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-    x.onclick=()=>{ data.borrados=data.borrados.filter(y=>y!==b); save(); pintarBorrados(); };
+    const r=btnAcc('restaurar',()=>restaurar(b));
+    const x=btnAcc('borrar',()=>{ data.borrados=data.borrados.filter(y=>y!==b); save(); pintarBorrados(); },true);
     row.appendChild(t); row.appendChild(r); row.appendChild(x);
     l.appendChild(row);
   });
