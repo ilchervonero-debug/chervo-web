@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#F2F2F0">
+<title>iLCalc</title>
+<link rel="manifest" href="/apps/ilcalc/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fondo:#F2F2F0;
+    --fondo-2:#E7E7E4;
+    --tinta:#1C1C1C;
+    --gris:#7A7A7A;
+    --linea:#DCDCD8;
+    --rojo:#7B1D1D;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:'Geist',system-ui,sans-serif;
+    background:var(--fondo);color:var(--tinta);
+    display:flex;flex-direction:column;overflow:hidden;
+    padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  header{flex-shrink:0;padding:6px 4px 12px}
+  .titulo{font-size:1.05rem;font-weight:700;letter-spacing:-.02em}
+  .titulo span{color:var(--rojo)}
+  .pant{
+    font-family:'Geist Mono',monospace;font-size:2.2rem;text-align:right;
+    padding:18px 16px;background:var(--fondo-2);border-radius:14px;margin-bottom:12px;
+    min-height:4rem;overflow:hidden;word-wrap:break-word;flex-shrink:0;
+    display:flex;align-items:center;justify-content:flex-end;
+  }
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:1}
+  .grid button{
+    border:none;font-family:'Geist Mono',monospace;font-size:1.5rem;cursor:pointer;
+    border-radius:14px;background:var(--fondo-2);color:var(--tinta);
+  }
+  .grid button:active{filter:brightness(.94)}
+  .grid button.op{background:var(--tinta);color:#fff}
+  .grid button.ig{background:var(--rojo);color:#fff}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="titulo">iL<span>Calc</span></div>
+</header>
+
+<div class="pant" id="pant">0</div>
+<div class="grid" id="grid"></div>
+
+<script>
+const pant=document.getElementById('pant');
+let expr='';
+
+function render(){ pant.textContent=expr||'0'; }
+
+function pulsar(t){
+  if(t==='C'){ expr=''; }
+  else if(t==='⌫'){ expr=expr.slice(0,-1); }
+  else if(t==='='){
+    try{
+      const js=expr.replace(/÷/g,'/').replace(/×/g,'*').replace(/−/g,'-');
+      if(/^[0-9+\-*/().\s]+$/.test(js)){
+        const r=Function('"use strict";return ('+js+')')();
+        expr=(Math.round(r*10000)/10000).toString();
+      }
+    }catch(e){ expr=''; pant.textContent='error'; return; }
+  }
+  else{ expr+=t; }
+  render();
+}
+
+const teclas=['7','8','9','÷','4','5','6','×','1','2','3','−','C','0','.','+','⌫','(',')','='];
+const grid=document.getElementById('grid');
+teclas.forEach(t=>{
+  const b=document.createElement('button');
+  b.textContent=t;
+  if('÷×−+'.includes(t)) b.className='op';
+  if(t==='=') b.className='ig';
+  b.onclick=()=>pulsar(t);
+  grid.appendChild(b);
+});
+
+// teclado físico (para escritorio)
+document.addEventListener('keydown',e=>{
+  const k=e.key;
+  if(/[0-9().]/.test(k)) pulsar(k);
+  else if(k==='/') pulsar('÷');
+  else if(k==='*') pulsar('×');
+  else if(k==='-') pulsar('−');
+  else if(k==='+') pulsar('+');
+  else if(k==='Enter'||k==='=') pulsar('=');
+  else if(k==='Backspace') pulsar('⌫');
+  else if(k==='Escape'||k.toLowerCase()==='c') pulsar('C');
+});
+
+render();
+</script>
+</body>
+</html>

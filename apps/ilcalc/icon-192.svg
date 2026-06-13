@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#F2F2F0"/>
+  <!-- cuerpo de la calculadora -->
+  <rect x="46" y="28" width="100" height="136" rx="14" fill="none" stroke="#1C1C1C" stroke-width="5"/>
+  <!-- pantalla -->
+  <rect x="62" y="44" width="68" height="26" rx="4" fill="#1C1C1C"/>
+  <!-- botones (fila 1) -->
+  <circle cx="68" cy="92" r="6" fill="#1C1C1C"/>
+  <circle cx="90" cy="92" r="6" fill="#1C1C1C"/>
+  <circle cx="112" cy="92" r="6" fill="#1C1C1C"/>
+  <!-- botones (fila 2) -->
+  <circle cx="68" cy="116" r="6" fill="#1C1C1C"/>
+  <circle cx="90" cy="116" r="6" fill="#1C1C1C"/>
+  <circle cx="112" cy="116" r="6" fill="#1C1C1C"/>
+  <!-- botones (fila 3) -->
+  <circle cx="68" cy="140" r="6" fill="#1C1C1C"/>
+  <circle cx="90" cy="140" r="6" fill="#1C1C1C"/>
+  <!-- igual, en rojo -->
+  <circle cx="124" cy="128" r="9" fill="#FF3333"/>
+</svg>
