@@ -636,25 +636,7 @@ document.querySelectorAll('.tipo').forEach(b=>{
     }
   };
 });
-// ── Speech-to-text ──
-const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(SpeechRecognition){
-  const recognition=new SpeechRecognition();
-  recognition.lang='es-ES';
-  document.getElementById('btnVoz').onclick=()=>{
-    recognition.start();
-    document.getElementById('btnVoz').style.opacity='0.5';
-  };
-  recognition.onresult=e=>{
-    let transcript='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      transcript+=e.results[i][0].transcript;
-    }
-    document.getElementById('inp').value=transcript;
-    document.getElementById('btnVoz').style.opacity='1';
-  };
-  recognition.onerror=()=>{ document.getElementById('btnVoz').style.opacity='1'; };
-}
+// Speech-to-text eliminado - sin botón de micrófono
 
 function agregar(){
   const id=Date.now()+''+Math.random().toString(36).slice(2,6);
