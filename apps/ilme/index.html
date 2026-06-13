@@ -5,14 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#F2F2F0">
 <title>iLMe</title>
-<link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script async src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js" onload="if(window.feather) feather.replace()"></script>
-<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --fondo:#F2F2F0;
@@ -368,24 +365,11 @@ let data = raw && raw.dias ? raw : { dias: raw||{}, rutinas: [], rutReset: '' };
 data.memos = data.memos || [];
 data.borrados = data.borrados || [];
 
-// Supabase sync (completamente opcional)
-var supabase = null;
-var deviceId = localStorage.getItem('ilme_device_id') || (localStorage.setItem('ilme_device_id', Date.now()+Math.random()), localStorage.getItem('ilme_device_id'));
-try {
-  if(window.supabase) {
-    const SUPABASE_URL = 'https://bgzfxcobsfzsvnqchqth.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnemZ4Y29ic2Z6c3ZucWNoaXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEzNDU5NTgsImV4cCI6MjA0NjkyNTk1OH0.hCQRr3YA-yqQGZ2RwVqh0rYjD8w4P_Z3d7lEuI_EdU0';
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-} catch(e) {}
+// Almacenamiento local (offline-first)
+// Supabase se puede agregar después en otra versión
 
-const save = async ()=> {
+const save = ()=> {
   store.set(data);
-  if(supabase && navigator.onLine) {
-    try {
-      await supabase.from('ilme_data').upsert({device_id: deviceId, data: data, updated_at: new Date()}, {onConflict: 'device_id'});
-    } catch(e) {}
-  }
 };
 
 // ── Fechas ──
@@ -793,17 +777,8 @@ function respaldo(){
   document.body.appendChild(a); a.click(); a.remove();
 }
 
-// Inicializar pantalla INMEDIATAMENTE (crítico)
-try { pintarTodo(); } catch(e) { console.error('Error al dibujar:', e); }
-
-// Intentar cargar Supabase y sincronizar después
-if(navigator.onLine && supabase) {
-  try {
-    supabase.from('ilme_data').select('data').eq('device_id', deviceId).then(({data: d})=>{
-      if(d && d[0]) { data = d[0].data; pintarTodo(); }
-    }).catch(()=>{});
-  } catch(e) {}
-}
+// Inicializar pantalla
+pintarTodo();
 
 // ── Reloj y alarmas ──
 setInterval(()=>{
@@ -833,9 +808,6 @@ setInterval(()=>{
 if('Notification' in window&&Notification.permission==='default'){
   Notification.requestPermission();
 }
-
-// Sincronizar cuando vuelve la conexión
-window.addEventListener('online', ()=> save());
 </script>
 </body>
 </html>
