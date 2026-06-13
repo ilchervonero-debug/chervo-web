@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJCU CAD — Croquis</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#1e4d8c;min-height:100vh;display:flex;flex-direction:column}
+.header{background:#1e4d8c;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-title{font-size:15px;font-weight:700}
+.header-sub{font-size:10px;color:#a3d0f0;letter-spacing:1px;text-transform:uppercase}
+.back-btn{background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:Arial;text-decoration:none;display:inline-block;touch-action:manipulation}
+.back-btn:hover{background:rgba(255,255,255,.25)}
+.toolbar{background:#163d70;padding:8px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.tool-btn{background:#2d7bc4;color:#fff;border:none;border-radius:5px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:Arial;font-weight:700;touch-action:manipulation}
+.tool-btn.active{background:#63b3ed;color:#1e4d8c}
+.tool-btn:hover{opacity:.85}
+.sep{width:1px;height:28px;background:rgba(255,255,255,.2)}
+.color-btn{width:28px;height:28px;border-radius:4px;border:2px solid transparent;cursor:pointer;touch-action:manipulation}
+.color-btn.active{border-color:#fff}
+label.tool-lbl{font-size:11px;color:#a3d0f0;align-self:center}
+input[type=range]{width:80px;accent-color:#63b3ed}
+.canvas-wrap{flex:1;background:#f8f8f8;display:flex;justify-content:center;align-items:center;overflow:hidden;position:relative}
+canvas{background:#fff;cursor:crosshair;touch-action:none;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.status{background:#163d70;color:#a3d0f0;padding:5px 14px;font-size:11px;text-align:right;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div>
+      <div class="header-sub">DJCU Uruguay</div>
+      <div class="header-title">DJCU CAD — Croquis del inmueble</div>
+    </div>
+  </div>
+  <a href="index.html" class="back-btn">← Volver a DJCU</a>
+</div>
+
+<div class="toolbar">
+  <button class="tool-btn active" id="btn_lapiz" onclick="setTool('lapiz')">✏ Lápiz</button>
+  <button class="tool-btn" id="btn_linea" onclick="setTool('linea')">╱ Línea</button>
+  <button class="tool-btn" id="btn_rect" onclick="setTool('rect')">▭ Rectángulo</button>
+  <button class="tool-btn" id="btn_texto" onclick="setTool('texto')">T Texto</button>
+  <button class="tool-btn" id="btn_borrador" onclick="setTool('borrador')">◻ Borrador</button>
+  <div class="sep"></div>
+  <div class="color-btn active" id="c_negro" style="background:#111" onclick="setColor('#111',this)" title="Negro"></div>
+  <div class="color-btn" id="c_rojo" style="background:#c0392b" onclick="setColor('#c0392b',this)" title="Rojo"></div>
+  <div class="color-btn" id="c_azul" style="background:#2d7bc4" onclick="setColor('#2d7bc4',this)" title="Azul"></div>
+  <div class="color-btn" id="c_verde" style="background:#2d7a4f" onclick="setColor('#2d7a4f',this)" title="Verde"></div>
+  <div class="sep"></div>
+  <label class="tool-lbl">Grosor</label>
+  <input type="range" id="grosor" min="1" max="12" value="2" oninput="updateGrosor()">
+  <span id="grosor_lbl" style="font-size:11px;color:#fff;min-width:18px">2</span>
+  <div class="sep"></div>
+  <button class="tool-btn" onclick="deshacer()">↩ Deshacer</button>
+  <button class="tool-btn" onclick="limpiarCanvas()">🗑 Limpiar</button>
+  <div class="sep"></div>
+  <button class="tool-btn" style="background:#2d7a4f" onclick="exportarPNG()">⬇ Exportar PNG</button>
+</div>
+
+<div class="canvas-wrap" id="canvas_wrap">
+  <canvas id="canvas" width="794" height="561"></canvas>
+</div>
+
+<div class="status" id="status">Herramienta: Lápiz | Hoja A4 apaisada (794×561px) | Exportá el PNG y pegalo en la declaración</div>
+
+<script>
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+var tool = 'lapiz';
+var color = '#111';
+var grosor = 2;
+var dibujando = false;
+var startX, startY;
+var snapshot;
+var historial = [];
+
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+
+function setTool(t) {
+  tool = t;
+  document.querySelectorAll('.tool-btn').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('btn_' + t);
+  if (btn) btn.classList.add('active');
+  canvas.style.cursor = t === 'borrador' ? 'cell' : t === 'texto' ? 'text' : 'crosshair';
+  document.getElementById('status').textContent = 'Herramienta: ' + t.charAt(0).toUpperCase() + t.slice(1) + ' | Hoja A4 apaisada (794×561px)';
+}
+
+function setColor(c, el) {
+  color = c;
+  document.querySelectorAll('.color-btn').forEach(function(b){ b.classList.remove('active'); });
+  el.classList.add('active');
+}
+
+function updateGrosor() {
+  grosor = parseInt(document.getElementById('grosor').value);
+  document.getElementById('grosor_lbl').textContent = grosor;
+}
+
+function getPos(e) {
+  var rect = canvas.getBoundingClientRect();
+  var scaleX = canvas.width / rect.width;
+  var scaleY = canvas.height / rect.height;
+  var cx = (e.touches ? e.touches[0].clientX : e.clientX);
+  var cy = (e.touches ? e.touches[0].clientY : e.clientY);
+  return { x: (cx - rect.left) * scaleX, y: (cy - rect.top) * scaleY };
+}
+
+function guardarHistorial() {
+  historial.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+  if (historial.length > 30) historial.shift();
+}
+
+function deshacer() {
+  if (historial.length === 0) return;
+  ctx.putImageData(historial.pop(), 0, 0);
+}
+
+function limpiarCanvas() {
+  if (!confirm('¿Limpiar el croquis?')) return;
+  guardarHistorial();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// Mouse / Touch events
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', endDraw);
+canvas.addEventListener('mouseleave', endDraw);
+canvas.addEventListener('touchstart', function(e){ e.preventDefault(); startDraw(e); }, {passive:false});
+canvas.addEventListener('touchmove', function(e){ e.preventDefault(); draw(e); }, {passive:false});
+canvas.addEventListener('touchend', function(e){ e.preventDefault(); endDraw(e); }, {passive:false});
+
+function startDraw(e) {
+  var pos = getPos(e);
+  startX = pos.x; startY = pos.y;
+
+  if (tool === 'texto') {
+    var txt = prompt('Texto:');
+    if (txt) {
+      guardarHistorial();
+      ctx.font = grosor * 6 + 'px Arial';
+      ctx.fillStyle = color;
+      ctx.fillText(txt, startX, startY);
+    }
+    return;
+  }
+
+  guardarHistorial();
+  dibujando = true;
+  snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+  if (tool === 'lapiz' || tool === 'borrador') {
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+  }
+}
+
+function draw(e) {
+  if (!dibujando) return;
+  var pos = getPos(e);
+
+  ctx.lineWidth = tool === 'borrador' ? grosor * 4 : grosor;
+  ctx.strokeStyle = tool === 'borrador' ? '#fff' : color;
+
+  if (tool === 'lapiz' || tool === 'borrador') {
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    return;
+  }
+
+  ctx.putImageData(snapshot, 0, 0);
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = grosor;
+
+  if (tool === 'linea') {
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  } else if (tool === 'rect') {
+    ctx.strokeRect(startX, startY, pos.x - startX, pos.y - startY);
+  }
+}
+
+function endDraw(e) {
+  dibujando = false;
+}
+
+function exportarPNG() {
+  var a = document.createElement('a');
+  a.download = 'croquis_djcu.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+// Responsive canvas scale
+function ajustarCanvas() {
+  var wrap = document.getElementById('canvas_wrap');
+  var maxW = wrap.clientWidth - 24;
+  var maxH = wrap.clientHeight - 16;
+  var ratio = Math.min(maxW / 794, maxH / 561, 1);
+  canvas.style.width = (794 * ratio) + 'px';
+  canvas.style.height = (561 * ratio) + 'px';
+}
+window.addEventListener('resize', ajustarCanvas);
+ajustarCanvas();
+</script>
+</body>
+</html>

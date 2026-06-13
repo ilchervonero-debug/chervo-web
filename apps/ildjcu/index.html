@@ -1,0 +1,1591 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJCU Relevamiento v3</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
+.app{max-width:640px;margin:0 auto;background:#f0f0f0;min-height:100vh}
+.header{background:#1e4d8c;color:#fff;padding:14px 16px}
+.header-sub{font-size:10px;color:#a3d0f0;letter-spacing:2px;text-transform:uppercase}
+.header-title{font-size:17px;font-weight:700;margin-top:2px}
+.tabs{display:flex;background:#fff;overflow-x:auto;border-bottom:2px solid #dbeeff}
+.tab{flex:0 0 auto;padding:9px 10px;background:transparent;color:#2d7bc4;border:none;border-bottom:3px solid transparent;font-size:10px;cursor:pointer;font-weight:400;letter-spacing:.5px;font-family:Arial,sans-serif;white-space:nowrap;margin-bottom:-2px}
+.tab.active{background:#2d7bc4;color:#fff;font-weight:700;border-bottom:3px solid #2d7bc4;border-radius:6px 6px 0 0}
+.body{padding:14px}
+.card{background:#fff;border-radius:8px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card-title{font-weight:700;font-size:11px;color:#2d7bc4;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid #f0f0f0;padding-bottom:5px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+.field{margin-bottom:8px}
+.field label{display:block;font-size:11px;color:#666;margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:5px;font-size:13px;background:#fafafa;font-family:Arial,sans-serif}
+.field textarea{resize:vertical}
+.full{grid-column:1/-1}
+.btn{border:none;border-radius:6px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif;color:#fff}
+.btn-red{background:#2d7bc4}.btn-dark{background:#1e4d8c}.btn-green{background:#63b3ed}.btn-gray{background:#555}
+.btn-full{width:100%}.btn-sm{padding:5px 10px;font-size:11px}
+.nav{display:flex;gap:10px;margin-top:8px}
+.linea-bloque{background:#fff;border-radius:8px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.linea-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.links-box{background:#f8f8f8;border-radius:6px;padding:10px 12px;margin-top:8px}
+.links-box .lbl{font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.links-box a{display:block;font-size:12px;color:#2d7bc4;text-decoration:none;padding:3px 0}
+.foto-item{background:#fff;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.foto-inner{display:flex;gap:10px;align-items:flex-start}
+.foto-img{width:100px;height:80px;object-fit:cover;border-radius:5px;border:1px solid #ddd;flex-shrink:0}
+.foto-side{flex:1}
+.rec-btn{width:100%;margin-top:5px;font-size:11px;padding:6px;border:none;border-radius:5px;cursor:pointer;font-family:Arial;color:#fff;font-weight:700}
+.rec-btn.grabando{background:#2d7bc4}.rec-btn.parado{background:#63b3ed}
+.total-bar{background:#1e4d8c;color:#fff;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.resumen-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
+.resumen-row span:first-child{color:#888}
+.resumen-row span:last-child{font-weight:600}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e4d8c;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:999;display:none}
+.cond{background:#fff8e1;border-left:3px solid #f0a500;padding:10px;border-radius:0 5px 5px 0;margin:8px 0}
+.honor-result{background:#dbeeff;border-radius:6px;padding:12px;margin-top:10px;font-size:15px;font-weight:700;color:#1e4d8c;text-align:center}
+.honor-linea{display:flex;justify-content:space-between;font-size:12px;color:#555;padding:3px 0}
+.grabando-ind{font-size:10px;color:#2d7bc4;text-align:center;margin-top:3px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.input-sm input{padding:6px 8px;font-size:12px}
+/* Tabla DJCU oficial */
+.djcu-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+.djcu-table th{background:#e8e8e8;padding:4px 5px;border:1px solid #bbb;text-align:center;font-size:10px}
+.djcu-table td{padding:4px 5px;border:1px solid #ddd;text-align:center}
+.djcu-table td input,.djcu-table td select{width:100%;padding:3px 4px;border:1px solid #ddd;border-radius:3px;font-size:11px;background:#fafafa;text-align:center;font-family:Arial}
+.djcu-table td.desc input{text-align:left}
+.cod-desc{display:flex;gap:4px}
+.cod-desc input:first-child{width:40px;flex-shrink:0}
+.cod-desc input:last-child{flex:1}
+.pin-overlay{position:fixed;inset:0;background:#1e4d8c;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
+.bienvenida-overlay{position:fixed;inset:0;background:#1e4d8c;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9998}
+.bienvenida-box{background:#fff;border-radius:14px;padding:28px 24px;width:300px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.perm-btn{width:100%;padding:13px;margin-bottom:10px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px}
+.perm-btn.pendiente{background:#f0f6ff;color:#1e4d8c;border:2px solid #2d7bc4}
+.perm-btn.ok{background:#e8f8f0;color:#2d7a4f;border:2px solid #2d7a4f}
+.perm-btn.bloqueado{background:#fff0f0;color:#c0392b;border:2px solid #c0392b}
+.visor-overlay{position:fixed;inset:0;background:#1e4d8c;z-index:9997;display:none;flex-direction:column}
+.visor-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1e4d8c;flex-shrink:0}
+.visor-toolbar span{color:#fff;font-size:13px;font-weight:700}
+.visor-iframe{flex:1;border:none;width:100%;background:#fff}
+.pin-box{background:#fff;border-radius:14px;padding:32px 28px;width:280px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.pin-logo{font-size:13px;font-weight:700;color:#1e4d8c;letter-spacing:1px;margin-bottom:4px}
+.pin-sub{font-size:10px;color:#aaa;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.pin-dots{display:flex;gap:12px;justify-content:center;margin-bottom:20px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid #2d7bc4;background:#fff;transition:background .15s}
+.pin-dot.filled{background:#2d7bc4}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.pin-btn{background:#f4f8ff;border:1px solid #dce8f8;border-radius:8px;padding:14px;font-size:18px;font-weight:700;color:#1e4d8c;cursor:pointer;font-family:Arial;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+.pin-btn:active{background:#dce8f8}
+.pin-btn.del{font-size:14px;color:#888}
+.pin-err{font-size:12px;color:#c0392b;min-height:18px;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- PANTALLA DE BIENVENIDA Y PERMISOS -->
+<div class="bienvenida-overlay" id="bienvenida_overlay">
+  <div class="bienvenida-box">
+    <div style="font-size:22px;margin-bottom:6px">👋</div>
+    <div style="font-size:16px;font-weight:700;color:#1e4d8c;margin-bottom:4px">Bienvenido</div>
+    <div id="bienvenida_nombre" style="font-size:13px;color:#888;margin-bottom:20px"></div>
+    <div style="font-size:12px;color:#666;margin-bottom:14px;text-align:left">Para usar cámara y micrófono en el relevamiento, habilitá los permisos:</div>
+    <button id="btn_perm_cam" class="perm-btn pendiente" onclick="pedirPermiso('camara')">
+      <span>📷</span><span>Habilitar cámara</span>
+    </button>
+    <button id="btn_perm_mic" class="perm-btn pendiente" onclick="pedirPermiso('microfono')">
+      <span>🎤</span><span>Habilitar micrófono</span>
+    </button>
+    <div style="font-size:10px;color:#aaa;margin:10px 0 14px">Podés saltear esto y habilitarlos después desde el navegador.</div>
+    <button onclick="entrarApp()" style="width:100%;padding:13px;background:#2d7bc4;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">
+      Entrar →
+    </button>
+  </div>
+</div>
+
+<!-- PIN DE ACCESO — los PINs se administran desde Supabase: tabla "usuarios" -->
+<div class="pin-overlay" id="pin_overlay">
+  <div class="pin-box">
+    <div class="pin-logo">DJCU Uruguay</div>
+    <div class="pin-sub">Relevamiento de Campo</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" ontouchstart="e_pin(event,'1')" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" ontouchstart="e_pin(event,'2')" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" ontouchstart="e_pin(event,'3')" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" ontouchstart="e_pin(event,'4')" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" ontouchstart="e_pin(event,'5')" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" ontouchstart="e_pin(event,'6')" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" ontouchstart="e_pin(event,'7')" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" ontouchstart="e_pin(event,'8')" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" ontouchstart="e_pin(event,'9')" onclick="pinPress('9')">9</button>
+      <button class="pin-btn del" ontouchstart="e_pin(event,'C')" onclick="pinPress('C')">✕</button>
+      <button class="pin-btn" ontouchstart="e_pin(event,'0')" onclick="pinPress('0')">0</button>
+      <button class="pin-btn del" ontouchstart="e_pin(event,'B')" onclick="pinPress('B')">⌫</button>
+    </div>
+    <div class="pin-err" id="pin_err"></div>
+
+    <!-- Crear cuenta -->
+    <div id="pin_crear" style="display:none;margin-top:12px;border-top:1px solid #e8f0fb;padding-top:12px">
+      <div style="font-size:11px;color:#888;margin-bottom:8px;text-align:center">Nueva cuenta</div>
+      <input id="reg2_nombre" type="text" placeholder="Tu nombre" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:8px;font-family:Arial">
+      <input id="reg2_pin" type="password" maxlength="4" inputmode="numeric" placeholder="PIN (4 dígitos)" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:8px;font-family:Arial">
+      <input id="reg2_pin2" type="password" maxlength="4" inputmode="numeric" placeholder="Confirmar PIN" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:8px;font-family:Arial">
+      <div id="reg2_msg" style="font-size:11px;min-height:16px;margin-bottom:6px;text-align:center"></div>
+      <button onclick="registrarDesdePin()" style="width:100%;padding:10px;background:#2d7bc4;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">Crear cuenta</button>
+    </div>
+
+    <button onclick="toggleCrearCuenta()" style="margin-top:10px;background:none;border:none;color:#2d7bc4;font-size:12px;cursor:pointer;font-family:Arial;width:100%;touch-action:manipulation" id="btn_crear_toggle">¿Sin cuenta? Crear una →</button>
+  </div>
+</div>
+
+<!-- VISOR INLINE PARA iOS -->
+<div class="visor-overlay" id="visor_overlay">
+  <div class="visor-toolbar">
+    <span>📄 Vista previa — Imprimí o compartí desde acá</span>
+    <button onclick="cerrarVisor()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Cerrar</button>
+  </div>
+  <div style="background:#1e4d8c;padding:8px 14px;flex-shrink:0;display:flex;gap:8px">
+    <button onclick="imprimirVisor()" style="flex:1;background:#2d7bc4;border:none;color:#fff;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">🖨 Imprimir / PDF</button>
+    <button onclick="compartirVisor()" style="flex:1;background:#63b3ed;border:none;color:#fff;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">📤 Compartir</button>
+  </div>
+  <iframe class="visor-iframe" id="visor_iframe"></iframe>
+</div>
+
+<div class="app">
+  <div class="header">
+    <div class="header-sub">Relevamiento de Campo</div>
+    <div class="header-title">DJCU Uruguay <span style="font-size:11px;font-weight:400;color:#aaa">v3</span></div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="goTab(0)">Expediente</button>
+    <button class="tab" onclick="goTab(1)">Inmueble</button>
+    <button class="tab" onclick="goTab(2)">Construcción</button>
+    <button class="tab" onclick="goTab(3)">Profesional</button>
+    <button class="tab" onclick="goTab(4)">Fotos</button>
+    <button class="tab" onclick="goTab(5)">Económico</button>
+    <button class="tab" onclick="goTab(6)">Resumen</button>
+    <button class="tab" onclick="goTab(7)">📁 Archivos</button>
+    <button class="tab" onclick="goTab(8)">👤 Mi cuenta</button>
+    <button class="tab" id="tab_admin_btn" style="display:none" onclick="goTab(9)">⚙ Admin</button>
+  </div>
+  <div class="body">
+
+    <!-- TAB 0: EXPEDIENTE -->
+    <div id="tab0">
+      <div class="card">
+        <div class="card-title">Gestión del expediente <span style="background:#f0f0f0;color:#888;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:400">INTERNO</span></div>
+        <div class="field"><label>Nombre del cliente / proyecto</label><input id="cliente" type="text" placeholder="Ej: García, Juan — Calle X 123"></div>
+        <div class="field"><label>Intermediario / referido <span style="font-size:10px;color:#aaa">(opcional)</span></label><input id="intermediario" type="text" placeholder="Arq., Escribano, gestor..."></div>
+        <div class="row">
+          <div class="field"><label>Fecha de alta</label><input id="fecha_alta" type="datetime-local"></div>
+          <div class="field"><label>Estado del trámite</label>
+            <select id="estado_tramite">
+              <option value="">— Seleccionar</option>
+              <option>Relevamiento pendiente</option><option>En proceso</option>
+              <option>Documentación completa</option><option>Presentado a DNC</option><option>Aprobado</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Notas internas</label><textarea id="notas_internas" rows="2" placeholder="Observaciones de gestión..."></textarea></div>
+      </div>
+      <div class="nav"><button class="btn btn-red btn-full" onclick="goTab(1)">Siguiente →</button></div>
+    </div>
+
+    <!-- TAB 1: INMUEBLE -->
+    <div id="tab1" style="display:none">
+      <div class="card">
+        <div class="card-title">Régimen y tipo <span style="background:#dbeeff;color:#1e4d8c;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
+        <div class="row">
+          <div class="field"><label>Régimen de propiedad</label>
+            <select id="regimen" onchange="onRegimen()">
+              <option value="">— Seleccionar</option>
+              <option value="comun">Padrón Común</option>
+              <option value="ph">Propiedad Horizontal (PH)</option>
+            </select>
+          </div>
+          <div class="field" id="campo_tipo_ph" style="display:none"><label>Tipo declaración PH</label>
+            <select id="tipo_ph">
+              <option value="">— Seleccionar</option>
+              <option>Unidad individual</option><option>Padrón global</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Tipo de Declaración Jurada <span style="background:#dbeeff;color:#1e4d8c;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></label>
+          <select id="tipo_dj">
+            <option value="">— Seleccionar</option>
+            <option value="SCE">SCE — Solo construcciones existentes</option>
+            <option value="CEOE">CEOE — Construcciones existentes + obras a ejecutar</option>
+            <option value="DTE">DTE — Demolición total ejecutada</option>
+          </select>
+        </div>
+        <div class="field"><label>Condición predial</label>
+          <select id="condicion_predial">
+            <option value="">— Seleccionar</option>
+            <option>Baldío</option><option>Terreno con construcciones</option>
+          </select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Ubicación</div>
+        <div class="row">
+          <div class="field"><label>Departamento</label>
+            <select id="dpto">
+              <option value="">— Seleccionar</option>
+              <option>Artigas</option><option>Canelones</option><option>Cerro Largo</option><option>Colonia</option><option>Durazno</option><option>Flores</option><option>Florida</option><option>Lavalleja</option><option>Maldonado</option><option>Montevideo</option><option>Paysandú</option><option>Río Negro</option><option>Rivera</option><option>Rocha</option><option>Salto</option><option>San José</option><option>Soriano</option><option>Tacuarembó</option><option>Treinta y Tres</option>
+            </select>
+          </div>
+          <div class="field"><label>Localidad</label><input id="localidad" type="text"></div>
+        </div>
+        <div class="field"><label>Calle y número</label><input id="direccion" type="text"></div>
+        <div class="row">
+          <div class="field"><label>Padrón</label><input id="padron" type="number"></div>
+          <div class="field"><label>Dim. Frente (m)</label><input id="dim_frente" type="number" step="0.01"></div>
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" id="es_esquina" style="width:auto" onchange="toggleEsquina()">
+            Es esquina
+          </label>
+        </div>
+        <div id="campo_esquina" style="display:none">
+          <div class="field"><label>Segunda calle (esquina con)</label><input id="direccion2" type="text" placeholder="Nombre de la calle transversal"></div>
+          <div class="field"><label>Dim. Frente 2ª calle (m)</label><input id="dim_frente2" type="number" step="0.01"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Terreno Hectáreas</label><input id="terreno_hect" type="number" step="0.0001" value="0"></div>
+          <div class="field"><label>Terreno Metros (m²)</label><input id="terreno_metros" type="number"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Fecha ingresada</label><input id="fecha_ingresada" type="date"></div>
+          <div class="field"><label>Nº expediente DNC</label><input id="nro_expediente" type="text" placeholder="000000000000"></div>
+        </div>
+        <div style="text-align:center;margin:10px 0">
+          <button class="btn btn-dark btn-full" onclick="geolocate()">📍 Capturar coordenadas GPS</button>
+          <div id="gps_result" style="font-size:11px;color:#666;margin-top:5px"></div>
+        </div>
+        <div class="links-box">
+          <div class="lbl">Consultas Catastro DNC</div>
+          <a href="http://visor.catastro.gub.uy/visordnc/" target="_blank">🗺 Visor de mapa — Catastro DNC</a>
+          <a href="https://www.snig.gub.uy/ConsultaPadrones" target="_blank">🔍 Buscar padrón por ubicación (SNIG)</a>
+          <a href="http://sede.catastro.gub.uy/Sede/" target="_blank">🏛 Sede Electrónica DNC — trámites</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Propietario <span style="background:#dbeeff;color:#1e4d8c;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
+        <div class="row">
+          <div class="field"><label>Apellidos</label><input id="prop_apellidos" type="text"></div>
+          <div class="field"><label>Nombres</label><input id="prop_nombres" type="text"></div>
+        </div>
+        <div class="field"><label>Doc. de Identidad</label><input id="prop_ci" type="text"></div>
+        <div class="row">
+          <div class="field"><label>Domicilio Calle</label><input id="prop_calle" type="text"></div>
+          <div class="field"><label>Puerta</label><input id="prop_puerta" type="text"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Departamento</label><input id="prop_dpto" type="text"></div>
+          <div class="field"><label>Localidad</label><input id="prop_localidad" type="text"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Teléfono</label><input id="prop_tel" type="tel"></div>
+          <div class="field"><label>Email</label><input id="prop_email" type="email"></div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn btn-gray btn-full" onclick="goTab(0)">← Atrás</button>
+        <button class="btn btn-red btn-full" onclick="goTab(2)">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: CONSTRUCCIÓN — tabla oficial DJCU -->
+    <div id="tab2" style="display:none">
+      <div class="card" style="overflow-x:auto">
+        <div class="card-title">Situación Actual — Tabla DJCU oficial <span style="background:#dbeeff;color:#1e4d8c;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
+        <p style="font-size:11px;color:#888;margin-bottom:8px">Campos según formulario DNC: Nivel · U.O · Hab · Ser · Destino (Tabla A) · Cat (Tabla B) · Est (Tabla C) · Área Edific · Obra · Const · Rema · Cub (Tabla D) · Ubic (solo PH, Tabla F)</p>
+        <table class="djcu-table" id="tabla_construccion">
+          <thead>
+            <tr>
+              <th>Nivel</th><th>U.O</th><th>Hab</th><th>Ser</th>
+              <th>Destino</th>
+              <th>Cat</th><th>Est</th><th>Edific<br>(m²)</th>
+              <th>Obra</th><th>Const</th><th>Rema</th><th>Cub</th>
+              <th>Ubic<br>PH</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="lineas_body"></tbody>
+        </table>
+        <button class="btn btn-dark btn-sm" style="margin-top:10px" onclick="addLinea()">+ Agregar línea</button>
+      </div>
+      <div class="total-bar" id="total_bar">Total Área Edific: <strong>0 m²</strong></div>
+      <div class="card">
+        <div class="card-title">Antigüedad y condiciones generales</div>
+        <div class="field"><label>Antigüedad predominante</label>
+          <select id="antiguedad_general">
+            <option value="">— Seleccionar</option>
+            <option>Solo construcciones más de 10 años</option>
+            <option>Solo construcciones menos de 10 años</option>
+            <option>Mixto (más y menos de 10 años)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" id="reformas_internas" style="width:auto">
+            Reformas internas no visibles (fachada intacta)
+          </label>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn btn-gray btn-full" onclick="goTab(1)">← Atrás</button>
+        <button class="btn btn-red btn-full" onclick="goTab(3)">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: PROFESIONAL -->
+    <div id="tab3" style="display:none">
+      <div class="card">
+        <div class="card-title">Profesional firmante <span style="background:#dbeeff;color:#1e4d8c;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
+        <div class="row">
+          <div class="field"><label>Apellidos</label><input id="prof_apellidos" type="text"></div>
+          <div class="field"><label>Nombres</label><input id="prof_nombres" type="text"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Doc. de Identidad</label><input id="prof_ci" type="text"></div>
+          <div class="field"><label>Matrícula Nº</label><input id="prof_matricula" type="text"></div>
+        </div>
+        <div class="field"><label>Título</label>
+          <select id="prof_titulo">
+            <option>ARQUITECTO</option>
+            <option>INGENIERO AGRIMENSOR</option>
+            <option>INGENIERO CIVIL</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="field"><label>Domicilio Calle</label><input id="prof_calle" type="text"></div>
+          <div class="field"><label>Puerta</label><input id="prof_puerta" type="text"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Apto</label><input id="prof_apto" type="text"></div>
+          <div class="field"><label>Teléfono</label><input id="prof_tel" type="tel"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Departamento</label><input id="prof_dpto" type="text"></div>
+          <div class="field"><label>Localidad</label><input id="prof_localidad" type="text"></div>
+        </div>
+        <div class="field"><label>Email</label><input id="prof_email" type="email"></div>
+      </div>
+      <div class="nav">
+        <button class="btn btn-gray btn-full" onclick="goTab(2)">← Atrás</button>
+        <button class="btn btn-red btn-full" onclick="goTab(4)">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- TAB 4: FOTOS -->
+    <div id="tab4" style="display:none">
+      <div class="card">
+        <div class="card-title">Registro fotográfico <span style="background:#f0f0f0;color:#888;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:400">RELEVAMIENTO</span></div>
+        <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px;margin-bottom:12px" onclick="document.getElementById('file_input').click()">📷 Tomar foto / Seleccionar</button>
+        <input id="file_input" type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="addFotos(event)">
+        <div id="fotos_container"></div>
+        <div id="fotos_count" style="font-size:12px;color:#888;text-align:right">0 fotos</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Observaciones generales</div>
+        <button id="btn_obs_gen" class="rec-btn parado" onclick="toggleVoz('obs_gen','btn_obs_gen','ind_obs_gen')">🎤 Dictar observaciones generales</button>
+        <div id="ind_obs_gen" class="grabando-ind"></div>
+        <textarea id="obs_gen" rows="5" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;margin-top:8px;font-family:Arial" placeholder="Descripción general del inmueble, estado, particularidades..."></textarea>
+      </div>
+      <div class="nav">
+        <button class="btn btn-gray btn-full" onclick="goTab(3)">← Atrás</button>
+        <button class="btn btn-red btn-full" onclick="goTab(5)">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- TAB 5: ECONÓMICO -->
+    <div id="tab5" style="display:none">
+      <div class="card">
+        <div class="card-title">Timbres y honorarios <span style="background:#f0f0f0;color:#888;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:400">INTERNO — no va a DNC</span></div>
+        <div class="row">
+          <div class="field"><label>Timbres profesionales ($)</label><input id="timbres" type="number" value="270" oninput="calcHonorarios()"></div>
+          <div class="field"><label>Valor base por bloque ($)</label><input id="valor_bloque" type="number" value="2000" oninput="calcHonorarios()"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Honorarios base ($)</label><input id="honor_base" type="number" value="5000" oninput="calcHonorarios()"></div>
+          <div class="field"><label>Adicional PH ($)</label><input id="honor_ph" type="number" value="1500" oninput="calcHonorarios()"></div>
+        </div>
+        <div class="field"><label>Ajuste manual ($)</label><input id="honor_ajuste" type="number" value="0" oninput="calcHonorarios()"></div>
+        <div id="honor_desglose" style="margin-top:10px;background:#f8f8f8;border-radius:6px;padding:10px"></div>
+        <div id="honor_total" class="honor-result">TOTAL: $ 0</div>
+      </div>
+      <div class="nav">
+        <button class="btn btn-gray btn-full" onclick="goTab(4)">← Atrás</button>
+        <button class="btn btn-red btn-full" onclick="goTab(6)">Ver resumen →</button>
+      </div>
+    </div>
+
+    <!-- TAB 6: RESUMEN -->
+    <div id="tab6" style="display:none">
+      <div class="card">
+        <div class="card-title">Resumen del expediente</div>
+        <div id="resumen_contenido"></div>
+      </div>
+
+      <!-- IMPRIMIR -->
+      <div class="card">
+        <div class="card-title">Imprimir</div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:11px;color:#555;margin-bottom:5px">Declaración oficial 2 hojas A4 — firmas, propietario, profesional <span style="background:#dbeeff;color:#1e4d8c;font-size:9px;padding:1px 5px;border-radius:8px">DNC</span></div>
+          <button class="btn btn-red btn-full" style="padding:12px;font-size:14px" onclick="exportar()">🖨 Imprimir declaración DJCU</button>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#555;margin-bottom:5px">Presupuesto, honorarios y gastos <span style="background:#f0f0f0;color:#888;font-size:9px;padding:1px 5px;border-radius:8px">INTERNO</span></div>
+          <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px" onclick="exportarPresupuesto()">🖨 Imprimir presupuesto y gastos</button>
+        </div>
+      </div>
+
+      <!-- ENVÍO A CATASTRO -->
+      <div class="card">
+        <div class="card-title">Enviar a Catastro DNC</div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:11px;color:#555;margin-bottom:5px">Genera archivos .DBF para importar en el programa DJCU.exe (C:\catastro)</div>
+          <button class="btn btn-dark btn-full" style="padding:12px" onclick="exportarDBF()">📦 Exportar para DJCU.exe</button>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:11px;color:#555;margin-bottom:5px">Copia los datos para pegar en la Sede Electrónica DNC</div>
+          <button class="btn btn-green btn-full" style="padding:12px" onclick="copiarSedeWeb()">📋 Copiar datos para Sede DNC</button>
+        </div>
+        <a href="http://sede.catastro.gub.uy/Sede/" target="_blank" style="display:block;text-align:center;font-size:12px;color:#2d7bc4;font-weight:700;text-decoration:none;padding:6px 0">🏛 Abrir Sede Electrónica DNC →</a>
+      </div>
+
+      <!-- CROQUIS -->
+      <div class="card">
+        <div class="card-title">Croquis del inmueble</div>
+        <div style="font-size:12px;color:#555;margin-bottom:10px">Dibujá el croquis en DJCU CAD, exportá como PNG y cargalo acá. Se incluye automáticamente en la declaración impresa.</div>
+        <a href="djcu_cad.html" target="_blank" style="display:block;background:#1e4d8c;color:#fff;text-align:center;padding:12px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;touch-action:manipulation">✏ Abrir DJCU CAD →</a>
+        <div class="field">
+          <label>Cargar PNG del croquis</label>
+          <input type="file" id="croquis_file" accept="image/png,image/jpeg,image/*" onchange="cargarCroquis(event)" style="padding:6px;font-size:12px">
+        </div>
+        <img id="croquis_preview" style="display:none;max-width:100%;border:1px solid #ddd;border-radius:6px;margin-top:8px" alt="Croquis">
+        <button id="croquis_clear" style="display:none;margin-top:6px;background:none;border:1px solid #ddd;border-radius:5px;padding:5px 12px;font-size:11px;cursor:pointer;color:#888;font-family:Arial" onclick="limpiarCroquis()">✕ Quitar croquis</button>
+      </div>
+
+      <div class="nav" style="margin-top:4px">
+        <button class="btn btn-gray btn-full" onclick="goTab(5)">← Atrás</button>
+        <button class="btn btn-dark btn-full" onclick="nuevoExpediente()">+ Nuevo expediente</button>
+      </div>
+    </div>
+
+    <!-- TAB 9: ADMIN -->
+    <div id="tab9" style="display:none">
+      <div class="card">
+        <div class="card-title">Gestión de usuarios</div>
+        <div id="admin_lista"><div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Cargando...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Agregar usuario</div>
+        <div class="field"><label>Nombre</label><input id="admin_nombre" type="text" placeholder="Nombre del usuario"></div>
+        <div class="field"><label>PIN (4 dígitos)</label><input id="admin_pin" type="password" maxlength="4" inputmode="numeric"></div>
+        <div id="admin_msg" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
+        <button class="btn btn-red btn-full" onclick="adminAgregarUsuario()">+ Agregar usuario</button>
+      </div>
+    </div>
+
+    <!-- TAB 8: MI CUENTA -->
+    <div id="tab8" style="display:none">
+      <div class="card">
+        <div class="card-title">Crear nueva cuenta</div>
+        <div class="field"><label>Nombre</label><input id="reg_nombre" type="text" placeholder="Tu nombre completo"></div>
+        <div class="field"><label>PIN (4 dígitos)</label><input id="reg_pin" type="password" maxlength="4" inputmode="numeric" placeholder="Ej: 1234"></div>
+        <div class="field"><label>Confirmar PIN</label><input id="reg_pin2" type="password" maxlength="4" inputmode="numeric" placeholder="Repetí el PIN"></div>
+        <div id="reg_msg" style="font-size:12px;min-height:18px;margin-bottom:8px"></div>
+        <button class="btn btn-red btn-full" onclick="registrarUsuario()">Crear cuenta</button>
+      </div>
+      <div class="card" style="margin-top:4px">
+        <div class="card-title">Sesión actual</div>
+        <div style="font-size:13px;color:#444;padding:4px 0">Usuario: <strong id="sesion_usuario">—</strong></div>
+        <button class="btn btn-gray btn-full" style="margin-top:10px" onclick="if(confirm('¿Cerrar sesión?')) location.reload()">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <!-- TAB 7: ARCHIVOS -->
+    <div id="tab7" style="display:none">
+      <div style="margin-bottom:12px">
+        <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px" onclick="nuevoExpediente()">+ Nueva declaración</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Mis declaraciones guardadas</div>
+        <div id="archivos_lista">
+          <div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var SUPA_URL = 'https://mvuyntiuiwjjjjsshzcb.supabase.co';
+var SUPA_KEY = 'sb_publishable_OxcQ-rYPOi9gUdKW8dRwug_Vyu-3oTQ';
+
+var pinActual = '';
+var usuarioActivo = null;
+
+function supaFetch(path, options) {
+  var method = (options && options.method) || 'GET';
+  var sep = path.includes('?') ? '&' : '?';
+  var url = SUPA_URL + '/rest/v1/' + path + sep + 'apikey=' + SUPA_KEY;
+  var headers = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY };
+  if (method !== 'GET') headers['Content-Type'] = 'application/json';
+  var opts = Object.assign({ method: method, headers: headers }, options || {});
+  return fetch(url, opts);
+}
+
+function e_pin(e, v) { e.preventDefault(); pinPress(v); }
+
+var _visorBlobUrl = null;
+var _visorHtml = null;
+
+function mostrarVisor(blobUrl, html) {
+  _visorBlobUrl = blobUrl;
+  _visorHtml = html;
+  var ov = document.getElementById('visor_overlay');
+  var iframe = document.getElementById('visor_iframe');
+  iframe.src = blobUrl;
+  ov.style.display = 'flex';
+}
+
+function cerrarVisor() {
+  document.getElementById('visor_overlay').style.display = 'none';
+  document.getElementById('visor_iframe').src = '';
+}
+
+function imprimirVisor() {
+  var iframe = document.getElementById('visor_iframe');
+  try {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  } catch(e) {
+    // iOS no permite print() en iframe — abrir en nueva pestaña
+    window.open(_visorBlobUrl, '_blank');
+  }
+}
+
+function compartirVisor() {
+  if (navigator.share && _visorHtml) {
+    var file = new File([_visorHtml], 'DJCU_relevamiento.html', {type:'text/html'});
+    navigator.share({ files: [file], title: 'DJCU Relevamiento' }).catch(function(){});
+  } else {
+    window.open(_visorBlobUrl, '_blank');
+  }
+}
+
+async function cargarUsuariosAdmin() {
+  var c = document.getElementById('admin_lista');
+  c.innerHTML = '<div style="text-align:center;color:#aaa;padding:12px;font-size:13px">Cargando...</div>';
+  try {
+    var res = await supaFetch('usuarios?select=id,nombre,pin,activo&order=id.asc');
+    var data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) { c.innerHTML = '<div style="color:#aaa;padding:12px;font-size:13px">Sin usuarios.</div>'; return; }
+    c.innerHTML = data.map(function(u) {
+      var esAdmin = u.nombre === ADMIN_USER;
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0">'+
+        '<div>'+
+          '<span style="font-weight:700;font-size:13px;color:'+(u.activo?'#1e4d8c':'#aaa')+'">'+u.nombre+'</span>'+
+          (esAdmin?'<span style="font-size:10px;color:#2d7bc4;margin-left:6px">admin</span>':'')+
+          '<br><span style="font-size:11px;color:#aaa">PIN: '+u.pin+'</span>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px">'+
+          (!esAdmin?'<button onclick="adminToggle('+u.id+','+u.activo+')" style="padding:5px 10px;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:'+(u.activo?'#fff3cd':'#e8f8f0')+';color:'+(u.activo?'#856404':'#2d7a4f')+';">'+(u.activo?'🔒 Bloquear':'🔓 Activar')+'</button>':'')+
+          (!esAdmin?'<button onclick="adminBorrar('+u.id+',\''+u.nombre+'\')" style="padding:5px 10px;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:#fff0f0;color:#c0392b;">✕</button>':'')+
+        '</div>'+
+      '</div>';
+    }).join('');
+  } catch(e) {
+    c.innerHTML = '<div style="color:#c0392b;padding:12px;font-size:13px">Error al cargar usuarios.</div>';
+  }
+}
+
+async function adminToggle(id, activo) {
+  await supaFetch('usuarios?id=eq.'+id, { method:'PATCH', body: JSON.stringify({activo: !activo}) });
+  cargarUsuariosAdmin();
+}
+
+async function adminBorrar(id, nombre) {
+  if (!confirm('¿Borrar usuario "'+nombre+'"? Sus expedientes quedan guardados.')) return;
+  await supaFetch('usuarios?id=eq.'+id, { method:'DELETE' });
+  cargarUsuariosAdmin();
+}
+
+async function adminAgregarUsuario() {
+  var nombre = document.getElementById('admin_nombre').value.trim();
+  var pin = document.getElementById('admin_pin').value.trim();
+  var msg = document.getElementById('admin_msg');
+  if (!nombre) { msg.style.color='#c0392b'; msg.textContent='Ingresá un nombre.'; return; }
+  if (pin.length < 4) { msg.style.color='#c0392b'; msg.textContent='PIN de 4 dígitos.'; return; }
+  msg.style.color='#888'; msg.textContent='Creando...';
+  try {
+    var res = await supaFetch('usuarios', { method:'POST', body: JSON.stringify({nombre:nombre, pin:pin, activo:true}) });
+    if (res.ok || res.status===201) {
+      msg.style.color='#2d7a4f'; msg.textContent='✓ Usuario creado.';
+      document.getElementById('admin_nombre').value='';
+      document.getElementById('admin_pin').value='';
+      cargarUsuariosAdmin();
+    } else { msg.style.color='#c0392b'; msg.textContent='Error al crear.'; }
+  } catch(e) { msg.style.color='#c0392b'; msg.textContent='Error de conexión.'; }
+}
+
+function mostrarBienvenida() {
+  document.getElementById('bienvenida_nombre').textContent = usuarioActivo;
+  var ov = document.getElementById('bienvenida_overlay');
+  ov.style.display = 'flex';
+}
+
+function entrarApp() {
+  document.getElementById('bienvenida_overlay').style.display = 'none';
+}
+
+async function pedirPermiso(tipo) {
+  var btnId = tipo === 'camara' ? 'btn_perm_cam' : 'btn_perm_mic';
+  var btn = document.getElementById(btnId);
+  try {
+    var constraints = tipo === 'camara'
+      ? { video: { facingMode: 'environment' }, audio: false }
+      : { audio: true, video: false };
+    var stream = await navigator.mediaDevices.getUserMedia(constraints);
+    // Permiso otorgado — detener el stream de inmediato
+    stream.getTracks().forEach(function(t){ t.stop(); });
+    btn.className = 'perm-btn ok';
+    btn.innerHTML = tipo === 'camara'
+      ? '<span>📷</span><span>Cámara habilitada ✓</span>'
+      : '<span>🎤</span><span>Micrófono habilitado ✓</span>';
+  } catch(e) {
+    btn.className = 'perm-btn bloqueado';
+    btn.innerHTML = tipo === 'camara'
+      ? '<span>📷</span><span>Cámara bloqueada</span>'
+      : '<span>🎤</span><span>Micrófono bloqueado</span>';
+  }
+}
+
+function toggleCrearCuenta() {
+  var panel = document.getElementById('pin_crear');
+  var btn = document.getElementById('btn_crear_toggle');
+  var visible = panel.style.display !== 'none';
+  panel.style.display = visible ? 'none' : 'block';
+  btn.textContent = visible ? '¿Sin cuenta? Crear una →' : '← Volver al PIN';
+}
+
+async function registrarDesdePin() {
+  var nombre = document.getElementById('reg2_nombre').value.trim();
+  var pin = document.getElementById('reg2_pin').value.trim();
+  var pin2 = document.getElementById('reg2_pin2').value.trim();
+  var msg = document.getElementById('reg2_msg');
+  if (!nombre) { msg.style.color='#c0392b'; msg.textContent='Ingresá tu nombre.'; return; }
+  if (pin.length < 4) { msg.style.color='#c0392b'; msg.textContent='PIN de 4 dígitos.'; return; }
+  if (pin !== pin2) { msg.style.color='#c0392b'; msg.textContent='Los PINs no coinciden.'; return; }
+  msg.style.color='#888'; msg.textContent='Creando cuenta...';
+  try {
+    var chk = await supaFetch('usuarios?select=id&nombre=eq.'+encodeURIComponent(nombre));
+    var existe = await chk.json();
+    if (Array.isArray(existe) && existe.length > 0) { msg.style.color='#c0392b'; msg.textContent='Ese nombre ya existe.'; return; }
+    var res = await supaFetch('usuarios', { method:'POST', body: JSON.stringify({nombre:nombre, pin:pin, activo:true}) });
+    if (res.ok || res.status===201) {
+      msg.style.color='#2d7bc4'; msg.textContent='✓ Cuenta creada. Ingresá tu PIN.';
+      document.getElementById('reg2_nombre').value='';
+      document.getElementById('reg2_pin').value='';
+      document.getElementById('reg2_pin2').value='';
+      setTimeout(toggleCrearCuenta, 1500);
+    } else { msg.style.color='#c0392b'; msg.textContent='Error al crear cuenta.'; }
+  } catch(e) { msg.style.color='#c0392b'; msg.textContent='Error de conexión.'; }
+}
+
+function pinPress(v) {
+  var err = document.getElementById('pin_err');
+  if (v === 'C') { pinActual = ''; }
+  else if (v === 'B') { pinActual = pinActual.slice(0, -1); }
+  else if (pinActual.length < 4) { pinActual += v; }
+  for (var i = 0; i < 4; i++)
+    document.getElementById('pd'+i).classList.toggle('filled', i < pinActual.length);
+  err.textContent = '';
+  if (pinActual.length === 4) {
+    err.textContent = 'Verificando...';
+    verificarPin(pinActual);
+  }
+}
+
+async function verificarPin(pin) {
+  var err = document.getElementById('pin_err');
+  try {
+    var res = await supaFetch('usuarios?select=nombre&pin=eq.' + encodeURIComponent(pin) + '&activo=eq.true');
+    var data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) throw new Error('invalid');
+    usuarioActivo = data[0].nombre;
+    document.getElementById('pin_overlay').style.display = 'none';
+    document.querySelector('.header-sub').textContent = 'Usuario: ' + usuarioActivo;
+    if(usuarioActivo === ADMIN_USER) document.getElementById('tab_admin_btn').style.display = 'flex';
+    mostrarBienvenida();
+  } catch(e) {
+    err.textContent = 'PIN incorrecto';
+    pinActual = '';
+    setTimeout(function(){ for(var i=0;i<4;i++) document.getElementById('pd'+i).classList.remove('filled'); }, 600);
+  }
+}
+
+var lineas = [];
+var fotos = [];
+var recInstances = {};
+var linea_id = 0;
+
+window.onload = function() {
+  var now = new Date();
+  var local = new Date(now.getTime() - now.getTimezoneOffset()*60000);
+  document.getElementById('fecha_alta').value = local.toISOString().slice(0,16);
+  var hoy = local.toISOString().slice(0,10);
+  document.getElementById('fecha_ingresada').value = hoy;
+  addLinea();
+  calcHonorarios();
+};
+
+var ADMIN_USER = 'ilchervonero';
+
+function goTab(n) {
+  for(var i=0;i<10;i++){
+    var tab = document.getElementById('tab'+i);
+    if(tab) tab.style.display = i===n?'block':'none';
+    var btn = document.querySelectorAll('.tab')[i];
+    if(btn) btn.classList.toggle('active', i===n);
+  }
+  if(n===6) buildResumen();
+  if(n===7) cargarArchivos();
+  if(n===8){ var el=document.getElementById('sesion_usuario'); if(el) el.textContent=usuarioActivo||'—'; }
+  if(n===9) cargarUsuariosAdmin();
+}
+
+function showToast(msg) {
+  var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
+  setTimeout(function(){ t.style.display='none'; },2500);
+}
+
+function toggleEsquina() {
+  var v = document.getElementById('es_esquina').checked;
+  document.getElementById('campo_esquina').style.display = v ? 'block' : 'none';
+}
+
+function onRegimen() {
+  var v=document.getElementById('regimen').value;
+  document.getElementById('campo_tipo_ph').style.display = v==='ph'?'block':'none';
+  renderLineas();
+  calcHonorarios();
+}
+
+function geolocate() {
+  var el=document.getElementById('gps_result');
+  if(!navigator.geolocation){ el.textContent='GPS no disponible'; return; }
+  el.textContent='Obteniendo ubicación...';
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=pos.coords.latitude.toFixed(6), lng=pos.coords.longitude.toFixed(6);
+    el.innerHTML='📍 Lat: '+lat+' | Lng: '+lng+' <a href="https://www.google.com/maps?q='+lat+','+lng+'" target="_blank" style="color:#2d7bc4;font-size:11px">ver en mapa</a>';
+    el.setAttribute('data-lat',lat); el.setAttribute('data-lng',lng);
+  }, function(){ el.textContent='No se pudo obtener la ubicación.'; });
+}
+
+// DESCRIPCIONES DJCU frecuentes
+var DESTINOS_COMUN = {
+  '1':'VIVIENDA','2':'ESCRITORIO, ESTUDIO, OFICINA','3':'CONSULTORIO',
+  '4':'COMERCIO','5':'INDUSTRIA','6':'CENTRO DE ENSEÑANZA',
+  '7':'CENTRO DE SALUD','8':'CENTRO DE ESPECTÁCULOS','9':'CENTRO DE CULTOS',
+  '10':'CLUB DEPORTIVO Y/O SOCIAL','11':'HOTEL, MOTEL','12':'PENSIÓN, INQUILINATO',
+  '13':'SALÓN','14':'LABORATORIO','17':'PLAYA DE ESTACIONAMIENTO',
+  '18':'SS HH INDEPENDIENTES','19':'JARDÍN','20':'PATIO','21':'PORCHE',
+  '22':'CUBIERTA, TECHADO, COBERTIZO','23':'CIRCULACIÓN','24':'HALL',
+  '25':'PALIER','26':'ESCALERA','27':'ASCENSOR','28':'CONTADORES',
+  '29':'AZOTEA O TECHO','30':'TERRAZA','31':'BALCÓN','32':'BOHARDILLA, ALTILLO',
+  '33':'CHURRASQUERA','34':'BARBACOA','35':'TANQUE DE AGUA',
+  '36':'SUB-ESTACIÓN UTE','37':'SALA MÁQ. CALDERA','38':'SUB-SUELO',
+  '39':'GARAJE','40':'COCHERA','41':'DEPÓSITO','42':'SÓTANO',
+  '43':'MUROS','44':'GALERÍA DE VIVIENDA','46':'CASILLA, RANCHO',
+  '47':'PISCINA','48':'CANTINA','49':'VESTIDOR','50':'CÁMARA DE FRÍO',
+  '51':'HORNO','52':'LAVADERO DE VIVIENDA','53':'TESORO',
+  '55':'CASETA DE VIGILANTE','57':'MUSEO','59':'BANCO',
+  '60':'ESTACIÓN DE SERVICIO','61':'GIMNASIO','62':'CANCHA DEPORTIVA'
+};
+var DESTINOS_PH = {
+  '1':'DEPARTAMENTO, CASA','2':'ESCRITORIO, OFICINA','4':'LOCAL COMERCIAL',
+  '5':'LOCAL INDUSTRIAL','13':'SALÓN','17':'PLAYA DE ESTACIONAMIENTO',
+  '18':'SS HH INDEPENDIENTES','19':'JARDÍN','20':'PATIO','21':'PORCHE',
+  '22':'CUBIERTA, TECHADO, COBERTIZO','23':'CIRCULACIÓN','24':'HALL',
+  '25':'PALIER','26':'ESCALERA','27':'ASCENSOR','28':'CONTADORES',
+  '29':'AZOTEA O TECHO','30':'TERRAZA','31':'BALCÓN','34':'BARBACOA',
+  '36':'SUB-ESTACIÓN UTE','38':'SUB-SUELO','39':'GARAJE','40':'COCHERA',
+  '41':'DEPÓSITO','42':'SÓTANO','43':'MUROS','44':'GALERÍA DE VIVIENDA',
+  '47':'PISCINA','52':'LAVADERO DE VIVIENDA','55':'CASETA DE VIGILANTE',
+  '58':'CHIMENEA','63':'RAMPA','64':'ACCESO'
+};
+function getDestinos(){ return document.getElementById('regimen').value==='ph'?DESTINOS_PH:DESTINOS_COMUN; }
+
+function addLinea() {
+  linea_id++;
+  lineas.push({id:linea_id, nivel:'0,0', uo:'0', hab:'1', ser:'0', cod:'', desc:'', cat:'3', est:'3', edific:'', obra:'0', cons:'0', rema:'0', cub:'0', ubic:'0'});
+  renderLineas();
+}
+
+function removeLinea(id) {
+  lineas=lineas.filter(function(l){ return l.id!==id; });
+  renderLineas();
+}
+
+var CAT_OPTS=[
+  {v:'',l:'—'},{v:'1',l:'1 MUY BUENA'},{v:'1,5',l:'1,5'},
+  {v:'2',l:'2 BUENA'},{v:'2,5',l:'2,5'},{v:'3',l:'3 MEDIANA'},
+  {v:'3,5',l:'3,5'},{v:'4',l:'4 ECONÓMICA'},{v:'4,5',l:'4,5'},{v:'5',l:'5 MUY ECON.'}
+];
+var EST_OPTS=[
+  {v:'',l:'—'},{v:'1',l:'1 EXCELENTE'},{v:'1,5',l:'1,5'},
+  {v:'2',l:'2 BUENO'},{v:'2,5',l:'2,5'},{v:'3',l:'3 REGULAR'},
+  {v:'3,5',l:'3,5'},{v:'4',l:'4 MALO'},{v:'4,5',l:'4,5'},{v:'5',l:'5 MUY MALO'}
+];
+var CUB_OPTS=[
+  {v:'0',l:'0 LOSA'},{v:'1',l:'1 LIV S/C'},{v:'2',l:'2 LIV C/C'},
+  {v:'3',l:'3 QUIN S/C'},{v:'4',l:'4 QUIN C/C'}
+];
+var UBIC_OPTS=[
+  {v:'0',l:'0 FRENT.'},{v:'1',l:'1 INTER.'},{v:'2',l:'2 CONTR.'}
+];
+
+function td_sel(id,field,val,opts,w){
+  var s='<td style="min-width:'+w+'"><select style="width:100%;padding:3px 2px;border:1px solid #ddd;border-radius:3px;font-size:10px;background:#fafafa;font-family:Arial" onchange="updL('+id+',\''+field+'\',this.value)">';
+  opts.forEach(function(o){ s+='<option value="'+o.v+'"'+(o.v===val?' selected':'')+'>'+o.l+'</option>'; });
+  s+='</select></td>';
+  return s;
+}
+
+function renderLineas() {
+  var tbody=document.getElementById('lineas_body');
+  tbody.innerHTML='';
+  var destinos=getDestinos();
+  var destOpts='<option value="">— Destino</option>';
+  Object.keys(destinos).forEach(function(k){ destOpts+='<option value="'+k+'">'+k+' — '+destinos[k]+'</option>'; });
+  lineas.forEach(function(l){
+    var tr=document.createElement('tr');
+    tr.innerHTML=
+      td_inp(l.id,'nivel',l.nivel,'36px')+
+      td_inp(l.id,'uo',l.uo,'28px')+
+      td_inp(l.id,'hab',l.hab,'28px')+
+      td_inp(l.id,'ser',l.ser,'28px')+
+      '<td style="min-width:140px"><select style="width:100%;padding:3px 2px;border:1px solid #ddd;border-radius:3px;font-size:10px;background:#fafafa;font-family:Arial" onchange="updDestino('+l.id+',this.value)">'+
+        destOpts.replace('value="'+l.cod+'"','value="'+l.cod+'" selected')+
+      '</select></td>'+
+      td_sel(l.id,'cat',l.cat,CAT_OPTS,'62px')+
+      td_sel(l.id,'est',l.est,EST_OPTS,'62px')+
+      '<td style="min-width:50px"><input type="number" value="'+l.edific+'" style="width:100%;padding:3px 2px;border:1px solid #ddd;border-radius:3px;font-size:11px;text-align:center" onchange="updLEdific('+l.id+',this.value)"></td>'+
+      td_inp(l.id,'obra',l.obra,'32px')+
+      td_inp(l.id,'cons',l.cons,'32px')+
+      td_inp(l.id,'rema',l.rema,'32px')+
+      td_sel(l.id,'cub',l.cub,CUB_OPTS,'72px')+
+      td_sel(l.id,'ubic',l.ubic||'0',UBIC_OPTS,'62px')+
+      '<td><button onclick="removeLinea('+l.id+')" style="background:#2d7bc4;color:#fff;border:none;border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer">✕</button></td>';
+    tbody.appendChild(tr);
+  });
+  updateTotal();
+}
+
+function updDestino(id, cod) {
+  var desc = getDestinos()[cod] || '';
+  updL(id,'cod',cod);
+  updL(id,'desc',desc);
+}
+
+function td_inp(id,field,val,w){
+  return '<td style="min-width:'+w+'"><input type="text" value="'+val+'" style="width:100%;padding:3px 4px;border:1px solid #ddd;border-radius:3px;font-size:11px;text-align:center" onchange="updL('+id+',\''+field+'\',this.value)"></td>';
+}
+
+function updL(id,k,v){ lineas.forEach(function(l){ if(l.id===id) l[k]=v; }); }
+function updLEdific(id,v){ updL(id,'edific',v); updateTotal(); }
+
+
+function updateTotal(){
+  var t=lineas.reduce(function(s,l){ return s+(parseFloat(l.edific)||0); },0);
+  document.getElementById('total_bar').innerHTML='Total Área Edific: <strong>'+t.toFixed(1)+' m²</strong>';
+  calcHonorarios();
+}
+
+// FOTOS
+function addFotos(e){
+  Array.from(e.target.files).forEach(function(f){
+    var r=new FileReader();
+    r.onload=function(ev){
+      // Comprimir foto a max 1024px, calidad 0.75
+      var img=new Image();
+      img.onload=function(){
+        var maxW=1024, maxH=1024;
+        var w=img.width, h=img.height;
+        if(w>maxW||h>maxH){
+          var ratio=Math.min(maxW/w,maxH/h);
+          w=Math.round(w*ratio); h=Math.round(h*ratio);
+        }
+        var canvas=document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        var url=canvas.toDataURL('image/jpeg',0.75);
+        fotos.push({id:Date.now()+Math.random(),url:url,caption:''});
+        renderFotos();
+      };
+      img.src=ev.target.result;
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+function renderFotos(){
+  var c=document.getElementById('fotos_container'); c.innerHTML='';
+  fotos.forEach(function(f,i){
+    var div=document.createElement('div'); div.className='foto-item';
+    div.innerHTML=
+      '<div class="foto-inner">'+
+        '<div style="position:relative;flex-shrink:0">'+
+          '<img class="foto-img" src="'+f.url+'">'+
+          '<button style="position:absolute;top:-6px;right:-6px;background:#2d7bc4;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:20px;padding:0;font-weight:700" onclick="delFoto(\''+f.id+'\')">✕</button>'+
+        '</div>'+
+        '<div class="foto-side">'+
+          '<div style="font-size:11px;color:#666;margin-bottom:3px">Descripción foto '+(i+1)+'</div>'+
+          '<textarea rows="3" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:5px;font-size:12px;background:#fafafa;resize:vertical;font-family:Arial" placeholder="Dictá o escribí..." onchange="updFoto(\''+f.id+'\',this.value)" id="ta_'+f.id+'">'+f.caption+'</textarea>'+
+          '<button id="btnf_'+f.id+'" class="rec-btn parado" onclick="toggleVoz(\'ta_'+f.id+'\',\'btnf_'+f.id+'\',\'indf_'+f.id+'\',\''+f.id+'\')">🎤 Dictar descripción</button>'+
+          '<div id="indf_'+f.id+'" class="grabando-ind"></div>'+
+        '</div>'+
+      '</div>';
+    c.appendChild(div);
+  });
+  document.getElementById('fotos_count').textContent=fotos.length+' foto'+(fotos.length!==1?'s':'');
+}
+
+function delFoto(id){ fotos=fotos.filter(function(x){ return x.id!==id; }); renderFotos(); }
+function updFoto(id,v){ fotos.forEach(function(f){ if(f.id==id) f.caption=v; }); }
+
+// VOZ
+function toggleVoz(targetId,btnId,indId,fotoId){
+  if(recInstances[btnId]){
+    recInstances[btnId].stop(); delete recInstances[btnId];
+    var btn=document.getElementById(btnId);
+    btn.classList.remove('grabando'); btn.classList.add('parado');
+    btn.textContent=fotoId?'🎤 Dictar descripción':'🎤 Dictar observaciones generales';
+    document.getElementById(indId).textContent='';
+    return;
+  }
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ showToast('Dictado no disponible en este navegador'); return; }
+  var r=new SR(); r.lang='es-UY'; r.continuous=true; r.interimResults=true;
+  r.onresult=function(e){
+    var t=''; for(var i=0;i<e.results.length;i++) t+=e.results[i][0].transcript+' '; t=t.trim();
+    var el=document.getElementById(targetId); if(el){ el.value=t; }
+    if(fotoId) updFoto(fotoId,t);
+  };
+  r.onend=function(){
+    var btn=document.getElementById(btnId);
+    if(btn){ btn.classList.remove('grabando'); btn.classList.add('parado'); btn.textContent=fotoId?'🎤 Dictar descripción':'🎤 Dictar observaciones generales'; }
+    var ind=document.getElementById(indId); if(ind) ind.textContent='';
+    delete recInstances[btnId];
+  };
+  r.start(); recInstances[btnId]=r;
+  var btn=document.getElementById(btnId);
+  btn.classList.remove('parado'); btn.classList.add('grabando'); btn.textContent='⏹ Detener dictado';
+  document.getElementById(indId).textContent='● Grabando...';
+}
+
+// HONORARIOS
+function calcHonorarios(){
+  var timbres=parseFloat(document.getElementById('timbres').value)||270;
+  var base=parseFloat(document.getElementById('honor_base').value)||5000;
+  var por_bloque=parseFloat(document.getElementById('valor_bloque').value)||2000;
+  var ph_add=parseFloat(document.getElementById('honor_ph').value)||1500;
+  var ajuste=parseFloat(document.getElementById('honor_ajuste').value)||0;
+  var regimen=document.getElementById('regimen').value;
+  var n=lineas.length;
+  var sub_ph=regimen==='ph'?ph_add:0;
+  var subtotal=base+(n*por_bloque)+sub_ph+ajuste;
+  var total=subtotal+timbres;
+  document.getElementById('honor_desglose').innerHTML=
+    '<div class="honor-linea"><span>Honorarios base</span><span>$'+base.toLocaleString('es-UY')+'</span></div>'+
+    '<div class="honor-linea"><span>Líneas ('+n+' × $'+por_bloque+')</span><span>$'+(n*por_bloque).toLocaleString('es-UY')+'</span></div>'+
+    (sub_ph>0?'<div class="honor-linea"><span>Adicional PH</span><span>$'+sub_ph.toLocaleString('es-UY')+'</span></div>':'')+
+    (ajuste!==0?'<div class="honor-linea"><span>Ajuste</span><span>$'+ajuste.toLocaleString('es-UY')+'</span></div>':'')+
+    '<div class="honor-linea" style="border-top:1px solid #ddd;padding-top:4px;margin-top:4px"><span>Subtotal honorarios</span><span>$'+subtotal.toLocaleString('es-UY')+'</span></div>'+
+    '<div class="honor-linea"><span>Timbres</span><span>$'+timbres.toLocaleString('es-UY')+'</span></div>';
+  document.getElementById('honor_total').textContent='TOTAL: $ '+total.toLocaleString('es-UY');
+}
+
+// RESUMEN
+function g(id){ var el=document.getElementById(id); return el?(el.value||'—'):'—'; }
+function gc(id){ var el=document.getElementById(id); return el?el.checked:false; }
+
+function buildResumen(){
+  var rows=[
+    ['Cliente',g('cliente')],['Intermediario',g('intermediario')],
+    ['Fecha alta',g('fecha_alta').replace('T',' ')],['Estado',g('estado_tramite')],
+    ['Régimen',g('regimen')==='ph'?'Propiedad Horizontal':g('regimen')==='comun'?'Padrón Común':'—'],
+    ['Tipo PH',g('tipo_ph')],['Departamento',g('dpto')],['Localidad',g('localidad')],
+    ['Dirección',g('direccion')+(gc('es_esquina')?' esq. '+g('direccion2'):'')],['Padrón',g('padron')],['Terreno',g('terreno_metros')+' m²'],
+    ['Frente',g('dim_frente')+' m'+(gc('es_esquina')?' | '+g('dim_frente2')+' m':'')],
+    ['Propietario',g('prop_apellidos')+' '+g('prop_nombres')],
+    ['CI propietario',g('prop_ci')],
+    ['Profesional',g('prof_apellidos')+' '+g('prof_nombres')],
+    ['Matrícula',g('prof_matricula')],
+    ['Líneas DJCU',lineas.length],
+    ['Total Área Edific',lineas.reduce(function(s,l){return s+(parseFloat(l.edific)||0);},0).toFixed(1)+' m²'],
+    ['Fotos',fotos.length],
+  ];
+  document.getElementById('resumen_contenido').innerHTML=rows.map(function(r){
+    return '<div class="resumen-row"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>';
+  }).join('');
+}
+
+// EXPORT
+function exportar(){
+  var fecha=new Date().toLocaleDateString('es-UY');
+  var gps=document.getElementById('gps_result');
+  var gps_txt=gps.getAttribute('data-lat')?'Lat: '+gps.getAttribute('data-lat')+' | Lng: '+gps.getAttribute('data-lng'):'—';
+  var tipo_planilla=g('regimen')==='ph'?'Planilla de Propiedad Horizontal':'Planilla de Propiedad Común';
+  var tipo_dj=g('tipo_dj')!=='—'?g('tipo_dj'):'';
+  var esPH=g('regimen')==='ph';
+  var total_edific=lineas.reduce(function(s,l){return s+(parseFloat(l.edific)||0);},0);
+  var timbres=parseFloat(document.getElementById('timbres').value)||270;
+  var base=parseFloat(document.getElementById('honor_base').value)||5000;
+  var por_bloque=parseFloat(document.getElementById('valor_bloque').value)||2000;
+  var ph_add=parseFloat(document.getElementById('honor_ph').value)||1500;
+  var ajuste=parseFloat(document.getElementById('honor_ajuste').value)||0;
+  var sub_ph=g('regimen')==='ph'?ph_add:0;
+  var total_honor=base+(lineas.length*por_bloque)+sub_ph+ajuste+timbres;
+  var nro_exp=g('nro_expediente')!=='—'?g('nro_expediente'):'';
+
+  var logoSVG='<img src="data:image/jpeg;base64,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" style="width:66px;height:66px;object-fit:contain;filter:grayscale(100%)" alt="DNC">'
+
+  function encabezado(hoja){
+    return '<table style="width:100%;border-collapse:collapse;margin-bottom:0"><tr>'+
+      '<td style="width:70px;border:none;vertical-align:middle;padding-right:8px">'+logoSVG+'</td>'+
+      '<td style="border:none;text-align:center;vertical-align:middle;font-size:9pt;font-weight:700;line-height:1.5">'+
+        'REPUBLICA ORIENTAL DEL URUGUAY<br>MINISTERIO DE ECONOMIA Y FINANZAS<br>DIRECCION NACIONAL DE CATASTRO'+
+      '</td>'+
+      '<td style="border:none;text-align:right;vertical-align:middle;font-size:9pt;white-space:nowrap;line-height:1.8">'+
+        '<strong>Fecha :</strong> '+fecha+'<br><strong>Hoja :</strong> '+hoja+' &nbsp;de &nbsp;2'+
+      '</td>'+
+    '</tr></table>'+
+    '<div style="border:1px solid #000;text-align:center;padding:5px 8px;font-weight:700;font-size:10pt;margin:4px 0 8px">'+
+      'DECLARACION JURADA DE CARACTERIZACION URBANA Art&iacute;culo 178 Ley Nro. 17296'+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:12px"><tr>'+
+      '<td style="border:2px solid #000;padding:7px 14px;font-weight:700;font-size:10.5pt;width:210px;vertical-align:middle">'+tipo_planilla+(tipo_dj?'<br><span style="font-size:9pt;font-weight:400">Tipo DJ: '+tipo_dj+'</span>':'')+'</td>'+
+      '<td style="border:none;padding:5px 18px;font-size:9.5pt;vertical-align:middle">'+
+        '<strong>DEPARTAMENTO:</strong> '+g('dpto').toUpperCase()+'<br>'+
+        '<strong>LOCALIDAD:</strong> '+g('localidad').toUpperCase()+
+      '</td>'+
+      '<td style="border:none;text-align:right;font-style:italic;font-weight:700;font-size:11pt;padding:5px;vertical-align:middle">'+nro_exp+'</td>'+
+    '</tr></table>';
+  }
+
+  var UBIC_LABEL={'0':'FRENTISTA','1':'INTERIOR','2':'CONTRAFRENTE'};
+  var lineas_html=lineas.map(function(l){
+    return '<tr>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.nivel+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.uo+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.hab+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.ser+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.cod+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:left">'+l.desc+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.cat+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.est+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.edific+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.obra+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.cons+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.rema+'</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.cub+'</td>'+
+      (esPH?'<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+(UBIC_LABEL[l.ubic]||l.ubic||'')+'</td>':'')+
+    '</tr>';
+  }).join('');
+
+  var fotos_html=fotos.length===0?'':
+    fotos.map(function(f,i){
+      return '<div style="display:flex;gap:14px;align-items:flex-start;margin:8px 0;padding:8px;border:1px solid #ddd;break-inside:avoid">'+
+        '<img style="max-width:180px;max-height:135px;border:1px solid #ccc;flex-shrink:0" src="'+f.url+'">'+
+        '<div style="flex:1;font-size:9pt;color:#333"><strong>Foto '+(i+1)+'</strong><br>'+(f.caption||'(sin descripción)')+'</div></div>';
+    }).join('');
+
+  var css=
+    '@page{size:A4 portrait;margin:12mm 15mm}'+
+    '@media print{html,body{width:210mm}.page-break{page-break-before:always}}'+
+    'html,body{font-family:Arial,sans-serif;font-size:9pt;margin:0;padding:0;width:210mm;box-sizing:border-box;color:#000}'+
+    '.pagina{padding:12mm 15mm;box-sizing:border-box;min-height:273mm;position:relative}'+
+    'table{border-collapse:collapse;width:100%}'+
+    'p,div,td,th{text-align:left}'+
+    '.th-g{background:#d8d8d8;font-weight:700;border:1px solid #000;padding:3px 5px;text-align:center;font-size:7.5pt}'+
+    '.th-g2{background:#ececec;font-weight:700;border:1px solid #888;padding:2px 4px;text-align:center;font-size:7pt}'+
+    '.obs{padding:7px;border-left:3px solid #999;background:#f9f9f9;white-space:pre-wrap;font-size:8.5pt;margin:4px 0}'+
+    '.pie{font-size:7pt;color:#888;text-align:center;margin-top:12px;border-top:1px solid #bbb;padding-top:4px}';
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head><body>'+
+  '<div class="pagina">'+
+
+  // ── HOJA 1 ─────────────────────────────────────────────
+  encabezado(1)+
+
+  '<div style="text-align:center;font-size:11pt;font-weight:700;margin:10px 0 6px;letter-spacing:1px;text-decoration:underline">SITUACION ACTUAL</div>'+
+
+  // Padrón / Fecha / Terreno
+  '<table style="margin-bottom:6px"><tr>'+
+    '<th class="th-g" style="width:80px">Padron</th>'+
+    '<th class="th-g" style="width:110px">Fecha Ingresada</th>'+
+    '<th class="th-g" style="width:90px">Terreno Hect</th>'+
+    '<th class="th-g" style="width:110px">Terreno Metros</th>'+
+  '</tr><tr>'+
+    '<td style="border:1px solid #000;padding:3px 8px;text-align:center">'+g('padron')+'</td>'+
+    '<td style="border:1px solid #000;padding:3px 8px;text-align:center">'+g('fecha_ingresada')+'</td>'+
+    '<td style="border:1px solid #000;padding:3px 8px;text-align:center">'+g('terreno_hect')+'</td>'+
+    '<td style="border:1px solid #000;padding:3px 8px;text-align:center">'+g('terreno_metros')+'</td>'+
+  '</tr></table>'+
+
+  // Calle
+  '<table style="width:100%;margin-bottom:10px"><tr>'+
+    '<th class="th-g">Calle &nbsp; Revisi&oacute;n</th>'+
+    '<th class="th-g" style="width:70px">Puerta</th>'+
+    '<th class="th-g" style="width:45px">Bis</th>'+
+    '<th class="th-g" style="width:90px">Dim. Frente</th>'+
+  '</tr><tr>'+
+    '<td style="border:1px solid #000;padding:3px 10px">'+g('direccion')+'</td>'+
+    '<td style="border:1px solid #000;padding:3px 8px;text-align:center">—</td>'+
+    '<td style="border:1px solid #000;padding:3px 8px;text-align:center">—</td>'+
+    '<td style="border:1px solid #000;padding:3px 8px;text-align:center">'+g('dim_frente')+'</td>'+
+  '</tr>'+
+  (gc('es_esquina')?
+    '<tr>'+
+      '<td style="border:1px solid #000;padding:3px 10px"><em>Esq. </em>'+g('direccion2')+'</td>'+
+      '<td style="border:1px solid #000;padding:3px 8px;text-align:center">—</td>'+
+      '<td style="border:1px solid #000;padding:3px 8px;text-align:center">—</td>'+
+      '<td style="border:1px solid #000;padding:3px 8px;text-align:center">'+g('dim_frente2')+'</td>'+
+    '</tr>':'')+
+  '</table>'+
+
+  // Tabla construcción — doble encabezado oficial
+  '<table style="width:100%;font-size:8.5pt;margin-bottom:12px"><thead>'+
+    '<tr>'+
+      '<th class="th-g" rowspan="2">Nivel</th>'+
+      '<th class="th-g" rowspan="2">U.O</th>'+
+      '<th class="th-g" rowspan="2">Hab</th>'+
+      '<th class="th-g" rowspan="2">Ser</th>'+
+      '<th class="th-g" colspan="2">Destino</th>'+
+      '<th class="th-g" rowspan="2">Cat</th>'+
+      '<th class="th-g" rowspan="2">Est</th>'+
+      '<th class="th-g" rowspan="2">Area<br>Edific</th>'+
+      '<th class="th-g" colspan="4">Tipo de Obra</th>'+
+      (esPH?'<th class="th-g" rowspan="2">Ubic.</th>':'')+
+    '</tr>'+
+    '<tr>'+
+      '<th class="th-g2">Cod</th>'+
+      '<th class="th-g2">Descripci&oacute;n</th>'+
+      '<th class="th-g2">Obra</th>'+
+      '<th class="th-g2">Const</th>'+
+      '<th class="th-g2">Rema</th>'+
+      '<th class="th-g2">Cub</th>'+
+    '</tr>'+
+  '</thead><tbody>'+lineas_html+
+    '<tr>'+
+      '<td colspan="8" style="border:1px solid #999;padding:3px 6px;text-align:right;font-weight:700;font-size:8pt">TOTAL</td>'+
+      '<td style="border:1px solid #999;padding:3px 5px;text-align:center;font-weight:700">'+total_edific.toFixed(1)+'</td>'+
+      '<td colspan="'+(esPH?5:4)+'" style="border:1px solid #999"></td>'+
+    '</tr>'+
+  '</tbody></table>'+
+
+  (document.getElementById('obs_gen').value?
+    '<strong style="font-size:9pt">Observaciones:</strong><div class="obs">'+document.getElementById('obs_gen').value+'</div>':'')+
+
+  (fotos.length>0?'<strong style="font-size:9pt">Registro fotogr&aacute;fico:</strong><br>'+fotos_html:'')  +
+
+  // Firmas hoja 1
+  '<div style="margin-top:40px;display:flex;justify-content:space-between;align-items:flex-end">'+
+    '<div><strong style="font-size:9pt">Firma propietario</strong>'+
+      '<div style="width:190px;border-bottom:1px solid #000;margin-top:45px"></div></div>'+
+    '<div style="text-align:center">'+
+      '<div style="width:220px;border-bottom:1px solid #000;margin-bottom:4px"></div>'+
+      '<strong style="font-size:9pt">Firma profesional</strong>'+
+    '</div>'+
+    '<div style="text-align:right;font-size:9pt"><strong>Sigue en la hoja :</strong>&nbsp;&nbsp;2</div>'+
+  '</div>'+
+
+  '</div>'+
+  // ── HOJA 2 ─────────────────────────────────────────────
+  '<div class="pagina page-break">'+
+  encabezado(2)+
+
+  '<div style="font-weight:700;font-size:10pt;margin:6px 0 4px">CONSTANCIAS DE RESPONSABILIDAD Y FIRMAS</div>'+
+  '<p style="font-weight:700;font-size:9pt;margin-bottom:10px">LOS QUE SUSCRIBEN SE RESPONSABILIZAN DE QUE LA INFORMACION PROPORCIONADA EN ESTE DOCUMENTO ES CORRECTA Y COMPLETA DE ACUERDO CON LAS DISPOSICIONES TRIBUTARIAS Y PENALES VIGENTES.</p>'+
+
+  // Propietario
+  '<div style="border:1px solid #000;padding:10px 14px;margin-bottom:8px">'+
+    '<div style="font-weight:700;font-size:11pt;margin-bottom:8px">Propietario :</div>'+
+    '<table style="width:100%;font-size:9pt"><tr>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Apellidos</td><td style="padding:3px 12px">'+g('prop_apellidos')+'</td>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Nombres</td><td style="padding:3px 12px">'+g('prop_nombres')+'</td>'+
+    '</tr><tr>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Doc de identidad</td><td style="padding:3px 12px">'+g('prop_ci')+'</td>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">e-mail</td><td style="padding:3px 12px">'+g('prop_email')+'</td>'+
+    '</tr><tr>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Domicilio Calle</td><td style="padding:3px 12px">'+g('prop_calle')+'</td>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Puerta</td><td style="padding:3px 12px">'+g('prop_puerta')+'</td>'+
+    '</tr><tr>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Departamento</td><td style="padding:3px 12px">'+g('prop_dpto')+'</td>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Localidad</td><td style="padding:3px 12px">'+g('prop_localidad')+'</td>'+
+    '</tr></table>'+
+  '</div>'+
+
+  // Bloque de firmas (Timbre | Firma prop | Firma prof | Timbre)
+  '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:8px"><tr>'+
+    '<td style="border-right:1px solid #000;padding:10px;text-align:center;width:80px;vertical-align:middle;font-weight:700;font-size:8.5pt">Timbre<br>Profesional</td>'+
+    '<td style="border-right:1px solid #000;padding:10px;width:40%">'+
+      '<div style="font-weight:700;font-size:9pt;margin-bottom:4px">Firma propietario</div>'+
+      '<div style="height:60px"></div>'+
+      '<div style="border-bottom:1px solid #000"></div>'+
+    '</td>'+
+    '<td style="border-right:1px solid #000;padding:10px;width:40%">'+
+      '<div style="height:64px"></div>'+
+      '<div style="border-bottom:1px solid #000;margin-bottom:4px"></div>'+
+      '<div style="font-weight:700;font-size:9pt">Firma profesional</div>'+
+    '</td>'+
+    '<td style="padding:10px;text-align:center;width:80px;vertical-align:middle;font-weight:700;font-size:8.5pt">Timbre<br>Profesional</td>'+
+  '</tr></table>'+
+
+  // Profesional
+  '<div style="border:1px solid #000;padding:10px 14px;margin-bottom:10px">'+
+    '<div style="display:flex;align-items:baseline;gap:24px;margin-bottom:8px">'+
+      '<span style="font-weight:700;font-size:11pt">Profesional :</span>'+
+      '<span style="font-size:9.5pt;font-weight:700">Matr&iacute;cula N&deg;</span>'+
+      '<span style="font-size:9.5pt;font-weight:700;border-bottom:1px solid #000;min-width:60px;display:inline-block;text-align:center">'+g('prof_matricula')+'</span>'+
+      '<span style="font-size:9.5pt;font-weight:700">'+g('prof_titulo')+'</span>'+
+    '</div>'+
+    '<table style="width:100%;font-size:9pt"><tr>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Apellidos</td><td style="padding:3px 12px">'+g('prof_apellidos')+'</td>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Nombres</td><td style="padding:3px 12px">'+g('prof_nombres')+'</td>'+
+    '</tr><tr>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Doc de Identidad</td><td style="padding:3px 12px">'+g('prof_ci')+'</td>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">e-mail</td><td style="padding:3px 12px">'+g('prof_email')+'</td>'+
+    '</tr><tr>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Domicilio Calle</td><td style="padding:3px 12px">'+g('prof_calle')+'</td>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Puerta</td><td style="padding:3px 12px">'+g('prof_puerta')+'</td>'+
+    '</tr><tr>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Apto</td><td style="padding:3px 12px">'+g('prof_apto')+'</td>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Tel</td><td style="padding:3px 12px">'+g('prof_tel')+'</td>'+
+    '</tr><tr>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Departamento</td><td style="padding:3px 12px">'+g('prof_dpto')+'</td>'+
+      '<td style="padding:3px 0;font-weight:700;white-space:nowrap">Localidad</td><td style="padding:3px 12px">'+g('prof_localidad')+'</td>'+
+    '</tr></table>'+
+  '</div>'+
+
+  '<div style="display:flex;justify-content:space-between;font-size:9pt;font-weight:700;margin-top:6px">'+
+    '<span>Timbres catastrales</span><span>CROQUIS AL DORSO</span>'+
+  (croquis_img ? '<div style="margin-top:14px;page-break-inside:avoid"><strong style="font-size:9pt">Croquis del inmueble:</strong><br><img src="'+croquis_img+'" style="max-width:100%;max-height:160mm;margin-top:6px;border:1px solid #ccc"></div>' : '')+
+  '</div>'+
+
+  // Liquidación económica — solo uso interno, no se imprime
+  ''+
+
+  '<div class="pie">GPS: '+gps_txt+' &middot; sede.catastro.gub.uy</div>'+
+  '</div>'+
+  '</body></html>';
+
+  // Abrir en nueva ventana y disparar impresión automática
+  var blob = new Blob([html], {type:'text/html'});
+  var blobUrl = URL.createObjectURL(blob);
+  var win = window.open(blobUrl, '_blank');
+  if (win) {
+    win.onload = function() { win.print(); };
+  } else {
+    // Fallback iOS: visor inline
+    mostrarVisor(blobUrl, html);
+  }
+  guardarEnNube(fecha, total_edific, total_honor);
+}
+
+async function guardarEnNube(fecha, total_edific, total_honor) {
+  var datos = {
+    cliente: g('cliente'), intermediario: g('intermediario'),
+    estado: g('estado_tramite'), regimen: g('regimen'), tipo_dj: g('tipo_dj'),
+    dpto: g('dpto'), localidad: g('localidad'),
+    direccion: g('direccion'), padron: g('padron'),
+    terreno_metros: g('terreno_metros'), dim_frente: g('dim_frente'),
+    nro_expediente: g('nro_expediente'),
+    prop_apellidos: g('prop_apellidos'), prop_nombres: g('prop_nombres'),
+    prop_ci: g('prop_ci'),
+    prof_apellidos: g('prof_apellidos'), prof_nombres: g('prof_nombres'),
+    prof_matricula: g('prof_matricula'),
+    total_edific: total_edific,
+    total_honor: total_honor,
+    cant_fotos: fotos.length,
+    cant_lineas: lineas.length,
+    lineas: lineas,
+    fotos: fotos.map(function(f){ return {id:f.id, url:f.url, caption:f.caption}; }),
+    obs_gen: document.getElementById('obs_gen').value,
+    es_esquina: gc('es_esquina'),
+    reformas_internas: gc('reformas_internas'),
+    direccion2: g('direccion2'),
+    dim_frente2: g('dim_frente2'),
+    fecha_export: fecha
+  };
+  try {
+    var res = await supaFetch('expedientes', {
+      method: 'POST',
+      body: JSON.stringify({ usuario: usuarioActivo || 'desconocido', datos: datos })
+    });
+    if (!res.ok) throw new Error();
+    showToast('✓ Reporte descargado y guardado en la nube');
+  } catch(e) {
+    showToast('⚠ No se pudo guardar en la nube');
+  }
+}
+
+async function cargarArchivos() {
+  var c = document.getElementById('archivos_lista');
+  c.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Cargando...</div>';
+  try {
+    var res = await supaFetch('expedientes?select=id,usuario,created_at,datos&usuario=eq.'+encodeURIComponent(usuarioActivo)+'&order=created_at.desc&limit=50');
+    var data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      c.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">'+usuarioActivo+' no tiene declaraciones guardadas aún.</div>';
+      return;
+    }
+    c.innerHTML = data.map(function(exp) {
+      var d = exp.datos || {};
+      var fecha = exp.created_at ? exp.created_at.slice(0,10) : '—';
+      var hora = exp.created_at ? exp.created_at.slice(11,16) : '';
+      var padron = d.padron || '—';
+      var cliente = d.cliente || '—';
+      var dpto = d.dpto || '—';
+      var dir = d.direccion || '—';
+      var area = d.total_edific ? d.total_edific + ' m²' : '—';
+      return '<div style="border:1px solid #e0eaf5;border-radius:8px;padding:12px;margin-bottom:10px;background:#f8fbff">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+
+          '<div>'+
+            '<span style="font-weight:700;font-size:13px;color:#1e4d8c">Padrón '+padron+'</span>'+
+            '<span style="font-size:11px;color:#888;margin-left:8px">'+dpto+'</span>'+
+          '</div>'+
+          '<span style="font-size:10px;color:#aaa">'+fecha+' '+hora+'</span>'+
+        '</div>'+
+        '<div style="font-size:12px;color:#444;margin-bottom:2px">📍 '+dir+'</div>'+
+        '<div style="font-size:12px;color:#444;margin-bottom:2px">👤 '+cliente+'</div>'+
+        '<div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center">'+
+          '<span style="font-size:11px;color:#2d7bc4">▪ '+area+' &nbsp;·&nbsp; '+exp.usuario+'</span>'+
+          '<button onclick="editarExpediente('+exp.id+')" style="background:#2d7bc4;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✏ Editar</button>'+
+          ' <button onclick="borrarExpediente('+exp.id+')" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Borrar</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  } catch(e) {
+    c.innerHTML = '<div style="text-align:center;color:#c0392b;padding:20px;font-size:13px">Error al cargar archivos.</div>';
+  }
+}
+
+async function borrarExpediente(id) {
+  if (!confirm('¿Borrar esta declaración? No se puede deshacer.')) return;
+  try {
+    var res = await supaFetch('expedientes?id=eq.'+id, { method:'DELETE' });
+    if (res.ok || res.status===204) { showToast('✓ Declaración borrada'); cargarArchivos(); }
+    else showToast('Error al borrar');
+  } catch(e) { showToast('Error de conexión'); }
+}
+
+async function editarExpediente(id) {
+  showToast('Cargando expediente...');
+  try {
+    var res = await supaFetch('expedientes?select=datos&id=eq.'+id);
+    var rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) { showToast('No se encontró el expediente'); return; }
+    var d = rows[0].datos || {};
+    // Campos de texto
+    var campos = ['cliente','intermediario','estado_tramite','notas_internas','regimen','tipo_ph',
+      'tipo_dj','condicion_predial','dpto','localidad','direccion','padron','dim_frente','terreno_hect',
+      'terreno_metros','fecha_ingresada','nro_expediente','prop_apellidos','prop_nombres',
+      'prop_ci','prop_calle','prop_puerta','prop_dpto','prop_localidad','prop_tel','prop_email',
+      'prof_apellidos','prof_nombres','prof_ci','prof_matricula','prof_titulo','prof_calle',
+      'prof_puerta','prof_apto','prof_tel','prof_dpto','prof_localidad','prof_email',
+      'direccion2','dim_frente2','obs_gen','antiguedad_general'];
+    campos.forEach(function(k) {
+      var el = document.getElementById(k);
+      if (el && d[k] !== undefined) el.value = d[k];
+    });
+    // Checkboxes
+    var chks = ['reformas_internas','es_esquina'];
+    chks.forEach(function(k) {
+      var el = document.getElementById(k);
+      if (el) { el.checked = !!d[k]; }
+    });
+    // Disparar eventos para mostrar campos condicionales
+    onRegimen(); toggleEsquina();
+    // Líneas de construcción
+    if (Array.isArray(d.lineas) && d.lineas.length > 0) {
+      lineas = d.lineas.map(function(l,i){ return Object.assign({id: i+1}, l); });
+      linea_id = lineas.length;
+      renderLineas();
+    }
+    // Fotos
+    if (Array.isArray(d.fotos) && d.fotos.length > 0) {
+      fotos = d.fotos;
+      renderFotos();
+    }
+    showToast('✓ Expediente cargado');
+    goTab(0);
+  } catch(e) {
+    showToast('Error al cargar expediente');
+  }
+}
+
+async function registrarUsuario() {
+  var nombre = document.getElementById('reg_nombre').value.trim();
+  var pin = document.getElementById('reg_pin').value.trim();
+  var pin2 = document.getElementById('reg_pin2').value.trim();
+  var msg = document.getElementById('reg_msg');
+  if (!nombre) { msg.style.color='#c0392b'; msg.textContent='Ingresá tu nombre.'; return; }
+  if (pin.length < 4) { msg.style.color='#c0392b'; msg.textContent='El PIN debe tener 4 dígitos.'; return; }
+  if (pin !== pin2) { msg.style.color='#c0392b'; msg.textContent='Los PINs no coinciden.'; return; }
+  msg.style.color='#888'; msg.textContent='Creando cuenta...';
+  try {
+    // Verificar que no exista ya ese nombre
+    var chk = await supaFetch('usuarios?select=id&nombre=eq.'+encodeURIComponent(nombre));
+    var existe = await chk.json();
+    if (Array.isArray(existe) && existe.length > 0) {
+      msg.style.color='#c0392b'; msg.textContent='Ese nombre ya está en uso.'; return;
+    }
+    var res = await supaFetch('usuarios', {
+      method: 'POST',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer '+SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ nombre: nombre, pin: pin, activo: true })
+    });
+    if (res.ok || res.status === 201) {
+      msg.style.color='#2d6a4f'; msg.textContent='✓ Cuenta creada. Ya podés ingresar con tu PIN.';
+      document.getElementById('reg_nombre').value='';
+      document.getElementById('reg_pin').value='';
+      document.getElementById('reg_pin2').value='';
+    } else {
+      msg.style.color='#c0392b'; msg.textContent='Error al crear la cuenta. Intentá de nuevo.';
+    }
+  } catch(e) {
+    msg.style.color='#c0392b'; msg.textContent='Error de conexión.';
+  }
+}
+
+function nuevoExpediente(){
+  if(confirm('¿Nuevo expediente? Se perderán los datos actuales.')) location.reload();
+}
+
+// CROQUIS
+var croquis_img = null;
+function cargarCroquis(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    croquis_img = ev.target.result;
+    var prev = document.getElementById('croquis_preview');
+    prev.src = croquis_img;
+    prev.style.display = 'block';
+    document.getElementById('croquis_clear').style.display = 'inline-block';
+    showToast('✓ Croquis cargado');
+  };
+  reader.readAsDataURL(file);
+}
+function limpiarCroquis() {
+  croquis_img = null;
+  document.getElementById('croquis_preview').style.display = 'none';
+  document.getElementById('croquis_preview').src = '';
+  document.getElementById('croquis_file').value = '';
+  document.getElementById('croquis_clear').style.display = 'none';
+}
+
+// PRESUPUESTO — impresión interna
+function exportarPresupuesto() {
+  var fecha = new Date().toLocaleDateString('es-UY');
+  var cliente = g('cliente') !== '—' ? g('cliente') : '—';
+  var intermediario = g('intermediario') !== '—' ? g('intermediario') : '';
+  var padron = g('padron');
+  var direccion = g('direccion');
+  var dpto = g('dpto');
+  var localidad = g('localidad');
+  var regimen = g('regimen') === 'ph' ? 'Propiedad Horizontal' : g('regimen') === 'comun' ? 'Padrón Común' : '—';
+  var tipo_dj = g('tipo_dj') !== '—' ? g('tipo_dj') : '';
+  var notas = document.getElementById('notas_internas').value;
+  var timbres = parseFloat(document.getElementById('timbres').value) || 270;
+  var base = parseFloat(document.getElementById('honor_base').value) || 5000;
+  var por_bloque = parseFloat(document.getElementById('valor_bloque').value) || 2000;
+  var ph_add = parseFloat(document.getElementById('honor_ph').value) || 1500;
+  var ajuste = parseFloat(document.getElementById('honor_ajuste').value) || 0;
+  var esPH = g('regimen') === 'ph';
+  var n = lineas.length;
+  var total_edific = lineas.reduce(function(s,l){return s+(parseFloat(l.edific)||0);},0);
+  var sub_ph = esPH ? ph_add : 0;
+  var subtotal = base + (n * por_bloque) + sub_ph + ajuste;
+  var total = subtotal + timbres;
+
+  var fila = function(lbl, val, bold) {
+    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:10pt">'
+      + '<span style="color:#555">' + lbl + '</span>'
+      + '<span style="font-weight:' + (bold ? '700' : '400') + '">' + val + '</span></div>';
+  };
+
+  var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>'
+    + '@page{size:A4 portrait;margin:20mm}'
+    + '@media print{html,body{width:210mm}.no-print{display:none}}'
+    + 'html,body{font-family:Arial,sans-serif;font-size:10pt;color:#111;margin:0;padding:0;width:210mm}'
+    + '.cab{border-bottom:3px solid #1e4d8c;padding-bottom:10px;margin-bottom:14px}'
+    + '.tit{font-size:15pt;font-weight:700;color:#1e4d8c}'
+    + '.sub{font-size:9pt;color:#888;margin-top:2px}'
+    + '.aviso{background:#fff3cd;border:1px solid #f0a500;padding:6px 10px;border-radius:4px;font-size:9pt;color:#7a5c00;margin-bottom:14px}'
+    + '.stit{font-size:9pt;font-weight:700;text-transform:uppercase;color:#fff;background:#1e4d8c;padding:4px 8px;margin:14px 0 6px}'
+    + '.total{background:#1e4d8c;color:#fff;padding:12px 16px;text-align:right;font-size:15pt;font-weight:700;margin-top:8px;border-radius:4px}'
+    + '.pie{font-size:8pt;color:#aaa;margin-top:20px;border-top:1px solid #eee;padding-top:8px;text-align:center}'
+    + '.btn-imp{margin:0 0 16px;padding:10px 20px;background:#1e4d8c;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial}'
+    + '</style></head><body>'
+    + '<button class="btn-imp no-print" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>'
+    + '<div class="cab"><div class="tit">Presupuesto y Honorarios Profesionales</div>'
+    + '<div class="sub">DJCU — Declaración Jurada de Caracterización Urbana</div></div>'
+    + '<div class="aviso">⚠ DOCUMENTO INTERNO — No presentar a DNC. Archivo profesional exclusivo.</div>'
+    + '<div class="stit">Datos del expediente</div>'
+    + fila('Fecha de emisión', fecha)
+    + fila('Cliente / Proyecto', cliente)
+    + (intermediario ? fila('Intermediario / Referido', intermediario) : '')
+    + fila('Padrón', padron)
+    + fila('Dirección', direccion)
+    + fila('Departamento / Localidad', dpto + (localidad !== '—' ? ' — ' + localidad : ''))
+    + fila('Régimen', regimen + (tipo_dj ? ' · ' + tipo_dj : ''))
+    + fila('Líneas DJCU', n + ' líneas · ' + total_edific.toFixed(1) + ' m² totales')
+    + '<div class="stit">Liquidación de honorarios</div>'
+    + fila('Honorarios base', '$ ' + base.toLocaleString('es-UY'))
+    + fila(n + ' líneas × $ ' + por_bloque.toLocaleString('es-UY'), '$ ' + (n*por_bloque).toLocaleString('es-UY'))
+    + (sub_ph > 0 ? fila('Adicional Propiedad Horizontal', '$ ' + sub_ph.toLocaleString('es-UY')) : '')
+    + (ajuste !== 0 ? fila('Ajuste manual', '$ ' + ajuste.toLocaleString('es-UY')) : '')
+    + fila('Subtotal honorarios', '$ ' + subtotal.toLocaleString('es-UY'), true)
+    + fila('Timbres profesionales', '$ ' + timbres.toLocaleString('es-UY'))
+    + '<div class="total">TOTAL: $ ' + total.toLocaleString('es-UY') + '</div>'
+    + (notas ? '<div class="stit">Notas internas</div><div style="white-space:pre-wrap;font-size:10pt;padding:6px 0">' + notas + '</div>' : '')
+    + '<div class="pie">DJCU Uruguay · Generado el ' + fecha + ' · Documento interno — uso profesional exclusivo</div>'
+    + '</body></html>';
+
+  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  mostrarVisor(url, html);
+}
+
+// EXPORT DBF — para DJCU.exe
+function exportarDBF() {
+  showToast('📦 Próximamente — pendiente confirmación del campo Obra');
+}
+
+// COPIAR PARA SEDE DNC
+function copiarSedeWeb() {
+  showToast('📋 Próximamente — esperando screenshots de la Sede DNC');
+}
+</script>
+</body>
+</html>
