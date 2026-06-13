@@ -827,14 +827,18 @@ if('Notification' in window&&Notification.permission==='default'){
   Notification.requestPermission();
 }
 
-// Inicializar Feather Icons
-feather.replace();
-
 // Sincronizar al cargar si hay internet
-if(navigator.onLine) {
-  supabase.from('ilme_data').select('data').eq('device_id', deviceId).then(({data: d})=>{
-    if(d && d[0]) { data = d[0].data; pintarTodo(); }
-  }).catch(()=>{});
+if(navigator.onLine && supabase) {
+  try {
+    supabase.from('ilme_data').select('data').eq('device_id', deviceId).then(({data: d})=>{
+      if(d && d[0]) { data = d[0].data; }
+      pintarTodo();
+      feather.replace();
+    }).catch(()=>{ pintarTodo(); feather.replace(); });
+  } catch(e) { pintarTodo(); feather.replace(); }
+} else {
+  pintarTodo();
+  feather.replace();
 }
 
 // Sincronizar cuando vuelve la conexión
