@@ -369,18 +369,25 @@ let data = raw && raw.dias ? raw : { dias: raw||{}, rutinas: [], rutReset: '' };
 data.memos = data.memos || [];
 data.borrados = data.borrados || [];
 
-// Supabase sync
-const SUPABASE_URL = 'https://bgzfxcobsfzsvnqchqth.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnemZ4Y29ic2Z6c3ZucWNoaXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEzNDU5NTgsImV4cCI6MjA0NjkyNTk1OH0.hCQRr3YA-yqQGZ2RwVqh0rYjD8w4P_Z3d7lEuI_EdU0';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const deviceId = localStorage.getItem('ilme_device_id') || (localStorage.setItem('ilme_device_id', Date.now()+Math.random()), localStorage.getItem('ilme_device_id'));
+// Supabase sync (opcional, si falla continúa sin sincronización)
+let supabase = null;
+let deviceId = localStorage.getItem('ilme_device_id') || (localStorage.setItem('ilme_device_id', Date.now()+Math.random()), localStorage.getItem('ilme_device_id'));
+setTimeout(()=>{
+  if(window.supabase) {
+    try {
+      const SUPABASE_URL = 'https://bgzfxcobsfzsvnqchqth.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnemZ4Y29ic2Z6c3ZucWNoaXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEzNDU5NTgsImV4cCI6MjA0NjkyNTk1OH0.hCQRr3YA-yqQGZ2RwVqh0rYjD8w4P_Z3d7lEuI_EdU0';
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch(e) {}
+  }
+}, 1000);
 
 const save = async ()=> {
   store.set(data);
-  if(navigator.onLine) {
+  if(supabase && navigator.onLine) {
     try {
       await supabase.from('ilme_data').upsert({device_id: deviceId, data: data, updated_at: new Date()}, {onConflict: 'device_id'});
-    } catch(e) { console.log('Sync offline'); }
+    } catch(e) {}
   }
 };
 
