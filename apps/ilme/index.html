@@ -369,8 +369,8 @@ data.memos = data.memos || [];
 data.borrados = data.borrados || [];
 
 // Supabase sync (completamente opcional)
-let supabase = null;
-let deviceId = localStorage.getItem('ilme_device_id') || (localStorage.setItem('ilme_device_id', Date.now()+Math.random()), localStorage.getItem('ilme_device_id'));
+var supabase = null;
+var deviceId = localStorage.getItem('ilme_device_id') || (localStorage.setItem('ilme_device_id', Date.now()+Math.random()), localStorage.getItem('ilme_device_id'));
 try {
   if(window.supabase) {
     const SUPABASE_URL = 'https://bgzfxcobsfzsvnqchqth.supabase.co';
