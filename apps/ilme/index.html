@@ -796,7 +796,11 @@ function respaldo(){
   document.body.appendChild(a); a.click(); a.remove();
 }
 
-pintarTodo();
+// Inicializar pantalla AHORA
+try { pintarTodo(); } catch(e) { console.error('Error pintarTodo:', e); }
+
+// Inicializar iconos cuando estén listos
+setTimeout(()=>{ try { if(window.feather) feather.replace(); } catch(e) {} }, 100);
 
 // ── Reloj y alarmas ──
 setInterval(()=>{
@@ -827,18 +831,13 @@ if('Notification' in window&&Notification.permission==='default'){
   Notification.requestPermission();
 }
 
-// Sincronizar al cargar si hay internet
+// Sincronizar al cargar si hay internet (opcional, no impide visualización)
 if(navigator.onLine && supabase) {
   try {
     supabase.from('ilme_data').select('data').eq('device_id', deviceId).then(({data: d})=>{
-      if(d && d[0]) { data = d[0].data; }
-      pintarTodo();
-      feather.replace();
-    }).catch(()=>{ pintarTodo(); feather.replace(); });
-  } catch(e) { pintarTodo(); feather.replace(); }
-} else {
-  pintarTodo();
-  feather.replace();
+      if(d && d[0]) { data = d[0].data; pintarTodo(); }
+    }).catch(()=>{});
+  } catch(e) {}
 }
 
 // Sincronizar cuando vuelve la conexión
