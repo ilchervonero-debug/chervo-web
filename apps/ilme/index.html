@@ -571,7 +571,7 @@ function pintarMemos(focoId){
       cab.appendChild(e);
     }
     const accs=document.createElement('span'); accs.className='accs';
-    const pen=document.createElement('button'); pen.className='acc'; pen.textContent='✎';
+    const pen=document.createElement('button'); pen.className='acc'; pen.textContent='E'; pen.style.fontSize='1rem'; pen.style.fontWeight='600';
     pen.onclick=()=>{ memoEdit=m.id; pintarMemos(m.id); };
     accs.appendChild(pen);
     const x=document.createElement('button'); x.className='acc'; x.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--rojo)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
