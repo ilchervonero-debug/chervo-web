@@ -114,8 +114,10 @@ function getText(prop) {
     const desc   = getText(p.properties["Descripcion"]);
     const url    = p.properties["URL"]?.url || "#";
     const icono  = getText(p.properties["Icono"]) || "⚙";
+    const slugM  = url.match(/\/apps\/([^\/]+)\//);
+    const icHtml = slugM ? '<img src="/apps/' + slugM[1] + '/icon-192.svg" alt="" style="width:100%;height:100%;display:block">' : icono;
     return '      <a class="app-card" href="' + url + '" target="_blank" rel="noopener">'
-      + '<div class="app-ic">' + icono + '</div>'
+      + '<div class="app-ic">' + icHtml + '</div>'
       + '<div class="app-info"><div class="app-name">' + nombre + '</div><div class="app-desc">' + desc + '</div></div>'
       + '<div class="app-arrow">→</div>'
       + '</a>';
@@ -224,7 +226,7 @@ function getText(prop) {
   .app-card{display:flex;align-items:center;gap:20px;padding:22px 0;text-decoration:none;color:var(--ink);border-bottom:1px solid var(--plata-l);transition:.3s cubic-bezier(.2,.7,.2,1)}
   .app-card:hover{padding-left:20px;border-color:var(--red)}
   .app-card:hover .app-arrow{transform:translateX(8px);color:var(--red)}
-  .app-ic{font-size:28px;width:52px;height:52px;background:var(--plata-l);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.3s}
+  .app-ic{font-size:28px;width:52px;height:52px;background:var(--plata-l);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.3s;overflow:hidden}
   .app-card:hover .app-ic{background:var(--red);color:#fff}
   .app-info{flex:1}
   .app-name{font-weight:700;font-size:20px;letter-spacing:-.4px;margin-bottom:4px}
