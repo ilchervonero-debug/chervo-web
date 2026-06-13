@@ -149,6 +149,11 @@
   .acc:active{background:var(--linea)}
   .acc.del{color:var(--rojo)}
   .acc.del:hover{background:rgba(123,29,29,.1);color:var(--rojo)}
+  /* arrastrar para reordenar + editar texto en línea */
+  .item[draggable="true"]{cursor:grab}
+  .item.dragging{opacity:.4}
+  .item.dragover{box-shadow:inset 0 2px 0 var(--rojo)}
+  .txt.editando{background:var(--fondo-2);border-radius:6px;padding:3px 7px;outline:none;cursor:text}
 
   /* rutinas */
   .rut-grupo{font-size:.68rem;color:var(--gris);text-transform:uppercase;letter-spacing:.1em;margin:16px 0 4px;font-weight:600}
@@ -394,6 +399,7 @@ let sel=new Date(hoy);
 let mesVista=new Date(hoy.getFullYear(),hoy.getMonth(),1);
 let tipoSel='tarea';
 let modo='agenda';
+let itemEdit=null; // id del ítem de agenda en edición de texto
 
 // reset diario de rutinas
 if(data.rutReset!==key(hoy)){
@@ -493,7 +499,7 @@ function btnAcc(iconKey, fn, del){
   return b;
 }
 
-function filaItem(it, onChk, onRem, onMan, onDel){
+function filaItem(it, onChk, onEdit, onMan, onDel){
   const row=document.createElement('div');
   const ahora=new Date(); const hActual=String(ahora.getHours()).padStart(2,'0')+':'+String(ahora.getMinutes()).padStart(2,'0');
   const esAlarma=it.tipo==='recordatorio'&&it.hora&&it.hora<=hActual&&it.fecha===key(ahora);
@@ -515,7 +521,14 @@ function filaItem(it, onChk, onRem, onMan, onDel){
       '<span class="lk-dom"><img src="https://www.google.com/s2/favicons?domain='+dom+'&sz=32" onerror="this.style.display=\'none\'">'+dom+'</span>'+
       '<span class="lk-url">'+url+'</span></a>';
   } else {
-    const t=document.createElement('div'); t.className='txt'; t.textContent=it.txt; cuerpo.appendChild(t);
+    const t=document.createElement('div'); t.className='txt'; t.textContent=it.txt;
+    if(it.id===itemEdit){
+      t.contentEditable='true'; t.classList.add('editando');
+      t.oninput=()=>{ it.txt=t.innerText; save(); };
+      t.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); t.blur(); } };
+      t.onblur=()=>{ if(itemEdit===it.id){ itemEdit=null; save(); pintarTodo(); } };
+    }
+    cuerpo.appendChild(t);
   }
   if(it.tipo==='recordatorio'&&it.hora){
     const h=document.createElement('div'); h.className='rec-hora'; h.textContent=it.hora; cuerpo.appendChild(h);
@@ -525,11 +538,20 @@ function filaItem(it, onChk, onRem, onMan, onDel){
     const r=document.createElement('span'); r.className='rut-racha'; r.textContent='×'+it.racha; row.appendChild(r);
   }
   const acc=document.createElement('div'); acc.className='acciones';
-  if(onRem) acc.appendChild(btnAcc('remarcar',onRem));
+  if(onEdit) acc.appendChild(btnAcc('editar',onEdit));
   if(onMan) acc.appendChild(btnAcc('mover',onMan));
   if(onDel) acc.appendChild(btnAcc('borrar',onDel,true));
   row.appendChild(acc);
   return row;
+}
+
+// Reordena el ítem `from` a la posición `to` dentro del día `k`
+function reordenarDia(k,from,to){
+  if(from===null||from===undefined||from===to) return;
+  const arr=data.dias[k]; if(!arr||from<0||from>=arr.length) return;
+  const [m]=arr.splice(from,1);
+  arr.splice(to,0,m);
+  save(); pintarTodo();
 }
 
 function pintarDia(){
@@ -540,10 +562,11 @@ function pintarDia(){
   const items=data.dias[k]||[];
   const esHoy=mismodia(sel,hoy);
   if(!items.length && !(esHoy&&data.rutinas.length)){ l.innerHTML='<div class="vacio">Hoja en blanco</div>'; return; }
-  items.forEach(it=>{
-    l.appendChild(filaItem(it,
+  let dragFrom=null;
+  items.forEach((it,idx)=>{
+    const row=filaItem(it,
       ()=>{ it.hecho=!it.hecho; save(); pintarTodo(); },
-      ()=>{ it.rem=!it.rem; save(); pintarTodo(); },
+      ()=>{ itemEdit=it.id; pintarTodo(); },
       ()=>{ data.dias[k]=data.dias[k].filter(x=>x.id!==it.id);
             if(!data.dias[k].length) delete data.dias[k];
             const nk=key(addDias(sel,1));
@@ -553,7 +576,20 @@ function pintarDia(){
             data.dias[k]=data.dias[k].filter(x=>x.id!==it.id);
             if(!data.dias[k].length) delete data.dias[k];
             save(); pintarTodo(); }
-    ));
+    );
+    // ── Arrastrar para reordenar ──
+    row.draggable = (it.id!==itemEdit);
+    row.addEventListener('dragstart',e=>{ dragFrom=idx; row.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',String(idx));}catch(_){} });
+    row.addEventListener('dragend',()=>{ row.classList.remove('dragging'); l.querySelectorAll('.dragover').forEach(x=>x.classList.remove('dragover')); dragFrom=null; });
+    row.addEventListener('dragover',e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; row.classList.add('dragover'); });
+    row.addEventListener('dragleave',()=>{ row.classList.remove('dragover'); });
+    row.addEventListener('drop',e=>{ e.preventDefault(); row.classList.remove('dragover'); reordenarDia(k,dragFrom,idx); });
+    l.appendChild(row);
+    // foco al editar
+    if(it.id===itemEdit){
+      const te=row.querySelector('.txt[contenteditable="true"]');
+      if(te){ te.focus(); const r=document.createRange(); r.selectNodeContents(te); r.collapse(false); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
+    }
   });
   // rutinas del día (solo hoy)
   if(esHoy&&data.rutinas.length){
