@@ -206,6 +206,16 @@
   #recHora{width:100%;text-align:center;font-size:1.1rem;letter-spacing:.05em}
   .aviso{font-size:.66rem;color:#ADADA9;text-align:center;margin-top:6px;display:none}
   .aviso.ver{display:block}
+  /* toast (aviso visible) */
+  #toast{
+    position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);
+    background:var(--tinta);color:#fff;padding:11px 18px;border-radius:12px;
+    font-size:.85rem;max-width:85%;text-align:center;z-index:90;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+    box-shadow:0 8px 24px rgba(28,28,28,.25);
+  }
+  #toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.alerta{background:var(--rojo)}
 
   /* ── Calculadora ── */
   #calcOv{
@@ -377,6 +387,8 @@
     <div id="borrLista"></div>
   </div>
 </div>
+
+<div id="toast"></div>
 
 <script>
 // ── Storage con fallback ──
@@ -753,20 +765,30 @@ document.querySelectorAll('.tipo').forEach(b=>{
     }
   };
 });
+// ── Toast (cartelito visible) ──
+let _toastH=null;
+function toast(msg, alerta){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.toggle('alerta', !!alerta);
+  t.classList.add('ver');
+  clearTimeout(_toastH);
+  _toastH=setTimeout(()=>t.classList.remove('ver'), 3200);
+}
+
 // ── Dictado por voz (voz a texto) ──
 (function(){
   const btnVoz=document.getElementById('btnVoz');
   const inp=document.getElementById('inp');
   const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const avisar=(msg)=>{ const orig=inp.placeholder; inp.placeholder=msg; setTimeout(()=>{ if(inp.placeholder===msg) inp.placeholder=(tipoSel==='recordatorio'?'Recordatorio…':'Escribí o pegá un link…'); },3500); };
 
-  // El dictado del navegador exige contexto seguro (https o localhost). En file:// no hay micrófono.
+  // El dictado del navegador exige contexto seguro (https). Abriendo el archivo local (file://) no hay micrófono.
   if(!SpeechRecognition){
-    btnVoz.onclick=()=>avisar('Tu navegador no soporta dictado por voz');
+    btnVoz.onclick=()=>toast('Tu navegador no soporta dictado por voz', true);
     return;
   }
   if(!window.isSecureContext){
-    btnVoz.onclick=()=>avisar('El micrófono solo anda por https — usá ilchervo.com');
+    btnVoz.onclick=()=>toast('El micrófono solo funciona en la web (ilchervo.com), no abriendo el archivo', true);
     return;
   }
 
@@ -779,7 +801,8 @@ document.querySelectorAll('.tipo').forEach(b=>{
   btnVoz.onclick=()=>{
     if(escuchando){ recognition.stop(); return; }
     base=inp.value.trim();
-    try{ recognition.start(); }catch(e){ /* ya estaba activo */ }
+    try{ recognition.start(); toast('Escuchando… hablá'); }
+    catch(e){ /* ya estaba activo */ }
   };
   recognition.onstart=()=>{ escuchando=true; btnVoz.classList.add('escuchando'); };
   recognition.onend=()=>{ escuchando=false; btnVoz.classList.remove('escuchando'); inp.focus(); };
@@ -790,9 +813,9 @@ document.querySelectorAll('.tipo').forEach(b=>{
   };
   recognition.onerror=ev=>{
     escuchando=false; btnVoz.classList.remove('escuchando');
-    if(ev.error==='not-allowed'||ev.error==='service-not-allowed') avisar('Permití el micrófono en el navegador');
-    else if(ev.error==='no-speech') avisar('No te escuché, probá de nuevo');
-    else if(ev.error!=='aborted') avisar('No pude usar el micrófono');
+    if(ev.error==='not-allowed'||ev.error==='service-not-allowed') toast('Tenés que permitir el micrófono en el navegador', true);
+    else if(ev.error==='no-speech') toast('No te escuché, probá de nuevo', true);
+    else if(ev.error!=='aborted') toast('No pude usar el micrófono', true);
   };
 })();
 
