@@ -311,6 +311,9 @@
   </div>
   <div class="cap-row" id="capRow">
     <input id="inp" placeholder="Escribí o pegá un link…" autocomplete="off">
+    <button id="btnVoz" style="border:none;background:var(--tinta);color:#fff;width:42px;height:42px;border-radius:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    </button>
     <button id="btnAdd">+</button>
   </div>
   <div id="recInputs" style="display:none;gap:8px;margin-top:8px">
@@ -636,7 +639,25 @@ document.querySelectorAll('.tipo').forEach(b=>{
     }
   };
 });
-// Speech-to-text eliminado - sin botón de micrófono
+// ── Speech-to-text ──
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SpeechRecognition){
+  const recognition=new SpeechRecognition();
+  recognition.lang='es-ES';
+  document.getElementById('btnVoz').onclick=()=>{
+    recognition.start();
+    document.getElementById('btnVoz').style.opacity='0.5';
+  };
+  recognition.onresult=e=>{
+    let transcript='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      transcript+=e.results[i][0].transcript;
+    }
+    document.getElementById('inp').value=transcript;
+    document.getElementById('btnVoz').style.opacity='1';
+  };
+  recognition.onerror=()=>{ document.getElementById('btnVoz').style.opacity='1'; };
+}
 
 function agregar(){
   const id=Date.now()+''+Math.random().toString(36).slice(2,6);
