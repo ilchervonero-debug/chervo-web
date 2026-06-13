@@ -10,7 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --fondo:#F2F2F0;
@@ -23,11 +25,12 @@
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{
-    font-family:'Geist',system-ui,sans-serif;
+    font-family:'Inter',system-ui,sans-serif;
     background:var(--fondo);color:var(--tinta);
     display:flex;flex-direction:column;overflow:hidden;
+    font-weight:300;
   }
-  .mono{font-family:'Geist Mono',monospace}
+  .mono{font-family:'Inter',sans-serif}
 
   /* ── Solapas Agenda / Rutinas ── */
   .solapas{display:flex;gap:2px;padding:12px 16px 0;flex-shrink:0}
@@ -74,7 +77,7 @@
     display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;
     justify-content:center;
   }
-  .panel .pd{font-size:2rem;font-weight:700;line-height:1;letter-spacing:-.03em}
+  .panel .pd{font-size:3.5rem;font-weight:700;line-height:1;letter-spacing:-.03em;font-family:'Geist Mono',monospace}
   .panel .pw{font-size:.62rem;color:var(--gris);text-transform:uppercase;letter-spacing:.1em}
   .panel .pp{font-size:.66rem;color:var(--rojo);font-weight:600;min-height:1em}
   .panel-btns{display:flex;gap:6px;margin-top:4px}
@@ -148,6 +151,16 @@
   /* rutinas */
   .rut-grupo{font-size:.68rem;color:var(--gris);text-transform:uppercase;letter-spacing:.1em;margin:16px 0 4px;font-weight:600}
   .rut-racha{font-size:.66rem;color:var(--rojo);font-family:'Geist Mono',monospace;flex-shrink:0;align-self:center}
+
+  /* recordatorios */
+  .sq.recordatorio{background:#4A7C9E}
+  .item.recordatorio .ic{color:#4A7C9E;font-size:1.1rem}
+  .item.recordatorio .txt{font-size:.88rem;color:#4A7C9E;font-weight:600}
+  .item.recordatorio.alarma{background:#FFE4E4}
+  .item.recordatorio.alarma .ic{color:#D32F2F;animation:parpadeo 0.5s infinite}
+  .item.recordatorio.alarma .txt{color:#D32F2F}
+  @keyframes parpadeo{0%,100%{opacity:1}50%{opacity:0.6}}
+  .rec-hora{font-size:.7rem;color:var(--gris);font-family:'Geist Mono',monospace;margin-top:2px}
 
   /* ── Captura ── */
   .captura{
@@ -275,12 +288,11 @@
       <div class="cal-grid" id="calGrid"></div>
     </div>
     <div class="panel">
-      <button class="pmenu" id="btnMenu">⋯</button>
-      <span class="pw" id="pSem"></span>
-      <span class="pp" id="pPagos"></span>
       <div class="panel-btns">
         <button class="pbtn" id="btnHoy">HOY</button>
       </div>
+      <span class="pd" id="pSem"></span>
+      <button class="pmenu" id="btnMenu">⋯</button>
     </div>
   </div>
 </header>
@@ -298,10 +310,16 @@
     <button class="tipo" data-t="nota">Nota</button>
     <button class="tipo t-pago" data-t="pago">Pago</button>
     <button class="tipo" data-t="rutina">Rutina</button>
+    <button class="tipo" data-t="recordatorio">Recordatorio</button>
   </div>
-  <div class="cap-row">
+  <div class="cap-row" id="capRow">
     <input id="inp" placeholder="Escribí o pegá un link…" autocomplete="off">
+    <button id="btnVoz" style="border:none;background:var(--tinta);color:#fff;width:42px;height:42px;border-radius:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0"><i data-feather="mic" style="width:18px;height:18px;stroke-width:2.5"></i></button>
     <button id="btnAdd">+</button>
+  </div>
+  <div id="recInputs" style="display:none;gap:8px;margin-top:8px">
+    <input type="text" id="recFecha" placeholder="YYYY-MM-DD" style="flex:1;border:none;background:var(--fondo-2);border-radius:8px;padding:8px;font-family:inherit;font-size:.9rem">
+    <input type="text" id="recHora" placeholder="HH:MM" style="flex:1;border:none;background:var(--fondo-2);border-radius:8px;padding:8px;font-family:inherit;font-size:.9rem">
   </div>
   <div class="aviso" id="aviso">Vista previa sin guardado — instalada en tu teléfono sí guarda.</div>
 </div>
@@ -350,7 +368,21 @@ let raw = store.get();
 let data = raw && raw.dias ? raw : { dias: raw||{}, rutinas: [], rutReset: '' };
 data.memos = data.memos || [];
 data.borrados = data.borrados || [];
-const save = ()=> store.set(data);
+
+// Supabase sync
+const SUPABASE_URL = 'https://bgzfxcobsfzsvnqchqth.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnemZ4Y29ic2Z6c3ZucWNoaXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEzNDU5NTgsImV4cCI6MjA0NjkyNTk1OH0.hCQRr3YA-yqQGZ2RwVqh0rYjD8w4P_Z3d7lEuI_EdU0';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const deviceId = localStorage.getItem('ilme_device_id') || (localStorage.setItem('ilme_device_id', Date.now()+Math.random()), localStorage.getItem('ilme_device_id'));
+
+const save = async ()=> {
+  store.set(data);
+  if(navigator.onLine) {
+    try {
+      await supabase.from('ilme_data').upsert({device_id: deviceId, data: data, updated_at: new Date()}, {onConflict: 'device_id'});
+    } catch(e) { console.log('Sync offline'); }
+  }
+};
 
 // ── Fechas ──
 const DOW=['lun','mar','mié','jue','vie','sáb','dom'];
@@ -403,15 +435,10 @@ function pintarMes(){
 
 // ── Panel (1/3) ──
 function pintarPanel(){
-  document.getElementById('pSem').textContent=DOWJS[sel.getDay()]+' '+sel.getDate()+' · '+MESES[sel.getMonth()].slice(0,3);
-  // próximo pago del mes
-  let prox='';
-  for(let i=0;i<31;i++){
-    const d=addDias(hoy,i);
-    const its=(data.dias[key(d)]||[]).filter(x=>x.tipo==='pago'&&!x.hecho);
-    if(its.length){ prox='$ '+(i===0?'hoy':DOWJS[d.getDay()]+' '+d.getDate()); break; }
-  }
-  document.getElementById('pPagos').textContent=prox;
+  const ahora=new Date();
+  const h=String(ahora.getHours()).padStart(2,'0');
+  const m=String(ahora.getMinutes()).padStart(2,'0');
+  document.getElementById('pSem').textContent=h+':'+m;
 }
 
 // ── Carrusel de días (ventana de 7 centrada en sel) ──
@@ -455,11 +482,17 @@ function dominio(u){ try{ return new URL(u.startsWith('http')?u:'https://'+u).ho
 
 function filaItem(it, onChk, onRem, onMan, onDel){
   const row=document.createElement('div');
-  row.className='item'+(it.hecho?' hecho':'')+(it.rem?' remarcado':'');
+  const ahora=new Date(); const hActual=String(ahora.getHours()).padStart(2,'0')+':'+String(ahora.getMinutes()).padStart(2,'0');
+  const esAlarma=it.tipo==='recordatorio'&&it.hora&&it.hora<=hActual&&it.fecha===key(ahora);
+  row.className='item'+(it.hecho?' hecho':'')+(it.rem?' remarcado':'')+(it.tipo==='recordatorio'?' recordatorio':'')+(esAlarma?' alarma':'');
   if(it.tipo==='tarea'||it.tipo==='pago'||it.tipo==='rutina'){
     const c=document.createElement('div'); c.className='chk'; c.textContent='✓'; c.onclick=onChk; row.appendChild(c);
   }
+  if(it.tipo==='recordatorio'){
+    const c=document.createElement('div'); c.className='chk'; c.textContent='✓'; c.onclick=onChk; row.appendChild(c);
+  }
   if(it.tipo==='pago'){ const i=document.createElement('div'); i.className='ic pago'; i.textContent='$'; row.appendChild(i); }
+  if(it.tipo==='recordatorio'){ const i=document.createElement('div'); i.className='ic'; i.textContent='|'; row.appendChild(i); }
   if(it.tipo==='nota'&&!esURL(it.txt)){ const i=document.createElement('div'); i.className='ic'; i.textContent='–'; row.appendChild(i); }
   const cuerpo=document.createElement('div'); cuerpo.className='cuerpo';
   if(esURL(it.txt)){
@@ -471,13 +504,16 @@ function filaItem(it, onChk, onRem, onMan, onDel){
   } else {
     const t=document.createElement('div'); t.className='txt'; t.textContent=it.txt; cuerpo.appendChild(t);
   }
+  if(it.tipo==='recordatorio'&&it.hora){
+    const h=document.createElement('div'); h.className='rec-hora'; h.textContent=it.hora; cuerpo.appendChild(h);
+  }
   row.appendChild(cuerpo);
   if(it.tipo==='rutina'&&it.racha>1){
     const r=document.createElement('span'); r.className='rut-racha'; r.textContent='×'+it.racha; row.appendChild(r);
   }
   const acc=document.createElement('div'); acc.className='acciones';
   const mk=(s,fn)=>{ if(!fn)return; const b=document.createElement('button'); b.className='acc'; b.textContent=s; b.onclick=fn; acc.appendChild(b); };
-  mk('🖊',onRem); mk('→',onMan); mk('✕',onDel);
+  mk('~',onRem); mk('→',onMan); mk('✕',onDel);
   row.appendChild(acc);
   return row;
 }
@@ -598,8 +634,40 @@ function pintarTodo(){ pintarMes(); pintarPanel(); pintarStrip(); pintarDia(); }
 
 // ── Captura ──
 document.querySelectorAll('.tipo').forEach(b=>{
-  b.onclick=()=>{ document.querySelectorAll('.tipo').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); tipoSel=b.dataset.t; };
+  b.onclick=()=>{
+    document.querySelectorAll('.tipo').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel');
+    tipoSel=b.dataset.t;
+    const recInputs=document.getElementById('recInputs');
+    if(tipoSel==='recordatorio'){
+      recInputs.style.display='flex';
+      document.getElementById('inp').placeholder='Recordatorio…';
+    } else {
+      recInputs.style.display='none';
+      document.getElementById('inp').placeholder='Escribí o pegá un link…';
+    }
+  };
 });
+// ── Speech-to-text ──
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SpeechRecognition){
+  const recognition=new SpeechRecognition();
+  recognition.lang='es-ES';
+  document.getElementById('btnVoz').onclick=()=>{
+    recognition.start();
+    document.getElementById('btnVoz').style.opacity='0.5';
+  };
+  recognition.onresult=e=>{
+    let transcript='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      transcript+=e.results[i][0].transcript;
+    }
+    document.getElementById('inp').value=transcript;
+    document.getElementById('btnVoz').style.opacity='1';
+  };
+  recognition.onerror=()=>{ document.getElementById('btnVoz').style.opacity='1'; };
+}
+
 function agregar(){
   const id=Date.now()+''+Math.random().toString(36).slice(2,6);
   if(modo!=='agenda'){
@@ -612,6 +680,15 @@ function agregar(){
   if(tipoSel==='rutina'){
     data.rutinas.push({id,tipo:'rutina',txt:v,hecho:false,racha:0});
     save(); inp.value=''; pintarTodo(); return;
+  }
+  if(tipoSel==='recordatorio'){
+    const fecha=document.getElementById('recFecha').value;
+    const hora=document.getElementById('recHora').value;
+    if(!fecha||!hora) return;
+    const k=key(new Date(fecha));
+    (data.dias[k]=data.dias[k]||[]).push({id,tipo:'recordatorio',txt:v,fecha,hora,hecho:false});
+    save(); inp.value=''; document.getElementById('recFecha').value=''; document.getElementById('recHora').value=''; pintarTodo();
+    return;
   }
   const tipo = esURL(v)&&tipoSel==='tarea' ? 'nota' : tipoSel;
   const k=key(sel);
@@ -713,6 +790,48 @@ function respaldo(){
 }
 
 pintarTodo();
+
+// ── Reloj y alarmas ──
+setInterval(()=>{
+  if(modo==='agenda') pintarPanel();
+  // Detectar recordatorios que deben sonar
+  const ahora=new Date();
+  const hActual=String(ahora.getHours()).padStart(2,'0')+':'+String(ahora.getMinutes()).padStart(2,'0');
+  const kHoy=key(ahora);
+  const items=data.dias[kHoy]||[];
+  items.forEach(it=>{
+    if(it.tipo==='recordatorio'&&it.hora===hActual&&!it.alarmaActivada){
+      it.alarmaActivada=true;
+      save();
+      // Reproducir sonido
+      const audio=new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==');
+      audio.play().catch(()=>{});
+      // Mostrar notificación
+      if('Notification' in window&&Notification.permission==='granted'){
+        new Notification('iLMe Recordatorio',{body:it.txt});
+      }
+      pintarDia();
+    }
+  });
+},1000);
+
+// Pedir permisos de notificación
+if('Notification' in window&&Notification.permission==='default'){
+  Notification.requestPermission();
+}
+
+// Inicializar Feather Icons
+feather.replace();
+
+// Sincronizar al cargar si hay internet
+if(navigator.onLine) {
+  supabase.from('ilme_data').select('data').eq('device_id', deviceId).then(({data: d})=>{
+    if(d && d[0]) { data = d[0].data; pintarTodo(); }
+  }).catch(()=>{});
+}
+
+// Sincronizar cuando vuelve la conexión
+window.addEventListener('online', ()=> save());
 </script>
 </body>
 </html>
