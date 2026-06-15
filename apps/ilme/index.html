@@ -150,8 +150,8 @@
   .acc.del{color:var(--rojo)}
   .acc.del:hover{background:rgba(123,29,29,.1);color:var(--rojo)}
   /* arrastrar para reordenar + editar texto en línea */
-  .item.dia-item,.item.rut-item{cursor:grab}
-  .item.arrastrando{opacity:.9;background:var(--fondo);box-shadow:0 6px 18px rgba(28,28,28,.18);border-radius:8px;position:relative;z-index:5;cursor:grabbing;touch-action:none}
+  .item.dia-item,.item.rut-item,.memo{cursor:grab}
+  .item.arrastrando,.memo.arrastrando{opacity:.9;background:var(--fondo);box-shadow:0 6px 18px rgba(28,28,28,.18);border-radius:8px;position:relative;z-index:5;cursor:grabbing;touch-action:none}
   .txt.editando{background:var(--fondo-2);border-radius:6px;padding:3px 7px;outline:none;cursor:text}
 
   /* rutinas */
@@ -197,8 +197,9 @@
   #recInputs{display:none;flex-direction:column;gap:8px;margin-top:8px}
   #recInputs.ver{display:flex}
   .rec-chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-  .rchip{border:none;font-family:inherit;font-size:.78rem;cursor:pointer;padding:8px 13px;border-radius:8px;background:var(--fondo-2);color:var(--gris)}
-  .rchip.sel{background:var(--tinta);color:#fff}
+  .rchip,.rrep{border:none;font-family:inherit;font-size:.78rem;cursor:pointer;padding:8px 13px;border-radius:8px;background:var(--fondo-2);color:var(--gris)}
+  .rchip.sel,.rrep.sel{background:var(--tinta);color:#fff}
+  #recRepetir{display:none}
   #recFecha,#recHora{border:none;background:var(--fondo-2);border-radius:8px;padding:9px 10px;font-family:inherit;font-size:.9rem;color:var(--tinta);outline:none}
   #recFecha{flex:1;min-width:130px}
   #recHora{width:100%;text-align:center;font-size:1.1rem;letter-spacing:.05em}
@@ -352,6 +353,11 @@
       <button type="button" class="rchip" data-d="1">Mañana</button>
       <button type="button" class="rchip" data-d="2">Pasado</button>
       <input type="date" id="recFecha">
+    </div>
+    <div class="rec-chips" id="recRepetir">
+      <button type="button" class="rrep sel" data-r="diario">Cada día</button>
+      <button type="button" class="rrep" data-r="lunvie">L a V</button>
+      <button type="button" class="rrep" data-r="finde">Finde</button>
     </div>
     <input type="time" id="recHora" step="60">
   </div>
@@ -560,9 +566,11 @@ function filaItem(it, onChk, onEdit, onMan, onDel){
     }
     cuerpo.appendChild(t);
   }
-  if(it.hora){
-    const h=document.createElement('div'); h.className='rec-hora'; h.textContent=it.hora; cuerpo.appendChild(h);
-  }
+  // línea de hora / recurrencia
+  let meta='';
+  if(it.tipo==='rutina'&&it.repetir&&it.repetir!=='diario') meta=ETIQ_REP[it.repetir]||'';
+  if(it.hora) meta = meta ? meta+' · '+it.hora : it.hora;
+  if(meta){ const h=document.createElement('div'); h.className='rec-hora'; h.textContent=meta; cuerpo.appendChild(h); }
   row.appendChild(cuerpo);
   if(it.tipo==='rutina'&&it.racha>1){
     const r=document.createElement('span'); r.className='rut-racha'; r.textContent='×'+it.racha; row.appendChild(r);
@@ -585,7 +593,7 @@ function habilitarArrastre(row, lista, selectorGrupo, onReorden){
   const empezar=()=>{ arrastrando=true; row.classList.add('arrastrando'); try{ row.setPointerCapture(pid); }catch(_){} };
   row.addEventListener('pointerdown', e=>{
     // no arrastrar si tocaste un control (check, botones, link o texto en edición)
-    if(e.target.closest('.chk,.acciones,a,[contenteditable="true"]')) return;
+    if(e.target.closest('.chk,.acc,.acciones,.accs,a,[contenteditable="true"]')) return;
     if(e.pointerType==='mouse'&&e.button!==0) return;
     x0=e.clientX; y0=e.clientY; pid=e.pointerId; armado=true; arrastrando=false; tactil=(e.pointerType!=='mouse');
     // en táctil: mantené apretado para agarrar (así un deslizar normal sigue scrolleando)
@@ -691,7 +699,7 @@ function pintarMemos(focoId){
   if(!data.memos.length){ l.innerHTML='<div class="vacio">Sin memorias — tocá “+ Nueva memoria” y escribí libre</div>'; return; }
   data.memos.forEach(m=>{
     const enEdicion = m.id===memoEdit;
-    const b=document.createElement('div'); b.className='memo';
+    const b=document.createElement('div'); b.className='memo'; b.dataset.id=m.id;
     const cab=document.createElement('div'); cab.className='memo-cab';
     const f=document.createElement('span'); f.className='memo-fecha'; f.textContent=fmtFH(m.creado);
     cab.appendChild(f);
@@ -714,6 +722,10 @@ function pintarMemos(focoId){
     ed.textContent=m.txt||'';
     if(enEdicion) ed.oninput=()=>{ m.txt=ed.innerText; m.editado=Date.now(); save(); };
     b.appendChild(ed);
+    if(!enEdicion) habilitarArrastre(b, l, '.memo', ids=>{
+      data.memos.sort((a,c)=> ids.indexOf(String(a.id)) - ids.indexOf(String(c.id)));
+      save(); pintarMemos();
+    });
     l.appendChild(b);
     if(enEdicion && m.id===focoId){ ed.focus(); ed.scrollIntoView({block:'center'}); }
   });
@@ -753,7 +765,10 @@ const recInputs=document.getElementById('recInputs');
 const recFechaRow=document.getElementById('recFechaRow');
 const recFecha=document.getElementById('recFecha');
 const recHora=document.getElementById('recHora');
+const recRepetir=document.getElementById('recRepetir');
 const rchips=Array.from(document.querySelectorAll('.rchip'));
+const rreps=Array.from(document.querySelectorAll('.rrep'));
+let rutRepetir='diario'; // diario | lunvie | finde
 function sincronizarChips(){
   rchips.forEach(c=>{
     const d=key(addDias(hoy,parseInt(c.dataset.d,10)));
@@ -763,7 +778,19 @@ function sincronizarChips(){
 rchips.forEach(c=>{
   c.onclick=()=>{ recFecha.value=key(addDias(hoy,parseInt(c.dataset.d,10))); sincronizarChips(); };
 });
+rreps.forEach(c=>{
+  c.onclick=()=>{ rutRepetir=c.dataset.r; rreps.forEach(x=>x.classList.toggle('sel',x===c)); };
+});
 recFecha.addEventListener('change', sincronizarChips);
+
+// ¿la rutina aplica hoy según su recurrencia?
+function rutinaAplicaHoy(r){
+  const dow=new Date().getDay(); // 0=dom .. 6=sáb
+  if(r.repetir==='lunvie') return dow>=1&&dow<=5;
+  if(r.repetir==='finde') return dow===0||dow===6;
+  return true; // diario o sin definir
+}
+const ETIQ_REP={diario:'Cada día', lunvie:'L a V', finde:'Finde'};
 
 // ── Captura ──
 const inpEl=document.getElementById('inp');
@@ -775,15 +802,17 @@ document.querySelectorAll('.tipo').forEach(b=>{
     if(tipoSel==='recordatorio'){
       recInputs.classList.add('ver');
       recFechaRow.style.display='flex';
+      recRepetir.style.display='none';                             // recordatorio = puntual
       if(!recFecha.value) recFecha.value=key(sel);                 // día que estás viendo
       if(!recHora.value){ const n=new Date(); recHora.value=String((n.getHours()+1)%24).padStart(2,'0')+':00'; }
       sincronizarChips();
       inpEl.placeholder='Recordatorio…';
     } else if(tipoSel==='rutina'){
       recInputs.classList.add('ver');
-      recFechaRow.style.display='none';                            // rutina = diaria, no necesita fecha
+      recFechaRow.style.display='none';                            // rutina = recurrente, no necesita fecha
+      recRepetir.style.display='flex';                             // mostrar Cada día / L a V / Finde
       recHora.value='';                                            // la hora es opcional
-      inpEl.placeholder='Rutina — poné hora abajo si querés alarma';
+      inpEl.placeholder='Rutina — elegí repetición y hora (opcional)';
     } else {
       recInputs.classList.remove('ver');
       inpEl.placeholder='Escribí o pegá un link…';
@@ -854,8 +883,8 @@ function agregar(){
   const inp=document.getElementById('inp');
   const v=inp.value.trim(); if(!v) return;
   if(tipoSel==='rutina'){
-    const hora=recHora.value||'';   // hora opcional → si la ponés, es alarma diaria
-    data.rutinas.push({id,tipo:'rutina',txt:v,hora,hecho:false,racha:0});
+    const hora=recHora.value||'';   // hora opcional → si la ponés, es alarma recurrente
+    data.rutinas.push({id,tipo:'rutina',txt:v,hora,repetir:rutRepetir,hecho:false,racha:0});
     save(); inp.value=''; recHora.value=''; pintarTodo(); return;
   }
   if(tipoSel==='recordatorio'){
@@ -1010,7 +1039,7 @@ setInterval(()=>{
     }
   });
   data.rutinas.forEach(r=>{
-    if(r.hora===hActual&&!r.hecho&&r.alarmaUlt!==kHoy){
+    if(r.hora===hActual&&!r.hecho&&rutinaAplicaHoy(r)&&r.alarmaUlt!==kHoy){
       r.alarmaUlt=kHoy; cambio=true; sonarAlarma('Rutina', r.txt);
     }
   });
