@@ -1,18 +1,19 @@
 {
   "name": "iLMe",
   "short_name": "iLMe",
-  "description": "Agenda personal con memoria, rutinas y pagos",
+  "description": "Tu agenda personal",
   "start_url": "/apps/ilme/",
   "scope": "/apps/ilme/",
   "display": "standalone",
   "background_color": "#F2F2F0",
-  "theme_color": "#FF3333",
+  "theme_color": "#1C1C1C",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/apps/ilme/icon-192.svg",
-      "sizes": "192x192",
+      "src": "/apps/ilme/icon.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
