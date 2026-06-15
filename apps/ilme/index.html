@@ -150,8 +150,8 @@
   .acc.del{color:var(--rojo)}
   .acc.del:hover{background:rgba(123,29,29,.1);color:var(--rojo)}
   /* arrastrar para reordenar + editar texto en línea */
-  .item.dia-item,.item.rut-item,.memo{cursor:grab}
-  .item.arrastrando,.memo.arrastrando{opacity:.9;background:var(--fondo);box-shadow:0 6px 18px rgba(28,28,28,.18);border-radius:8px;position:relative;z-index:5;cursor:grabbing;touch-action:none}
+  .item.dia-item,.item.rut-item,.memo{cursor:grab;touch-action:none}
+  .item.arrastrando,.memo.arrastrando{opacity:.9;background:var(--fondo);box-shadow:0 6px 18px rgba(28,28,28,.18);border-radius:8px;position:relative;z-index:5;cursor:grabbing}
   .txt.editando{background:var(--fondo-2);border-radius:6px;padding:3px 7px;outline:none;cursor:text}
 
   /* rutinas */
