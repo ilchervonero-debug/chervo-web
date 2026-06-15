@@ -152,7 +152,7 @@
   .acc.del{color:var(--rojo)}
   .acc.del:hover{background:rgba(123,29,29,.1);color:var(--rojo)}
   /* arrastrar para reordenar + editar texto en línea */
-  .item.dia-item,.item.rut-item,.memo{cursor:grab;touch-action:none}
+  .item.dia-item,.item.rut-item,.memo{cursor:grab}
   .item.arrastrando,.memo.arrastrando{opacity:.9;background:var(--fondo);box-shadow:0 6px 18px rgba(28,28,28,.18);border-radius:8px;position:relative;z-index:5;cursor:grabbing}
   .txt.editando{background:var(--fondo-2);border-radius:6px;padding:3px 7px;outline:none;cursor:text}
 
@@ -588,48 +588,56 @@ function filaItem(it, onChk, onEdit, onMan, onDel){
   return row;
 }
 
-// Hace el ítem ENTERO arrastrable para reordenar (mouse + dedo).
-// Tocar sin mover = pasa el toque (marca, edita, etc). Mover > umbral = arrastra.
-// `selectorGrupo` limita el reordenamiento a su grupo (tareas del día o rutinas).
-// `onReorden(ids)` recibe el nuevo orden de ids y persiste.
 function habilitarArrastre(row, lista, selectorGrupo, onReorden){
-  const UMBRAL=7, ESPERA_TACTIL=320;
-  let x0=0,y0=0,armado=false,arrastrando=false,pid=null,timer=null,tactil=false;
-  const empezar=()=>{ arrastrando=true; row.classList.add('arrastrando'); try{ row.setPointerCapture(pid); }catch(_){} };
-  row.addEventListener('pointerdown', e=>{
-    // no arrastrar si tocaste un control (check, botones, link o texto en edición)
-    if(e.target.closest('.chk,.acc,.acciones,.accs,a,[contenteditable="true"]')) return;
-    if(e.pointerType==='mouse'&&e.button!==0) return;
-    x0=e.clientX; y0=e.clientY; pid=e.pointerId; armado=true; arrastrando=false; tactil=(e.pointerType!=='mouse');
-    // en táctil: mantené apretado para agarrar (así un deslizar normal sigue scrolleando)
-    if(tactil){ clearTimeout(timer); timer=setTimeout(()=>{ if(armado) empezar(); }, ESPERA_TACTIL); }
-  });
-  row.addEventListener('pointermove', e=>{
-    if(!armado) return;
-    if(!arrastrando){
-      const dx=Math.abs(e.clientX-x0), dy=Math.abs(e.clientY-y0);
-      if(tactil){ if(dx>UMBRAL||dy>UMBRAL){ clearTimeout(timer); armado=false; } return; } // se movió antes => era scroll
-      if(dx<UMBRAL&&dy<UMBRAL) return;
-      empezar(); // mouse: arranca al pasar el umbral
-    }
-    e.preventDefault();
-    const y=e.clientY;
+  let drag=false, sx=0, sy=0, timer=null, tid=null;
+
+  function reordenar(y){
     const filas=Array.from(lista.querySelectorAll(selectorGrupo)).filter(r=>r!==row);
-    let antesDe=null;
-    for(const r of filas){ const rect=r.getBoundingClientRect(); if(y<rect.top+rect.height/2){ antesDe=r; break; } }
-    if(antesDe) lista.insertBefore(row, antesDe);
-    else { const t=lista.querySelectorAll(selectorGrupo); const ult=t[t.length-1]; if(ult&&ult!==row) ult.after(row); }
-  });
-  const fin=()=>{
-    clearTimeout(timer); armado=false;
-    if(!arrastrando) return;
-    arrastrando=false; row.classList.remove('arrastrando');
-    try{ row.releasePointerCapture(pid); }catch(_){}
+    let antes=null;
+    for(const r of filas){ const rc=r.getBoundingClientRect(); if(y<rc.top+rc.height/2){ antes=r; break; } }
+    if(antes) lista.insertBefore(row,antes);
+    else{ const all=lista.querySelectorAll(selectorGrupo); const last=all[all.length-1]; if(last&&last!==row) last.after(row); }
+  }
+  function finDrag(){
+    if(!drag) return;
+    drag=false; row.classList.remove('arrastrando');
     const ids=Array.from(lista.querySelectorAll(selectorGrupo)).map(r=>r.dataset.id);
     onReorden(ids);
-  };
-  row.addEventListener('pointerup', fin);
-  row.addEventListener('pointercancel', fin);
+  }
+
+  // ── Táctil: long-press 350ms ──
+  row.addEventListener('touchstart', e=>{
+    if(e.target.closest('.chk,.acc,.acciones,.accs,a,[contenteditable]')) return;
+    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; tid=t.identifier;
+    clearTimeout(timer);
+    timer=setTimeout(()=>{ drag=true; row.classList.add('arrastrando'); }, 350);
+  },{passive:true});
+
+  row.addEventListener('touchmove', e=>{
+    const t=Array.from(e.touches).find(x=>x.identifier===tid); if(!t) return;
+    if(!drag){
+      if(Math.abs(t.clientX-sx)>8||Math.abs(t.clientY-sy)>8) clearTimeout(timer);
+      return;
+    }
+    e.preventDefault();
+    reordenar(t.clientY);
+  },{passive:false});
+
+  row.addEventListener('touchend', ()=>{ clearTimeout(timer); finDrag(); },{passive:true});
+  row.addEventListener('touchcancel', ()=>{ clearTimeout(timer); drag=false; row.classList.remove('arrastrando'); },{passive:true});
+
+  // ── Mouse: mover > umbral ──
+  row.addEventListener('mousedown', e=>{
+    if(e.button!==0||e.target.closest('.chk,.acc,.acciones,.accs,a,[contenteditable]')) return;
+    sx=e.clientX; sy=e.clientY;
+    const onMove=e=>{
+      if(!drag){ if(Math.abs(e.clientX-sx)<7&&Math.abs(e.clientY-sy)<7) return; drag=true; row.classList.add('arrastrando'); }
+      reordenar(e.clientY);
+    };
+    const onUp=()=>{ document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); finDrag(); };
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  });
 }
 
 function pintarDia(){
