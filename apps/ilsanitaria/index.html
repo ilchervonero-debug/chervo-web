@@ -822,6 +822,9 @@ function calcG(){
 ['gAlt','gPer'].forEach(id=>document.getElementById(id).addEventListener('input',calcG));
 gArt.addEventListener('change',calcG);
 calcG();
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
