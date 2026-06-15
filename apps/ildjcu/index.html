@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DJCU Relevamiento v3</title>
 <link rel="manifest" href="/apps/ildjcu/manifest.json">
+<link rel="apple-touch-icon" href="/apps/ildjcu/icon-192.svg">
+<meta name="theme-color" content="#1e4d8c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1602,6 +1604,10 @@ function exportarDBF() {
 // COPIAR PARA SEDE DNC
 function copiarSedeWeb() {
   showToast('📋 Próximamente — esperando screenshots de la Sede DNC');
+}
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/apps/ildjcu/sw.js').catch(function(){});
 }
 </script>
 </body>
