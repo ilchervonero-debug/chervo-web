@@ -472,8 +472,8 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
       <!-- CROQUIS -->
       <div class="card">
         <div class="card-title">Croquis del inmueble</div>
-        <div style="font-size:12px;color:#555;margin-bottom:10px">Dibujá el croquis en DJCU CAD, exportá como PNG y cargalo acá. Se incluye automáticamente en la declaración impresa.</div>
-        <a href="djcu_cad.html" target="_blank" style="display:block;background:#1e4d8c;color:#fff;text-align:center;padding:12px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;touch-action:manipulation">✏ Abrir DJCU CAD →</a>
+        <div style="font-size:12px;color:#555;margin-bottom:10px">Dibujá el croquis en iLDraw, exportá como PNG y cargalo acá. Se incluye automáticamente en la declaración impresa.</div>
+        <a href="/apps/ildraw/" target="_blank" style="display:block;background:#1e4d8c;color:#fff;text-align:center;padding:12px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;touch-action:manipulation">✏ Abrir iLDraw →</a>
         <div class="field">
           <label>Cargar PNG del croquis</label>
           <input type="file" id="croquis_file" accept="image/png,image/jpeg,image/*" onchange="cargarCroquis(event)" style="padding:6px;font-size:12px">
@@ -550,8 +550,10 @@ function supaFetch(path, options) {
   var url = SUPA_URL + '/rest/v1/' + path + sep + 'apikey=' + SUPA_KEY;
   var headers = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY };
   if (method !== 'GET') headers['Content-Type'] = 'application/json';
-  var opts = Object.assign({ method: method, headers: headers }, options || {});
-  return fetch(url, opts);
+  if (options && options.headers) Object.assign(headers, options.headers);
+  var extra = options ? Object.assign({}, options) : {};
+  delete extra.headers;
+  return fetch(url, Object.assign({ method: method, headers: headers }, extra));
 }
 
 function e_pin(e, v) { e.preventDefault(); pinPress(v); }
@@ -1006,11 +1008,12 @@ function toggleVoz(targetId,btnId,indId,fotoId){
 
 // HONORARIOS
 function calcHonorarios(){
-  var timbres=parseFloat(document.getElementById('timbres').value)||270;
-  var base=parseFloat(document.getElementById('honor_base').value)||5000;
-  var por_bloque=parseFloat(document.getElementById('valor_bloque').value)||2000;
-  var ph_add=parseFloat(document.getElementById('honor_ph').value)||1500;
-  var ajuste=parseFloat(document.getElementById('honor_ajuste').value)||0;
+  function nv(id,d){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?d:v;}
+  var timbres=nv('timbres',270);
+  var base=nv('honor_base',5000);
+  var por_bloque=nv('valor_bloque',2000);
+  var ph_add=nv('honor_ph',1500);
+  var ajuste=nv('honor_ajuste',0);
   var regimen=document.getElementById('regimen').value;
   var n=lineas.length;
   var sub_ph=regimen==='ph'?ph_add:0;
@@ -1382,8 +1385,8 @@ async function cargarArchivos() {
         '<div style="font-size:12px;color:#444;margin-bottom:2px">👤 '+cliente+'</div>'+
         '<div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center">'+
           '<span style="font-size:11px;color:#2d7bc4">▪ '+area+' &nbsp;·&nbsp; '+exp.usuario+'</span>'+
-          '<button onclick="editarExpediente('+exp.id+')" style="background:#2d7bc4;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✏ Editar</button>'+
-          ' <button onclick="borrarExpediente('+exp.id+')" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Borrar</button>'+
+          '<button onclick="editarExpediente(\''+exp.id+'\')" style="background:#2d7bc4;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✏ Editar</button>'+
+          ' <button onclick="borrarExpediente(\''+exp.id+'\')" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Borrar</button>'+
         '</div>'+
       '</div>';
     }).join('');
@@ -1395,9 +1398,18 @@ async function cargarArchivos() {
 async function borrarExpediente(id) {
   if (!confirm('¿Borrar esta declaración? No se puede deshacer.')) return;
   try {
-    var res = await supaFetch('expedientes?id=eq.'+id, { method:'DELETE' });
-    if (res.ok || res.status===204) { showToast('✓ Declaración borrada'); cargarArchivos(); }
-    else showToast('Error al borrar');
+    var res = await supaFetch('expedientes?id=eq.'+id, {
+      method: 'DELETE',
+      headers: { 'Prefer': 'return=representation' }
+    });
+    if (res.status === 204) { showToast('✓ Declaración borrada'); cargarArchivos(); return; }
+    var data = [];
+    try { data = await res.json(); } catch(e) {}
+    if (res.ok && Array.isArray(data) && data.length > 0) {
+      showToast('✓ Declaración borrada'); cargarArchivos();
+    } else {
+      showToast('No se pudo borrar ('+(res.status||'sin permiso')+')');
+    }
   } catch(e) { showToast('Error de conexión'); }
 }
 
@@ -1520,11 +1532,12 @@ function exportarPresupuesto() {
   var regimen = g('regimen') === 'ph' ? 'Propiedad Horizontal' : g('regimen') === 'comun' ? 'Padrón Común' : '—';
   var tipo_dj = g('tipo_dj') !== '—' ? g('tipo_dj') : '';
   var notas = document.getElementById('notas_internas').value;
-  var timbres = parseFloat(document.getElementById('timbres').value) || 270;
-  var base = parseFloat(document.getElementById('honor_base').value) || 5000;
-  var por_bloque = parseFloat(document.getElementById('valor_bloque').value) || 2000;
-  var ph_add = parseFloat(document.getElementById('honor_ph').value) || 1500;
-  var ajuste = parseFloat(document.getElementById('honor_ajuste').value) || 0;
+  function nv(id,d){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?d:v;}
+  var timbres = nv('timbres',270);
+  var base = nv('honor_base',5000);
+  var por_bloque = nv('valor_bloque',2000);
+  var ph_add = nv('honor_ph',1500);
+  var ajuste = nv('honor_ajuste',0);
   var esPH = g('regimen') === 'ph';
   var n = lineas.length;
   var total_edific = lineas.reduce(function(s,l){return s+(parseFloat(l.edific)||0);},0);
