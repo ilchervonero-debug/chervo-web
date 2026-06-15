@@ -65,12 +65,14 @@ function render(){ pant.textContent=expr||'0'; }
 function pulsar(t){
   if(t==='C'){ expr=''; }
   else if(t==='⌫'){ expr=expr.slice(0,-1); }
-  else if(t==='='){
+  else if(t==='='||t==='√'||t==='%'){
     try{
       const js=expr.replace(/÷/g,'/').replace(/×/g,'*').replace(/−/g,'-');
-      if(/^[0-9+\-*/().\s]+$/.test(js)){
-        const r=Function('"use strict";return ('+js+')')();
-        expr=(Math.round(r*10000)/10000).toString();
+      if(/^[0-9+\-*/().\s]+$/.test(js)&&js.trim()){
+        let r=Function('"use strict";return ('+js+')')();
+        if(t==='√'){ if(r<0){ pant.textContent='error'; expr=''; return; } r=Math.sqrt(r); }
+        if(t==='%') r=r/100;
+        expr=(Math.round(r*1000000)/1000000).toString();
       }
     }catch(e){ expr=''; pant.textContent='error'; return; }
   }
@@ -78,12 +80,13 @@ function pulsar(t){
   render();
 }
 
-const teclas=['7','8','9','÷','4','5','6','×','1','2','3','−','C','0','.','+','⌫','(',')','='];
+const teclas=['C','√','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','.','⌫','='];
 const grid=document.getElementById('grid');
 teclas.forEach(t=>{
   const b=document.createElement('button');
   b.textContent=t;
   if('÷×−+'.includes(t)) b.className='op';
+  if('√%'.includes(t)) b.className='op';
   if(t==='=') b.className='ig';
   b.onclick=()=>pulsar(t);
   grid.appendChild(b);
@@ -103,6 +106,9 @@ document.addEventListener('keydown',e=>{
 });
 
 render();
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
