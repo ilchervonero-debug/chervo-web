@@ -1400,18 +1400,13 @@ async function cargarArchivos() {
 async function borrarExpediente(id) {
   if (!confirm('¿Borrar esta declaración? No se puede deshacer.')) return;
   try {
-    var res = await supaFetch('expedientes?id=eq.'+id, {
-      method: 'DELETE',
-      headers: { 'Prefer': 'return=representation' }
-    });
-    if (res.status === 204) { showToast('✓ Declaración borrada'); cargarArchivos(); return; }
-    var data = [];
-    try { data = await res.json(); } catch(e) {}
-    if (res.ok && Array.isArray(data) && data.length > 0) {
-      showToast('✓ Declaración borrada'); cargarArchivos();
-    } else {
-      showToast('No se pudo borrar ('+(res.status||'sin permiso')+')');
+    var res = await supaFetch('expedientes?id=eq.'+id, { method: 'DELETE' });
+    if (res.status === 204 || res.status === 200) {
+      showToast('✓ Declaración borrada'); cargarArchivos(); return;
     }
+    var errMsg = 'error '+res.status;
+    try { var j = await res.json(); errMsg = j.message || j.hint || errMsg; } catch(e) {}
+    showToast('No se pudo borrar: '+errMsg);
   } catch(e) { showToast('Error de conexión'); }
 }
 
