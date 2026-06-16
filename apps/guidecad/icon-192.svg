@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#b71c1c"/>
+  <rect x="28" y="60" width="136" height="72" rx="6" fill="none" stroke="#fff" stroke-width="6"/>
+  <line x1="28" y1="84" x2="164" y2="84" stroke="#fff" stroke-width="4" opacity=".5"/>
+  <text x="96" y="118" font-family="Verdana,sans-serif" font-size="26" font-weight="bold" fill="#fff" text-anchor="middle">CAD</text>
+  <line x1="56" y1="148" x2="136" y2="148" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <line x1="96" y1="132" x2="96" y2="148" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+</svg>

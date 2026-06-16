@@ -1,10 +1,9 @@
-const CACHE = 'ilme-v3';
+const CACHE = 'guidecad-v1';
 const ASSETS = [
-  '/apps/ilme/',
-  '/apps/ilme/index.html',
-  '/apps/ilme/manifest.json',
-  '/apps/ilme/icon.svg',
-  '/apps/ilme/icon-192.svg'
+  '/apps/guidecad/',
+  '/apps/guidecad/index.html',
+  '/apps/guidecad/manifest.json',
+  '/apps/guidecad/icon-192.svg'
 ];
 
 self.addEventListener('install', e => {
@@ -23,7 +22,6 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  if (e.request.url.includes('supabase.co')) return; // no cachear API calls
   e.respondWith(
     caches.match(e.request).then(r => {
       const fresh = fetch(e.request).then(res => {

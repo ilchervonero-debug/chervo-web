@@ -2,6 +2,8 @@
   "name": "iLMe",
   "short_name": "iLMe",
   "description": "Tu agenda personal",
+  "version": "1.5",
+  "author": "Angel Nieves — iLChervoNero",
   "start_url": "/apps/ilme/",
   "scope": "/apps/ilme/",
   "display": "standalone",

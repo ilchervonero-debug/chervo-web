@@ -1,0 +1,21 @@
+{
+  "name": "GuideCad — AutoCAD 2021",
+  "short_name": "GuideCad",
+  "description": "Guía de comandos AutoCAD 2021",
+  "version": "1.0",
+  "author": "Angel Nieves — iLChervoNero",
+  "start_url": "/apps/guidecad/",
+  "scope": "/apps/guidecad/",
+  "display": "standalone",
+  "background_color": "#f2f2f2",
+  "theme_color": "#b71c1c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/apps/guidecad/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
