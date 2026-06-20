@@ -422,6 +422,23 @@
     </div>
 </div>
 
+<!-- MODAL: CONFIRMAR ELIMINACIÓN -->
+<div class="modal-overlay" id="modal-confirmar">
+    <div class="modal" style="max-height:auto">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h2 id="confirm-titulo">Eliminar <span>elemento</span></h2>
+        </div>
+        <div class="modal-body" style="padding-top:0;padding-bottom:8px;">
+            <p id="confirm-msg" style="color:var(--ink-2);font-size:0.95rem;"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secundario" onclick="cerrarModal('modal-confirmar')">Cancelar</button>
+            <button class="btn" id="confirm-ok-btn" style="background:#c0392b;color:white;border-color:#c0392b;">Eliminar</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL: EDITOR BLOQUE (texto / voz) -->
 <div class="modal-overlay" id="modal-bloque">
     <div class="modal">
@@ -602,7 +619,16 @@ function onFab() {
 
 function cerrarStrip() {
     document.getElementById('add-strip').classList.remove('visible');
-    document.getElementById('fab').classList.remove('hidden');
+    if (proyectoIdx === null) {
+        document.getElementById('fab').classList.remove('hidden');
+    }
+}
+
+function abrirStrip() {
+    if (proyectoIdx !== null) {
+        document.getElementById('add-strip').classList.add('visible');
+        document.getElementById('fab').classList.add('hidden');
+    }
 }
 
 // ===== PROYECTOS =====
@@ -641,11 +667,12 @@ function irDashboard() {
 }
 
 function eliminarProyecto(i) {
-    if (!confirm('¿Eliminar este proyecto?')) return;
-    proyectos.splice(i,1);
-    guardar();
-    renderDashboard();
-    toast('Proyecto eliminado');
+    confirmar('Eliminar proyecto', '¿Eliminás este proyecto y todo su contenido?', () => {
+        proyectos.splice(i,1);
+        guardar();
+        renderDashboard();
+        toast('Proyecto eliminado');
+    });
 }
 
 function abrirModalNombre() {
@@ -713,11 +740,12 @@ function copiarBloque(i) {
 }
 
 function eliminarBloque(i) {
-    if (!confirm('¿Eliminar esta entrada?')) return;
-    proyectos[proyectoIdx].bloques.splice(i,1);
-    guardar();
-    renderBloques();
-    toast('Eliminado');
+    confirmar('Eliminar entrada', '¿Eliminás esta entrada?', () => {
+        proyectos[proyectoIdx].bloques.splice(i,1);
+        guardar();
+        renderBloques();
+        toast('Eliminado');
+    });
 }
 
 function editarBloque(i) {
@@ -883,6 +911,15 @@ function toggleVoz() {
     grabando ? recognition.stop() : recognition.start();
 }
 
+// ===== CONFIRMAR =====
+function confirmar(titulo, msg, onOk) {
+    document.getElementById('confirm-titulo').innerHTML = titulo.replace(' ', ' <span>') + '</span>';
+    document.getElementById('confirm-msg').textContent = msg;
+    const btn = document.getElementById('confirm-ok-btn');
+    btn.onclick = () => { cerrarModal('modal-confirmar'); onOk(); };
+    abrirModal('modal-confirmar');
+}
+
 // ===== MODALES =====
 function abrirModal(id) {
     document.getElementById(id).classList.add('active');
@@ -895,6 +932,7 @@ function cerrarModalBloque() {
     cerrarModal('modal-bloque');
     bloqueEditIdx = null;
     previewing = false;
+    abrirStrip();
 }
 
 document.querySelectorAll('.modal-overlay').forEach(o => {
