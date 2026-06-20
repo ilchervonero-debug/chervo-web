@@ -87,18 +87,40 @@
         .empty-state h3 { font-size: 1rem; color: var(--ink-2); margin-bottom: 6px; }
         .empty-state p { font-size: 0.82rem; color: var(--ink-3); }
 
-        /* ===== FAB ===== */
-        .fab {
-            position: fixed; bottom: 28px; right: 24px;
-            width: 58px; height: 58px; border-radius: 18px;
-            background: var(--red); color: white; border: none;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 20px rgba(192,57,43,.45); transition: all .2s cubic-bezier(.34,1.56,.64,1); z-index: 800;
+        /* ===== FAB PILL ===== */
+        .fab-wrap {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+            z-index: 800; display: flex; justify-content: center;
         }
-        .fab:hover { transform: scale(1.08) rotate(90deg); box-shadow: 0 8px 32px rgba(192,57,43,.55); }
-        .fab:active { transform: scale(0.93); }
-        .fab svg { width: 26px; height: 26px; transition: transform .2s; }
-        .fab.hidden { display: none; }
+        .fab-wrap.hidden { display: none; }
+        .fab-pill {
+            background: var(--red); border-radius: 20px; height: 58px; width: 58px;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            box-shadow: 0 4px 20px rgba(192,57,43,.45);
+            transition: width .38s cubic-bezier(.34,1.3,.64,1), box-shadow .2s;
+        }
+        .fab-pill.open { width: min(304px, calc(100vw - 48px)); box-shadow: 0 8px 36px rgba(192,57,43,.5); }
+        .fab-main {
+            width: 58px; height: 58px; border: none; background: transparent; color: white;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: transform .36s cubic-bezier(.34,1.5,.64,1);
+        }
+        .fab-main svg { width: 26px; height: 26px; }
+        .fab-pill.open .fab-main { transform: rotate(45deg); }
+        .fab-act {
+            width: 0; height: 58px; border: none; background: transparent; color: white;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; opacity: 0; overflow: hidden;
+            transition: width .32s cubic-bezier(.34,1.3,.64,1), opacity .18s;
+        }
+        .fab-act svg { width: 22px; height: 22px; }
+        .fab-pill.open .fab-act { width: 60px; opacity: 1; }
+        .fab-pill.open .fab-act:nth-child(1) { transition-delay: .08s; }
+        .fab-pill.open .fab-act:nth-child(2) { transition-delay: .04s; }
+        .fab-pill.open .fab-act:nth-child(5) { transition-delay: .04s; }
+        .fab-pill.open .fab-act:nth-child(6) { transition-delay: .08s; }
+        .fab-sep { width: 0; height: 28px; background: rgba(255,255,255,.25); flex-shrink: 0; transition: width .3s; }
+        .fab-pill.open .fab-sep { width: 1px; }
 
         /* ===== PROYECTO HEADER ===== */
         .proyecto-header-bar {
@@ -183,30 +205,6 @@
         .btn-copy-code svg { width: 11px; height: 11px; }
         .btn-copy-code:hover { background: white; color: var(--ink); border-color: white; }
 
-        /* ===== ADD STRIP ===== */
-        .add-strip {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: var(--surface); border-top: 1px solid var(--border);
-            padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); display: none; z-index: 700;
-            box-shadow: 0 -4px 24px rgba(0,0,0,.09);
-            transform: translateY(100%); transition: transform .25s cubic-bezier(.34,1.2,.64,1);
-        }
-        .add-strip.visible { display: flex; align-items: center; gap: 8px; justify-content: center; transform: translateY(0); }
-        .btn-add-tipo {
-            flex: 1; max-width: 110px; padding: 10px 6px; border-radius: 14px;
-            border: 1px solid var(--border); background: var(--surface); color: var(--ink-2);
-            cursor: pointer; font-family: 'Exo', sans-serif; font-size: 0.76rem; font-weight: 700;
-            display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all .15s;
-        }
-        .btn-add-tipo svg { width: 22px; height: 22px; color: var(--ink); transition: color .15s; }
-        .btn-add-tipo:hover, .btn-add-tipo:active { border-color: var(--red); background: var(--red); color: white; }
-        .btn-add-tipo:hover svg, .btn-add-tipo:active svg { color: white; }
-        .btn-strip-close {
-            width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
-            background: var(--surface); color: var(--ink-3); cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0;
-        }
-        .btn-strip-close:hover { background: var(--ink); color: white; border-color: var(--ink); }
 
         /* ===== MODALES ===== */
         .modal-overlay {
@@ -346,32 +344,30 @@
     <div class="bloques-timeline" id="bloques-timeline"></div>
 </div>
 
-<!-- FAB -->
-<button class="fab" id="fab" onclick="onFab()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-</button>
-
-<!-- ADD STRIP (dentro de proyecto) -->
-<div class="add-strip" id="add-strip">
-    <button class="btn-add-tipo" onclick="abrirModalBloque('texto')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        Nota
-    </button>
-    <button class="btn-add-tipo" onclick="abrirFoto('galeria')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Galería
-    </button>
-    <button class="btn-add-tipo" onclick="abrirFoto('camara')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Cámara
-    </button>
-    <button class="btn-add-tipo" onclick="abrirModalBloque('voz')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        Voz
-    </button>
-    <button class="btn-strip-close" onclick="cerrarStrip()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+<!-- FAB PILL -->
+<div class="fab-wrap" id="fab-wrap">
+    <div class="fab-pill" id="fab-pill">
+        <!-- izquierda: galería, cámara -->
+        <button class="fab-act" onclick="abrirFoto('galeria')" title="Galería">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </button>
+        <button class="fab-act" onclick="abrirFoto('camara')" title="Cámara">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+        <div class="fab-sep"></div>
+        <!-- centro: botón principal -->
+        <button class="fab-main" id="fab-main" onclick="onFab()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="fab-sep"></div>
+        <!-- derecha: nota, audio -->
+        <button class="fab-act" onclick="abrirModalBloque('texto')" title="Nota">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+        <button class="fab-act" onclick="abrirModalBloque('voz')" title="Audio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+    </div>
 </div>
 <input type="file" id="input-foto-galeria" accept="image/*" multiple onchange="onFotosSeleccionadas(event,'galeria')">
 <input type="file" id="input-foto-camara" accept="image/*" capture="environment" onchange="onFotosSeleccionadas(event,'camara')">
@@ -603,21 +599,19 @@ function renderDashboard() {
     }).join('');
 }
 
-// ===== FAB =====
+// ===== FAB PILL =====
 function onFab() {
     if (proyectoIdx === null) {
         document.getElementById('nuevo-nombre').value = '';
         abrirModal('modal-nuevo-proyecto');
         setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
     } else {
-        document.getElementById('add-strip').classList.add('visible');
-        document.getElementById('fab').classList.add('hidden');
+        document.getElementById('fab-pill').classList.toggle('open');
     }
 }
 
-function cerrarStrip() {
-    document.getElementById('add-strip').classList.remove('visible');
-    document.getElementById('fab').classList.remove('hidden');
+function cerrarFab() {
+    document.getElementById('fab-pill').classList.remove('open');
 }
 
 // ===== PROYECTOS =====
@@ -641,16 +635,14 @@ function abrirProyecto(i) {
     renderBloques();
     document.getElementById('page-dashboard').classList.remove('active');
     document.getElementById('page-proyecto').classList.add('active');
-    document.getElementById('add-strip').classList.remove('visible');
-    document.getElementById('fab').classList.remove('hidden');
+    cerrarFab();
     window.scrollTo(0,0);
 }
 
 function irDashboard() {
     document.getElementById('page-proyecto').classList.remove('active');
     document.getElementById('page-dashboard').classList.add('active');
-    document.getElementById('add-strip').classList.remove('visible');
-    document.getElementById('fab').classList.remove('hidden');
+    cerrarFab();
     proyectoIdx = null;
     renderDashboard();
 }
@@ -749,7 +741,7 @@ function editarBloque(i) {
     previewing = false;
     document.getElementById('editor-preview').classList.remove('on');
     document.getElementById('editor-ta').style.display = '';
-    cerrarStrip();
+    cerrarFab();
     abrirModal('modal-bloque');
 }
 
@@ -762,7 +754,7 @@ function abrirModalBloque(tipo) {
     previewing = false;
     document.getElementById('editor-preview').classList.remove('on');
     document.getElementById('editor-ta').style.display = '';
-    cerrarStrip();
+    cerrarFab();
     abrirModal('modal-bloque');
     setTimeout(() => document.getElementById('editor-ta').focus(), 350);
     if (tipo === 'voz' && recognition && !grabando) {
@@ -787,7 +779,7 @@ function guardarBloque() {
 }
 
 function abrirFoto(origen) {
-    cerrarStrip();
+    cerrarFab();
     if (origen === 'camara') {
         document.getElementById('input-foto-camara').click();
     } else {
