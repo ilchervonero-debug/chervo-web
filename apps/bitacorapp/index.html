@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bitacorapp">
+    <title>Bitacorapp</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f7f7f7;
+            --surface: #ffffff;
+            --border: #e8e8e8;
+            --ink: #1a1a1a;
+            --ink-2: #555555;
+            --ink-3: #aaaaaa;
+            --red: #c0392b;
+            --accent: #1a1a1a;
+            --accent-soft: #f0f0f0;
+            --code-bg: #1a1a1a;
+            --code-fg: #e0e0e0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Exo', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
+            background: var(--surface); position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .header h1 {
+            font-size: 1.5rem; font-weight: 800; letter-spacing: -1px;
+        }
+        .header h1 .bita { color: var(--red); }
+        .header h1 .app-word { color: var(--ink); font-weight: 800; }
+        .header-fecha { font-size: 0.75rem; color: var(--ink-3); font-weight: 500; text-align: right; line-height: 1.5; }
+
+        /* ===== PAGES ===== */
+        .page { padding: 20px; max-width: 900px; margin: 0 auto; display: none; padding-bottom: 110px; }
+        .page.active { display: block; animation: fadeIn .22s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== DASHBOARD GRID ===== */
+        .proyectos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+
+        .proyecto-card {
+            background: var(--surface); border-radius: 18px; overflow: hidden;
+            border: 1px solid var(--border); cursor: pointer;
+            transition: transform .18s ease, box-shadow .18s ease; position: relative; aspect-ratio: 1;
+            display: flex; flex-direction: column;
+            animation: cardIn .25s ease both;
+        }
+        @keyframes cardIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+        .proyecto-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.1); }
+        .proyecto-card:active { transform: scale(0.96); }
+        .card-icon-wrap {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background-size: cover; background-position: center;
+            transition: transform .3s ease;
+        }
+        .proyecto-card:hover .card-icon-wrap { transform: scale(1.04); }
+        .card-icon-wrap svg { width: 40px; height: 40px; color: var(--ink); opacity: 0.15; }
+        .card-icon-wrap.has-photo svg { display: none; }
+        .card-body { padding: 10px 12px 12px; border-top: 1px solid var(--border); }
+        .card-titulo { font-size: 0.82rem; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-meta-row { display: flex; gap: 8px; margin-top: 4px; font-size: 0.7rem; color: var(--ink-3); font-weight: 500; }
+        .card-del {
+            position: absolute; top: 8px; right: 8px; width: 26px; height: 26px;
+            border-radius: 8px; border: none; background: rgba(0,0,0,0.06);
+            color: var(--ink-2); cursor: pointer; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity .2s, background .15s;
+        }
+        .proyecto-card:hover .card-del { opacity: 1; }
+        .card-del:hover { background: var(--red); color: white; }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state { text-align: center; padding: 80px 20px 40px; animation: fadeIn .3s ease; }
+        .empty-state svg { width: 48px; height: 48px; color: var(--ink-3); margin-bottom: 16px; opacity: 0.4; }
+        .empty-state h3 { font-size: 1rem; color: var(--ink-2); margin-bottom: 6px; }
+        .empty-state p { font-size: 0.82rem; color: var(--ink-3); }
+
+        /* ===== FAB ===== */
+        .fab {
+            position: fixed; bottom: 28px; right: 24px;
+            width: 58px; height: 58px; border-radius: 18px;
+            background: var(--red); color: white; border: none;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 20px rgba(192,57,43,.45); transition: all .2s cubic-bezier(.34,1.56,.64,1); z-index: 800;
+        }
+        .fab:hover { transform: scale(1.08) rotate(90deg); box-shadow: 0 8px 32px rgba(192,57,43,.55); }
+        .fab:active { transform: scale(0.93); }
+        .fab svg { width: 26px; height: 26px; transition: transform .2s; }
+
+        /* ===== PROYECTO HEADER ===== */
+        .proyecto-header-bar {
+            display: flex; align-items: center; gap: 12px;
+            padding: 0 0 18px 0; margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .btn-volver {
+            width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--ink);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all .2s;
+        }
+        .btn-volver:hover { background: var(--ink); color: white; border-color: var(--ink); }
+        .proyecto-header-info { flex: 1; min-width: 0; }
+        .proyecto-header-info h2 { font-size: 1.2rem; font-weight: 800; }
+        .proyecto-header-info .meta { font-size: 0.72rem; color: var(--ink-3); margin-top: 2px; }
+        .btn-editar-nombre {
+            padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--ink-2);
+            cursor: pointer; font-family: 'Exo', sans-serif; font-size: 0.78rem; font-weight: 600;
+            display: flex; align-items: center; gap: 5px; transition: all .2s; white-space: nowrap;
+        }
+        .btn-editar-nombre:hover { background: var(--ink); color: white; border-color: var(--ink); }
+
+        /* ===== BLOQUES TIMELINE ===== */
+        .bloques-timeline { display: flex; flex-direction: column; gap: 10px; }
+
+        .bloque {
+            background: var(--surface); border-radius: 14px; overflow: hidden;
+            border: 1px solid var(--border); transition: box-shadow .2s;
+            animation: bloqueFade .2s ease both;
+        }
+        @keyframes bloqueFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .bloque:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+        .bloque-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--bg);
+        }
+        .bloque-meta { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; color: var(--ink-3); font-weight: 600; }
+        .bloque-badge {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--ink-2);
+        }
+        .bloque-badge svg { width: 10px; height: 10px; }
+        .bloque-acciones { display: flex; gap: 2px; }
+        .btn-bloque {
+            width: 28px; height: 28px; border-radius: 7px; border: none;
+            background: transparent; color: var(--ink-3);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all .15s;
+        }
+        .btn-bloque svg { width: 14px; height: 14px; }
+        .btn-bloque:hover { background: var(--accent-soft); color: var(--ink); }
+        .btn-bloque.eliminar:hover { background: var(--red); color: white; }
+        .bloque-contenido { padding: 14px 16px; }
+        .bloque-foto-img { width: 100%; border-radius: 8px; display: block; max-height: 400px; object-fit: contain; background: #000; }
+
+        /* ===== MARKDOWN ===== */
+        .md-render { line-height: 1.75; font-size: 0.93rem; color: var(--ink); }
+        .md-render h1 { font-size: 1.25rem; font-weight: 800; margin: 10px 0 6px; }
+        .md-render h2 { font-size: 1.05rem; font-weight: 700; margin: 8px 0 4px; }
+        .md-render h3 { font-size: 0.95rem; font-weight: 700; margin: 6px 0 4px; }
+        .md-render p { margin-bottom: 8px; }
+        .md-render ul, .md-render ol { padding-left: 18px; margin-bottom: 8px; }
+        .md-render li { margin-bottom: 3px; }
+        .md-render strong { font-weight: 800; }
+        .md-render em { font-style: italic; color: var(--ink-2); }
+        .md-render code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 0.86em; border: 1px solid var(--border); }
+        .md-render blockquote { border-left: 3px solid var(--red); padding-left: 12px; color: var(--ink-2); font-style: italic; margin: 6px 0; }
+        .md-render hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+        .code-block { background: var(--code-bg); border-radius: 10px; margin: 8px 0; overflow: hidden; position: relative; }
+        .code-block pre { padding: 14px; color: var(--code-fg); font-family: 'Courier New', monospace; font-size: 0.83rem; line-height: 1.5; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+        .btn-copy-code {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(255,255,255,0.08); color: #999; border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px; padding: 4px 10px; font-size: 0.7rem; cursor: pointer;
+            font-family: 'Exo', sans-serif; font-weight: 600; transition: all .2s; display: flex; align-items: center; gap: 4px;
+        }
+        .btn-copy-code svg { width: 11px; height: 11px; }
+        .btn-copy-code:hover { background: white; color: var(--ink); border-color: white; }
+
+        /* ===== ADD STRIP ===== */
+        .add-strip {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--surface); border-top: 1px solid var(--border);
+            padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); display: none; z-index: 700;
+            box-shadow: 0 -4px 24px rgba(0,0,0,.09);
+            transform: translateY(100%); transition: transform .25s cubic-bezier(.34,1.2,.64,1);
+        }
+        .add-strip.visible { display: flex; align-items: center; gap: 8px; justify-content: center; transform: translateY(0); }
+        .btn-add-tipo {
+            flex: 1; max-width: 110px; padding: 10px 6px; border-radius: 14px;
+            border: 1px solid var(--border); background: var(--surface); color: var(--ink-2);
+            cursor: pointer; font-family: 'Exo', sans-serif; font-size: 0.76rem; font-weight: 700;
+            display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all .15s;
+        }
+        .btn-add-tipo svg { width: 22px; height: 22px; color: var(--ink); transition: color .15s; }
+        .btn-add-tipo:hover, .btn-add-tipo:active { border-color: var(--red); background: var(--red); color: white; }
+        .btn-add-tipo:hover svg, .btn-add-tipo:active svg { color: white; }
+        .btn-strip-close {
+            width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--ink-3); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0;
+        }
+        .btn-strip-close:hover { background: var(--ink); color: white; border-color: var(--ink); }
+
+        /* ===== MODALES ===== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); display: none; align-items: flex-end;
+            justify-content: center; z-index: 1000; backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--surface); border-radius: 20px 20px 0 0;
+            width: 100%; max-width: 700px; max-height: 95vh; overflow-y: auto;
+            animation: slideUp 0.28s cubic-bezier(.34,1.2,.64,1); padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 0; }
+        .modal-header { padding: 14px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 1.1rem; font-weight: 700; }
+        .modal-header h2 span { color: var(--red); font-weight: 300; }
+        .btn-cerrar {
+            width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+            background: var(--surface); color: var(--ink-2); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: all .2s;
+        }
+        .btn-cerrar svg { width: 14px; height: 14px; }
+        .btn-cerrar:hover { background: var(--ink); color: white; border-color: var(--ink); }
+        .modal-body { padding: 0 20px 20px; }
+        .modal-footer { padding: 12px 20px 20px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); }
+
+        /* ===== EDITOR ===== */
+        .editor-toolbar {
+            display: flex; align-items: center; gap: 3px; padding: 8px 10px;
+            background: var(--bg); border-radius: 10px 10px 0 0;
+            border: 1px solid var(--border); border-bottom: none; flex-wrap: wrap;
+        }
+        .tbtn {
+            min-width: 28px; height: 28px; padding: 0 5px; border: none; border-radius: 6px;
+            background: transparent; color: var(--ink-2); cursor: pointer;
+            font-family: 'Exo', sans-serif; font-size: 0.78rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; transition: all .15s;
+        }
+        .tbtn svg { width: 13px; height: 13px; }
+        .tbtn:hover { background: var(--surface); color: var(--ink); }
+        .tbtn.mic { background: var(--ink); color: white; margin-left: auto; border-radius: 8px; padding: 0 10px; gap: 4px; font-size: 0.72rem; }
+        .tbtn.mic:hover { opacity: 0.85; }
+        .tbtn.mic.grabando { background: var(--red); animation: pulse 1.2s infinite; }
+        .tbtn-sep { width: 1px; height: 16px; background: var(--border); margin: 0 2px; }
+        .voz-ind { font-size: 0.7rem; color: var(--red); font-weight: 700; display: none; }
+        .voz-ind.on { display: inline; animation: pulse 1.2s infinite; }
+        .editor-ta {
+            width: 100%; min-height: 160px; padding: 14px; border: 1px solid var(--border);
+            border-top: none; border-radius: 0 0 10px 10px; font-family: 'Exo', sans-serif;
+            font-size: 0.93rem; color: var(--ink); resize: vertical; background: var(--surface);
+            transition: border-color .15s;
+        }
+        .editor-ta:focus { outline: none; border-color: var(--ink); }
+        .editor-preview-box {
+            width: 100%; min-height: 100px; padding: 14px; border: 1px solid var(--ink);
+            border-top: none; border-radius: 0 0 10px 10px; background: var(--bg); display: none;
+        }
+        .editor-preview-box.on { display: block; }
+
+        /* ===== FORM ===== */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 700; font-size: 0.72rem; color: var(--ink-3); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.8px; }
+        .form-input {
+            width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+            border-radius: 10px; font-family: 'Exo', sans-serif; font-size: 0.93rem;
+            color: var(--ink); background: var(--surface); transition: border-color .15s;
+        }
+        .form-input:focus { outline: none; border-color: var(--red); }
+        input[type="file"] { display: none; }
+
+        /* ===== BOTONES ===== */
+        .btn { padding: 10px 20px; border-radius: 10px; font-family: 'Exo', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all .2s; border: none; display: flex; align-items: center; gap: 6px; }
+        .btn svg { width: 15px; height: 15px; }
+        .btn-primario { background: var(--red); color: white; }
+        .btn-primario:hover { background: #a93226; }
+        .btn-secundario { background: var(--bg); color: var(--ink-2); border: 1px solid var(--border); }
+        .btn-secundario:hover { background: var(--border); }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px);
+            background: var(--ink); color: white; padding: 10px 20px; border-radius: 20px;
+            font-weight: 600; font-size: 0.82rem; opacity: 0; transition: all .3s; z-index: 3000;
+            white-space: nowrap; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.err { background: var(--red); }
+
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+        @media (max-width: 600px) {
+            .proyectos-grid { grid-template-columns: repeat(2, 1fr); }
+            .header h1 { font-size: 1.25rem; }
+            .btn-add-tipo { font-size: 0.7rem; }
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <h1><span class="bita">Bitacora</span><span class="app-word">app</span></h1>
+    <div class="header-fecha" id="header-fecha"></div>
+</div>
+
+<!-- PAGE: DASHBOARD -->
+<div class="page active" id="page-dashboard">
+    <div style="height: 20px;"></div>
+    <div class="proyectos-grid" id="proyectos-grid"></div>
+    <div class="empty-state" id="empty-state" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <h3>Sin proyectos</h3>
+        <p>Tocá + para empezar</p>
+    </div>
+</div>
+
+<!-- PAGE: VISTA PROYECTO -->
+<div class="page" id="page-proyecto">
+    <div style="height: 20px;"></div>
+    <div class="proyecto-header-bar">
+        <button class="btn-volver" onclick="irDashboard()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="proyecto-header-info">
+            <h2 id="vp-nombre">—</h2>
+            <div class="meta" id="vp-fecha">—</div>
+        </div>
+        <button class="btn-editar-nombre" onclick="abrirModalNombre()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Renombrar
+        </button>
+    </div>
+    <div class="bloques-timeline" id="bloques-timeline"></div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="onFab()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- ADD STRIP (dentro de proyecto) -->
+<div class="add-strip" id="add-strip">
+    <button class="btn-add-tipo" onclick="abrirModalBloque('texto')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Nota
+    </button>
+    <button class="btn-add-tipo" onclick="abrirFoto('galeria')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Galería
+    </button>
+    <button class="btn-add-tipo" onclick="abrirFoto('camara')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Cámara
+    </button>
+    <button class="btn-add-tipo" onclick="abrirModalBloque('voz')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Voz
+    </button>
+    <button class="btn-strip-close" onclick="cerrarStrip()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+</div>
+<input type="file" id="input-foto-galeria" accept="image/*" multiple onchange="onFotosSeleccionadas(event,'galeria')">
+<input type="file" id="input-foto-camara" accept="image/*" capture="environment" onchange="onFotosSeleccionadas(event,'camara')">
+
+<!-- MODAL: NUEVO PROYECTO -->
+<div class="modal-overlay" id="modal-nuevo-proyecto">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h2>Nuevo <span>proyecto</span></h2>
+            <button class="btn-cerrar" onclick="cerrarModal('modal-nuevo-proyecto')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input class="form-input" id="nuevo-nombre" placeholder="Ej: Motor Industrial #45" onkeydown="if(event.key==='Enter')crearProyecto()">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secundario" onclick="cerrarModal('modal-nuevo-proyecto')">Cancelar</button>
+            <button class="btn btn-primario" onclick="crearProyecto()">Crear</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: RENOMBRAR PROYECTO -->
+<div class="modal-overlay" id="modal-nombre">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h2>Renombrar <span>proyecto</span></h2>
+            <button class="btn-cerrar" onclick="cerrarModal('modal-nombre')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input class="form-input" id="edit-nombre" onkeydown="if(event.key==='Enter')guardarNombre()">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secundario" onclick="cerrarModal('modal-nombre')">Cancelar</button>
+            <button class="btn btn-primario" onclick="guardarNombre()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: EDITOR BLOQUE (texto / voz) -->
+<div class="modal-overlay" id="modal-bloque">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h2 id="modal-bloque-titulo">Nueva <span>nota</span></h2>
+            <button class="btn-cerrar" onclick="cerrarModalBloque()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="editor-toolbar">
+                <button class="tbtn" onclick="ins('**','**')" title="Negrita"><b>B</b></button>
+                <button class="tbtn" onclick="ins('*','*')" title="Cursiva"><i style="font-style:italic">I</i></button>
+                <button class="tbtn" onclick="ins('# ','',true)" title="Título">H1</button>
+                <button class="tbtn" onclick="ins('## ','',true)" title="Subtítulo">H2</button>
+                <button class="tbtn" onclick="ins('- ','',true)" title="Lista">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+                <button class="tbtn" onclick="ins('\`\`\`\n','\n\`\`\`')" title="Bloque código">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                </button>
+                <button class="tbtn" onclick="ins('> ','',true)" title="Cita">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>
+                </button>
+                <button class="tbtn" onclick="ins('---\n','',true)" title="Separador">—</button>
+                <div class="tbtn-sep"></div>
+                <button class="tbtn" onclick="togglePreview()" id="btn-prev" title="Vista previa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="tbtn" onclick="copiarEditor()" title="Copiar todo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
+                <span class="voz-ind" id="voz-ind">● REC</span>
+                <button class="tbtn mic" id="btn-mic" onclick="toggleVoz()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+                        <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                    </svg>
+                </button>
+            </div>
+            <textarea class="editor-ta" id="editor-ta" placeholder="Escribe en Markdown o dictá con el micrófono&#10;&#10;# Título&#10;## Subtítulo&#10;**negrita** | *cursiva*&#10;- lista&#10;&#96;&#96;&#96;&#10;bloque de código copiable&#10;&#96;&#96;&#96;&#10;&gt; cita destacada"></textarea>
+            <div class="editor-preview-box md-render" id="editor-preview"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secundario" onclick="cerrarModalBloque()">Cancelar</button>
+            <button class="btn btn-primario" onclick="guardarBloque()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== ESTADO =====
+let proyectos = JSON.parse(localStorage.getItem('bita_proyectos') || '[]');
+let proyectoIdx = null;
+let bloqueEditIdx = null;
+let recognition = null;
+let grabando = false;
+let previewing = false;
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+    actualizarFecha();
+    renderDashboard();
+    initVoz();
+});
+
+function actualizarFecha() {
+    const el = document.getElementById('header-fecha');
+    const d = new Date();
+    const s = d.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    el.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function guardar() {
+    localStorage.setItem('bita_proyectos', JSON.stringify(proyectos));
+}
+
+// ===== MARKDOWN =====
+function md(text) {
+    if (!text) return '';
+    let t = text
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const codes = [];
+    t = t.replace(/```([\s\S]*?)```/g, (_, c) => {
+        const i = codes.length;
+        codes.push(c.trim());
+        return `\x00CODE${i}\x00`;
+    });
+    t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+    t = t.replace(/^### (.+)$/gm,'<h3>$1</h3>')
+         .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+         .replace(/^# (.+)$/gm,'<h1>$1</h1>');
+    t = t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+         .replace(/\*(.+?)\*/g,'<em>$1</em>');
+    t = t.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>');
+    t = t.replace(/^- (.+)$/gm,'<li>$1</li>');
+    t = t.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => '<ul>'+m+'</ul>');
+    t = t.replace(/^---$/gm,'<hr>');
+    t = t.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+    if (!t.startsWith('<')) t = '<p>'+t+'</p>';
+    t = t.replace(/\x00CODE(\d+)\x00/g, (_, i) => {
+        const code = codes[parseInt(i)];
+        const safe = encodeURIComponent(code);
+        return `<div class="code-block"><pre>${code}</pre><button class="btn-copy-code" onclick="copiarCodigo(this,'${safe}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar</button></div>`;
+    });
+    return t;
+}
+
+const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+
+function copiarCodigo(btn, encoded) {
+    const text = decodeURIComponent(encoded);
+    navigator.clipboard.writeText(text).then(() => {
+        btn.innerHTML = ICON_CHECK + ' Copiado';
+        setTimeout(() => btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar', 2000);
+    });
+}
+
+const SVG_FOLDER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>';
+const SVG_TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
+const SVG_NOTE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+const SVG_PHOTO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+const SVG_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>';
+const SVG_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+const SVG_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+    const grid = document.getElementById('proyectos-grid');
+    const empty = document.getElementById('empty-state');
+    if (proyectos.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = proyectos.map((p, i) => {
+        const foto = p.bloques?.find(b => b.tipo === 'foto');
+        const nTexto = p.bloques?.filter(b=>b.tipo==='texto'||b.tipo==='voz').length || 0;
+        const nFoto  = p.bloques?.filter(b=>b.tipo==='foto').length || 0;
+        const iconWrap = foto
+            ? `<div class="card-icon-wrap has-photo" style="background-image:url(${foto.img})"></div>`
+            : `<div class="card-icon-wrap">${SVG_FOLDER}</div>`;
+        return `
+        <div class="proyecto-card" onclick="abrirProyecto(${i})" style="animation-delay:${i*0.04}s">
+            <button class="card-del" onclick="event.stopPropagation(); eliminarProyecto(${i})" title="Eliminar">${SVG_TRASH}</button>
+            ${iconWrap}
+            <div class="card-body">
+                <div class="card-titulo">${esc(p.nombre)}</div>
+                <div class="card-meta-row">
+                    <span>${nTexto}n · ${nFoto}f</span>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ===== FAB =====
+function onFab() {
+    if (proyectoIdx === null) {
+        document.getElementById('nuevo-nombre').value = '';
+        abrirModal('modal-nuevo-proyecto');
+        setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
+    } else {
+        const strip = document.getElementById('add-strip');
+        strip.classList.toggle('visible');
+    }
+}
+
+function cerrarStrip() {
+    document.getElementById('add-strip').classList.remove('visible');
+}
+
+// ===== PROYECTOS =====
+function crearProyecto() {
+    const nombre = document.getElementById('nuevo-nombre').value.trim();
+    if (!nombre) { toast('Escribí un nombre','err'); return; }
+    const p = { id: Date.now(), nombre, fechaCreacion: new Date().toISOString(), bloques: [] };
+    proyectos.unshift(p);
+    guardar();
+    cerrarModal('modal-nuevo-proyecto');
+    renderDashboard();
+    abrirProyecto(0);
+    toast('Proyecto creado');
+}
+
+function abrirProyecto(i) {
+    proyectoIdx = i;
+    const p = proyectos[i];
+    document.getElementById('vp-nombre').textContent = p.nombre;
+    document.getElementById('vp-fecha').textContent = 'Creado ' + fechaCorta(p.fechaCreacion);
+    renderBloques();
+    document.getElementById('page-dashboard').classList.remove('active');
+    document.getElementById('page-proyecto').classList.add('active');
+    document.getElementById('add-strip').classList.add('visible');
+    window.scrollTo(0,0);
+}
+
+function irDashboard() {
+    document.getElementById('page-proyecto').classList.remove('active');
+    document.getElementById('page-dashboard').classList.add('active');
+    document.getElementById('add-strip').classList.remove('visible');
+    proyectoIdx = null;
+    renderDashboard();
+}
+
+function eliminarProyecto(i) {
+    if (!confirm('¿Eliminar este proyecto?')) return;
+    proyectos.splice(i,1);
+    guardar();
+    renderDashboard();
+    toast('Proyecto eliminado');
+}
+
+function abrirModalNombre() {
+    if (proyectoIdx === null) return;
+    document.getElementById('edit-nombre').value = proyectos[proyectoIdx].nombre;
+    abrirModal('modal-nombre');
+    setTimeout(() => document.getElementById('edit-nombre').focus(), 300);
+}
+
+function guardarNombre() {
+    const n = document.getElementById('edit-nombre').value.trim();
+    if (!n) return;
+    proyectos[proyectoIdx].nombre = n;
+    guardar();
+    document.getElementById('vp-nombre').textContent = n;
+    cerrarModal('modal-nombre');
+    toast('Nombre actualizado');
+}
+
+// ===== BLOQUES =====
+function renderBloques() {
+    const p = proyectos[proyectoIdx];
+    const container = document.getElementById('bloques-timeline');
+    if (!p.bloques || p.bloques.length === 0) {
+        container.innerHTML = `<div style="text-align:center;padding:50px 20px;color:var(--ink-3);">
+            ${SVG_FOLDER.replace('<svg ', '<svg style="width:40px;height:40px;margin-bottom:14px;opacity:0.4;" ')}
+            <p style="font-weight:700;color:var(--ink-2);">Sin entradas aún</p>
+            <p style="font-size:0.8rem;margin-top:6px;">Usá los botones de abajo para agregar notas, fotos o voz</p>
+        </div>`;
+        return;
+    }
+    container.innerHTML = p.bloques.map((b,i) => renderBloque(b,i)).join('');
+}
+
+function renderBloque(b, i) {
+    const tipo = b.tipo;
+    const badgeIcon = tipo==='texto'?SVG_NOTE:tipo==='foto'?SVG_PHOTO:SVG_MIC;
+    const badgeLabel = tipo==='texto'?'Nota':tipo==='foto'?'Foto':'Voz';
+    let contenido = '';
+    if (tipo === 'foto') {
+        contenido = `<img class="bloque-foto-img" src="${b.img}" alt="Foto">`;
+    } else {
+        contenido = `<div class="md-render">${md(b.texto)}</div>`;
+    }
+    return `
+    <div class="bloque tipo-${tipo}" id="bloque-${i}" style="animation-delay:${i*0.05}s">
+        <div class="bloque-header">
+            <div class="bloque-meta">
+                <span class="bloque-badge">${badgeIcon}${badgeLabel}</span>
+                <span>${fechaCorta(b.fecha)}</span>
+            </div>
+            <div class="bloque-acciones">
+                ${tipo!=='foto'?`<button class="btn-bloque" onclick="copiarBloque(${i})" title="Copiar contenido">${SVG_COPY}</button>`:''}
+                <button class="btn-bloque" onclick="editarBloque(${i})" title="Editar">${SVG_EDIT}</button>
+                <button class="btn-bloque eliminar" onclick="eliminarBloque(${i})" title="Eliminar">${SVG_TRASH}</button>
+            </div>
+        </div>
+        <div class="bloque-contenido">${contenido}</div>
+    </div>`;
+}
+
+function copiarBloque(i) {
+    const b = proyectos[proyectoIdx].bloques[i];
+    navigator.clipboard.writeText(b.texto || '').then(() => toast('Copiado'));
+}
+
+function eliminarBloque(i) {
+    if (!confirm('¿Eliminar esta entrada?')) return;
+    proyectos[proyectoIdx].bloques.splice(i,1);
+    guardar();
+    renderBloques();
+    toast('Eliminado');
+}
+
+function editarBloque(i) {
+    const b = proyectos[proyectoIdx].bloques[i];
+    if (b.tipo === 'foto') {
+        toast('Para cambiar la foto, eliminá este bloque y agregá uno nuevo','err');
+        return;
+    }
+    bloqueEditIdx = i;
+    document.getElementById('modal-bloque-titulo').innerHTML = 'Editar <span>bloque</span>';
+    document.getElementById('editor-ta').value = b.texto || '';
+    previewing = false;
+    document.getElementById('editor-preview').classList.remove('on');
+    document.getElementById('editor-ta').style.display = '';
+    cerrarStrip();
+    abrirModal('modal-bloque');
+}
+
+// ===== AGREGAR BLOQUES =====
+function abrirModalBloque(tipo) {
+    bloqueEditIdx = null;
+    const titulo = tipo==='texto' ? 'Nueva <span>nota</span>' : 'Nueva <span>nota de voz</span>';
+    document.getElementById('modal-bloque-titulo').innerHTML = titulo;
+    document.getElementById('editor-ta').value = '';
+    previewing = false;
+    document.getElementById('editor-preview').classList.remove('on');
+    document.getElementById('editor-ta').style.display = '';
+    cerrarStrip();
+    abrirModal('modal-bloque');
+    setTimeout(() => document.getElementById('editor-ta').focus(), 350);
+    if (tipo === 'voz' && recognition && !grabando) {
+        setTimeout(toggleVoz, 500);
+    }
+}
+
+function guardarBloque() {
+    const texto = document.getElementById('editor-ta').value.trim();
+    if (!texto) { toast('El bloque está vacío','err'); return; }
+    const p = proyectos[proyectoIdx];
+    if (bloqueEditIdx !== null) {
+        p.bloques[bloqueEditIdx].texto = texto;
+        p.bloques[bloqueEditIdx].editado = new Date().toISOString();
+    } else {
+        p.bloques.push({ tipo:'texto', texto, fecha: new Date().toISOString() });
+    }
+    guardar();
+    cerrarModalBloque();
+    renderBloques();
+    toast('Guardado');
+}
+
+function abrirFoto(origen) {
+    cerrarStrip();
+    if (origen === 'camara') {
+        document.getElementById('input-foto-camara').click();
+    } else {
+        document.getElementById('input-foto-galeria').click();
+    }
+}
+
+function onFotosSeleccionadas(event, origen) {
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
+    const p = proyectos[proyectoIdx];
+    let done = 0;
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            p.bloques.push({ tipo:'foto', img: e.target.result, fecha: new Date().toISOString() });
+            done++;
+            if (done === files.length) {
+                guardar();
+                renderBloques();
+                toast(`${files.length} foto${files.length>1?'s':''} agregada${files.length>1?'s':''}`);
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+    event.target.value = '';
+}
+
+// ===== EDITOR MARKDOWN =====
+function ins(before, after, lineStart=false) {
+    const ta = document.getElementById('editor-ta');
+    const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
+    let nv, nc;
+    if (lineStart) {
+        const ls = v.lastIndexOf('\n', s-1)+1;
+        nv = v.substring(0,ls)+before+v.substring(ls);
+        nc = s+before.length;
+    } else {
+        const sel = v.substring(s,e);
+        nv = v.substring(0,s)+before+sel+after+v.substring(e);
+        nc = sel ? e+before.length+after.length : s+before.length;
+    }
+    ta.value = nv;
+    ta.focus();
+    ta.setSelectionRange(nc,nc);
+}
+
+function togglePreview() {
+    previewing = !previewing;
+    const ta = document.getElementById('editor-ta');
+    const pv = document.getElementById('editor-preview');
+    const btn = document.getElementById('btn-prev');
+    if (previewing) {
+        pv.innerHTML = md(ta.value);
+        pv.classList.add('on');
+        ta.style.display = 'none';
+        btn.style.background = 'var(--red)';
+        btn.style.color = 'white';
+    } else {
+        pv.classList.remove('on');
+        ta.style.display = '';
+        btn.style.background = '';
+        btn.style.color = '';
+    }
+}
+
+function copiarEditor() {
+    const t = document.getElementById('editor-ta').value;
+    if (!t) return;
+    navigator.clipboard.writeText(t).then(() => toast('Copiado'));
+}
+
+// ===== VOZ =====
+function initVoz() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { document.getElementById('btn-mic').disabled = true; return; }
+    recognition = new SR();
+    recognition.lang = 'es-ES';
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.onstart = () => {
+        grabando = true;
+        document.getElementById('btn-mic').classList.add('grabando');
+        document.getElementById('voz-ind').classList.add('on');
+    };
+    recognition.onend = () => {
+        grabando = false;
+        document.getElementById('btn-mic').classList.remove('grabando');
+        document.getElementById('voz-ind').classList.remove('on');
+    };
+    recognition.onresult = e => {
+        let txt = '';
+        for (let i=e.resultIndex;i<e.results.length;i++) {
+            if (e.results[i].isFinal) txt += e.results[i][0].transcript+' ';
+        }
+        if (txt) {
+            const ta = document.getElementById('editor-ta');
+            ta.value = (ta.value ? ta.value+'\n' : '') + txt.trim();
+        }
+    };
+    recognition.onerror = ev => {
+        toast('Error voz: '+ev.error,'err');
+        grabando = false;
+        document.getElementById('btn-mic').classList.remove('grabando');
+    };
+}
+
+function toggleVoz() {
+    if (!recognition) return;
+    grabando ? recognition.stop() : recognition.start();
+}
+
+// ===== MODALES =====
+function abrirModal(id) {
+    document.getElementById(id).classList.add('active');
+}
+function cerrarModal(id) {
+    document.getElementById(id).classList.remove('active');
+    if (grabando && recognition) recognition.stop();
+}
+function cerrarModalBloque() {
+    cerrarModal('modal-bloque');
+    bloqueEditIdx = null;
+    previewing = false;
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if(e.target===o) cerrarModal(o.id); });
+});
+
+// ===== UTILS =====
+function esc(t) {
+    const d=document.createElement('div'); d.textContent=t; return d.innerHTML;
+}
+function fechaCorta(s) {
+    return new Date(s).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function toast(msg, tipo='ok') {
+    const el=document.getElementById('toast');
+    el.textContent=msg; el.className='toast show '+(tipo==='err'?'err':'');
+    clearTimeout(el._t);
+    el._t=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ===== PWA: Service Worker =====
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
