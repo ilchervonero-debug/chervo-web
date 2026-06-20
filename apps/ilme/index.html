@@ -328,6 +328,7 @@
         <button class="pbtn" id="btnHoy">HOY</button>
       </div>
       <span class="pd" id="pSem"></span>
+      <span id="authChip" style="display:none;font-size:.65rem;font-family:'Geist Mono',monospace;color:var(--gris);background:var(--fondo-alt,#f3f3f0);border-radius:20px;padding:2px 8px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="document.getElementById('btnMenu').click()"></span>
       <button class="pmenu" id="btnMenu">⋯</button>
     </div>
   </div>
@@ -1080,17 +1081,25 @@ async function _parsearCallback(){
   if(errQ){ history.replaceState(null,'',location.pathname); setTimeout(()=>toast('Login: '+decodeURIComponent(errQ.replace(/\+/g,' ')),true),400); return; }
   if(code){
     history.replaceState(null,'',location.pathname);
-    const verifier=sessionStorage.getItem('_pkce'); sessionStorage.removeItem('_pkce');
-    if(!verifier) return;
+    // localStorage como respaldo de sessionStorage (más robusto en cross-origin hops)
+    const verifier=sessionStorage.getItem('_pkce')||localStorage.getItem('_pkce');
+    sessionStorage.removeItem('_pkce'); localStorage.removeItem('_pkce');
+    if(!verifier){ toast('Sesión expiró — intentá de nuevo',true); return; }
     try{
       const r=await fetch(SUPA_URL+'/auth/v1/token?grant_type=pkce',{
         method:'POST', headers:{'apikey':SUPA_KEY,'Content-Type':'application/json'},
         body:JSON.stringify({auth_code:code,code_verifier:verifier})
       });
-      if(!r.ok){ toast('Error al iniciar sesión',true); return; }
+      if(!r.ok){
+        let msg='Error al iniciar sesión';
+        try{ const e=await r.json(); msg=e.error_description||e.msg||e.message||msg; }catch(_){}
+        toast(msg,true); return;
+      }
       const d=await r.json();
+      if(!d.access_token){ toast('Respuesta inesperada de Supabase',true); return; }
       localStorage.setItem('_iat',d.access_token);
       if(d.refresh_token) localStorage.setItem('_irt',d.refresh_token);
+      setTimeout(()=>toast('¡Sesión iniciada!'),200);
     }catch(e){ toast('Sin conexión',true); }
     return;
   }
@@ -1126,6 +1135,7 @@ function limpiarSesion(){ localStorage.removeItem('_iat'); localStorage.removeIt
 async function loginGoogle(){
   const verifier=_verifier();
   sessionStorage.setItem('_pkce',verifier);
+  localStorage.setItem('_pkce',verifier);
   const challenge=await _challenge(verifier);
   const red=encodeURIComponent(location.href.split('#')[0].split('?')[0]);
   location.href=SUPA_URL+'/auth/v1/authorize?provider=google&redirect_to='+red+'&code_challenge='+challenge+'&code_challenge_method=s256';
@@ -1161,11 +1171,15 @@ function actualizarAuthUI(){
   const mLogout=document.getElementById('mLogout');
   const mSync=document.getElementById('mSync');
   const userNom=document.getElementById('userNom');
+  const chip=document.getElementById('authChip');
   if(sesion){
+    const nom=(sesion.user.email||'').split('@')[0];
     mLogin.style.display='none'; mLogout.style.display=''; mSync.style.display='';
-    userNom.textContent=(sesion.user.email||'').split('@')[0];
+    userNom.textContent=nom;
+    if(chip){ chip.textContent='● '+nom; chip.style.display=''; }
   } else {
     mLogin.style.display=''; mLogout.style.display='none'; mSync.style.display='none';
+    if(chip) chip.style.display='none';
   }
 }
 
