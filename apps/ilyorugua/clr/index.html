@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cielorrasos — Calculadora de Materiales</title>
+<style>
+  /* ===== RESET Y BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F7F7F7; --card: #FFFFFF; --dark: #2C2C2C; --accent: #C0392B;
+    --accent-light: #E74C3C; --border: #E0E0E0; --muted: #777777;
+    --input-bg: #FAFAFA; --calc-bg: #FFF8F0; --calc-border: #E8A87C;
+    --radius: 10px; --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: var(--bg); color: var(--dark); line-height: 1.55;
+    min-height: 100vh; padding-bottom: 60px;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--dark); color: #fff; padding: 18px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-left svg { flex-shrink: 0; }
+  .header-left h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+  .header-left span { font-size: 0.78rem; opacity: 0.55; font-weight: 400; }
+  .btn-pdf {
+    background: var(--accent); color: #fff; border: none; padding: 9px 18px;
+    border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 7px; transition: background 0.2s;
+  }
+  .btn-pdf:hover { background: var(--accent-light); }
+  .btn-pdf svg { width: 16px; height: 16px; }
+
+  /* ===== MAIN ===== */
+  main { max-width: 920px; margin: 0 auto; padding: 24px 16px; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden;
+    border: 1px solid var(--border);
+    animation: cardIn 0.45s ease-out both;
+  }
+  .card:nth-child(2) { animation-delay: 0.06s; }
+  .card:nth-child(3) { animation-delay: 0.12s; }
+  .card:nth-child(4) { animation-delay: 0.18s; }
+  .card:nth-child(5) { animation-delay: 0.24s; }
+  .card:nth-child(6) { animation-delay: 0.30s; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  .card-header:hover { background: #FAFAFA; }
+  .card-header svg { color: var(--accent); flex-shrink: 0; width: 20px; height: 20px; }
+  .card-header h2 { font-size: 1rem; font-weight: 700; flex: 1; }
+  .card-header .chevron { color: var(--muted); transition: transform 0.3s; width: 18px; height: 18px; }
+  .card.collapsed .card-header .chevron { transform: rotate(-90deg); }
+  .card-body { padding: 20px; transition: max-height 0.35s ease, padding 0.35s ease, opacity 0.25s; }
+  .card.collapsed .card-body { max-height: 0; padding: 0 20px; opacity: 0; overflow: hidden; }
+
+  /* ===== FORMULARIOS ===== */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.78rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.04em; }
+  input[type="text"], input[type="number"], select {
+    padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 7px;
+    font-size: 0.92rem; background: var(--input-bg); color: var(--dark);
+    transition: border-color 0.2s, box-shadow 0.2s; outline: none; width: 100%;
+    font-family: inherit;
+  }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(192,57,43,0.10); }
+  input[type="number"] { -moz-appearance: textfield; }
+  input[type="number"]::-webkit-inner-spin-button { opacity: 1; }
+
+  /* Valores calculados */
+  .calc-value {
+    background: var(--calc-bg); border: 1.5px solid var(--calc-border);
+    border-radius: 7px; padding: 10px 12px; font-size: 0.95rem;
+    font-weight: 700; color: #B8651A; display: flex; align-items: center; gap: 6px;
+  }
+  .calc-value svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .calc-value small { font-weight: 400; font-size: 0.75rem; color: #999; }
+
+  /* ===== SISTEMA SELECTOR ===== */
+  .sistema-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 10px; margin-bottom: 18px; }
+  .sistema-opt {
+    border: 2px solid var(--border); border-radius: 8px; padding: 14px;
+    cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .sistema-opt:hover { border-color: #bbb; }
+  .sistema-opt.active { border-color: var(--accent); background: rgba(192,57,43,0.04); }
+  .sistema-opt svg { width: 28px; height: 28px; margin: 0 auto 8px; display: block; color: var(--muted); }
+  .sistema-opt.active svg { color: var(--accent); }
+  .sistema-opt strong { display: block; font-size: 0.85rem; }
+  .sistema-opt small { font-size: 0.72rem; color: var(--muted); }
+
+  .param-section { margin-top: 14px; }
+  .param-section.hidden { display: none; }
+
+  /* ===== CHECKBOX CUSTOM ===== */
+  .check-group { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .check-group input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;
+  }
+  .check-group label { text-transform: none; font-size: 0.88rem; cursor: pointer; }
+
+  /* ===== TABLA MATERIALES ===== */
+  .mat-table-wrap { overflow-x: auto; }
+  .mat-table {
+    width: 100%; border-collapse: collapse; font-size: 0.82rem;
+  }
+  .mat-table th {
+    background: var(--dark); color: #fff; padding: 10px 12px;
+    text-align: left; font-weight: 600; white-space: nowrap;
+    position: sticky; top: 0;
+  }
+  .mat-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .mat-table tr:nth-child(even) td { background: #FAFAFA; }
+  .mat-table tr:hover td { background: #F0F0F0; }
+  .mat-table .mat-name { font-weight: 600; min-width: 160px; }
+  .mat-table .qty-buy { font-weight: 700; color: var(--accent); font-size: 0.95rem; }
+  .total-row td { background: #F5ECEA !important; font-weight: 700; border-top: 2px solid var(--accent); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* ===== PLANO ===== */
+  .plano-container {
+    position: relative; background: #eee; border-radius: 8px;
+    overflow: hidden; min-height: 200px; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .plano-container canvas { display: block; cursor: crosshair; }
+  .plano-placeholder { text-align: center; color: var(--muted); padding: 40px; }
+  .plano-placeholder svg { width: 36px; height: 36px; margin-bottom: 10px; opacity: 0.4; }
+  .plano-toolbar {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center;
+  }
+  .plano-toolbar .btn {
+    padding: 7px 14px; border-radius: 6px; border: 1.5px solid var(--border);
+    font-size: 0.8rem; cursor: pointer; background: #fff; color: var(--dark);
+    font-weight: 600; transition: all 0.15s; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .plano-toolbar .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .plano-toolbar .btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .plano-toolbar .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .plano-toolbar .btn.primary:hover { background: var(--accent-light); }
+  .plano-info { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+  .plano-measure {
+    background: var(--calc-bg); border: 1.5px solid var(--calc-border); border-radius: 7px;
+    padding: 8px 14px; margin-top: 10px; font-weight: 600; color: #B8651A;
+    display: none; align-items: center; gap: 10px;
+  }
+  .plano-measure.show { display: flex; }
+  .plano-measure .transfer-btn {
+    padding: 4px 10px; border-radius: 5px; border: 1px solid var(--calc-border);
+    background: #fff; font-size: 0.75rem; cursor: pointer; font-weight: 600;
+    color: var(--accent); font-family: inherit; transition: all 0.15s;
+  }
+  .plano-measure .transfer-btn:hover { background: var(--accent); color: #fff; }
+  .scale-input-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+  .scale-input-row input { max-width: 120px; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .card-body { padding: 14px; }
+    .card-header { padding: 12px 14px; }
+    .sistema-options { grid-template-columns: 1fr; }
+    header { padding: 14px 16px; }
+    .header-left h1 { font-size: 1.05rem; }
+    .btn-pdf { padding: 7px 12px; font-size: 0.75rem; }
+    .mat-table { font-size: 0.75rem; }
+    .mat-table th, .mat-table td { padding: 7px 8px; }
+  }
+  @media (max-width: 380px) {
+    .form-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===== PRINT ===== */
+  @media print {
+    body { background: #fff; }
+    header, .card:nth-child(-n+4), .card:nth-child(6) { display: none !important; }
+    .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+    .card-body { max-height: none !important; opacity: 1 !important; padding: 10px !important; }
+    .card.collapsed .card-body { max-height: none !important; opacity: 1 !important; }
+    .mat-table th { background: #333 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    main { padding: 0; max-width: 100%; }
+    .print-header { display: block !important; }
+  }
+  .print-header { display: none; margin-bottom: 16px; }
+  .print-header h2 { font-size: 1.1rem; }
+  .print-header p { font-size: 0.82rem; color: #666; }
+
+  /* ===== ANIMACIONES ===== */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+  .pulse { animation: pulseAnim 0.6s ease; }
+  @keyframes pulseAnim { 0%{background:rgba(192,57,43,0.12)} 100%{background:transparent} }
+
+  /* Scrollbar sutil */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-left">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+    <div>
+      <h1>Cielorrasos</h1>
+      <span>Calculadora de Materiales</span>
+    </div>
+  </div>
+  <button class="btn-pdf" onclick="exportarPDF()" aria-label="Exportar PDF">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Exportar PDF
+  </button>
+</header>
+
+<main>
+
+  <!-- ===== MÓDULO 1: DATOS DEL AMBIENTE ===== -->
+  <section class="card" id="card1">
+    <div class="card-header" onclick="toggleCard('card1')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <h2>Datos del Ambiente</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="nombre">Nombre del ambiente</label>
+          <input type="text" id="nombre" placeholder="Ej: Living principal">
+        </div>
+        <div class="form-group">
+          <label for="largo">Largo (m)</label>
+          <input type="number" id="largo" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label for="ancho">Ancho (m)</label>
+          <input type="number" id="ancho" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label for="alturaLocal">Altura del local (m)</label>
+          <input type="number" id="alturaLocal" step="0.01" min="0" placeholder="3.00">
+        </div>
+        <div class="form-group">
+          <label for="alturaCielo">Altura cielorraso terminado (m)</label>
+          <input type="number" id="alturaCielo" step="0.01" min="0" placeholder="2.70">
+        </div>
+        <div class="form-group">
+          <label>Superficie neta</label>
+          <div class="calc-value" id="valSuperficie">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            <span>0.00</span><small>m²</small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Perímetro total</label>
+          <div class="calc-value" id="valPerimetro">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <span>0.00</span><small>m</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MÓDULO 2: SISTEMA DE CIELORRASO ===== -->
+  <section class="card" id="card2">
+    <div class="card-header" onclick="toggleCard('card2')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <h2>Sistema de Cielorraso</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="sistema-options">
+        <div class="sistema-opt active" data-sys="drywall" onclick="selectSistema('drywall')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="1"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+          <strong>Placa de Yeso</strong><small>Drywall</small>
+        </div>
+        <div class="sistema-opt" data-sys="pvc" onclick="selectSistema('pvc')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="2" x2="4" y2="22"/><line x1="8" y1="2" x2="8" y2="22"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="16" y1="2" x2="16" y2="22"/><line x1="20" y1="2" x2="20" y2="22"/><line x1="2" y1="8" x2="22" y2="8"/><line x1="2" y1="16" x2="22" y2="16"/></svg>
+          <strong>Panel de PVC</strong><small>Machimbre</small>
+        </div>
+        <div class="sistema-opt" data-sys="fibrocemento" onclick="selectSistema('fibrocemento')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="1"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><circle cx="7" cy="7" r="1.5"/><circle cx="17" cy="7" r="1.5"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
+          <strong>Fibrocemento / OSB</strong><small>Placa rígida</small>
+        </div>
+      </div>
+
+      <!-- Parámetros Drywall -->
+      <div class="param-section" id="params-drywall">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="dw-spacingMain">Distancia perfiles principales (m)</label>
+            <select id="dw-spacingMain">
+              <option value="0.40">0.40 m</option>
+              <option value="0.61" selected>0.61 m</option>
+              <option value="1.20">1.20 m</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dw-spacingHat">Distancia perfiles secundarios (m)</label>
+            <select id="dw-spacingHat">
+              <option value="0.40">0.40 m</option>
+              <option value="0.61" selected>0.61 m</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dw-tipoPlaca">Tipo de placa</label>
+            <select id="dw-tipoPlaca">
+              <option value="STD">Standard 12.5mm</option>
+              <option value="RH">Resistente a la humedad (RH)</option>
+              <option value="RF">Resistente al fuego (RF)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dw-wastePlaca">Desperdicio placas (%)</label>
+            <input type="number" id="dw-wastePlaca" value="12" min="0" max="30" step="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Parámetros PVC -->
+      <div class="param-section hidden" id="params-pvc">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="pvc-anchoPanel">Ancho del panel (m)</label>
+            <select id="pvc-anchoPanel">
+              <option value="0.10">0.10 m</option>
+              <option value="0.20" selected>0.20 m</option>
+              <option value="0.25">0.25 m</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="pvc-spacingListon">Distancia entre listones (m)</label>
+            <select id="pvc-spacingListon">
+              <option value="0.40">0.40 m</option>
+              <option value="0.60" selected>0.60 m</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="pvc-tipoSoporte">Tipo de soporte</label>
+            <select id="pvc-tipoSoporte">
+              <option value="madera">Listón de madera</option>
+              <option value="aluminio">Perfil de aluminio</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="pvc-waste">Desperdicio (%)</label>
+            <input type="number" id="pvc-waste" value="10" min="0" max="30" step="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Parámetros Fibrocemento -->
+      <div class="param-section hidden" id="params-fibrocemento">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fc-spacingMain">Distancia perfiles principales (m)</label>
+            <select id="fc-spacingMain">
+              <option value="0.40">0.40 m</option>
+              <option value="0.61" selected>0.61 m</option>
+              <option value="1.20">1.20 m</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fc-spacingHat">Distancia perfiles secundarios (m)</label>
+            <select id="fc-spacingHat">
+              <option value="0.40">0.40 m</option>
+              <option value="0.61" selected>0.61 m</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fc-tipoPlaca">Tipo de placa</label>
+            <select id="fc-tipoPlaca">
+              <option value="FIBRO">Fibrocemento</option>
+              <option value="OSB">OSB</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fc-wastePlaca">Desperdicio placas (%)</label>
+            <input type="number" id="fc-wastePlaca" value="12" min="0" max="30" step="1">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MÓDULO 3: PERÍMETRO Y TERMINACIÓN ===== -->
+  <section class="card" id="card3">
+    <div class="card-header" onclick="toggleCard('card3')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      <h2>Perímetro y Terminación de Borde</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Perímetro calculado</label>
+          <div class="calc-value" id="valPerimetro3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2 12 6 12 6 6 18 6 18 18 6 18 6 12"/></svg>
+            <span>0.00</span><small>m</small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="terminacionTipo">Tipo de terminación perimetral</label>
+          <select id="terminacionTipo">
+            <option value="angulo25">Perfil Ángulo L 25×25 mm</option>
+            <option value="angulo38">Perfil Ángulo L 38×38 mm</option>
+            <option value="molduraYeso">Moldura de yeso en L</option>
+            <option value="sin">Sin terminación perimetral</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Terminación necesaria</label>
+          <div class="calc-value" id="valTerminacion">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 18 4 18 4 12"/></svg>
+            <span>0.00</span><small>m</small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Barras de 3m a comprar</label>
+          <div class="calc-value" id="valBarrasTerm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="1"/></svg>
+            <span>0</span><small>u</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MÓDULO 4: SUSPENSIÓN Y VIENTOS ===== -->
+  <section class="card" id="card4">
+    <div class="card-header" onclick="toggleCard('card4')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="4 6 12 2 20 6"/><line x1="8" y1="12" x2="16" y2="12"/><circle cx="12" cy="12" r="1"/></svg>
+      <h2>Estructura de Suspensión y Vientos</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="vientoCalibre">Alambre viento galvanizado</label>
+          <select id="vientoCalibre">
+            <option value="12">N°12 (2.05 mm)</option>
+            <option value="14">N°14 (1.63 mm)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="vientoSpacing">Distancia entre puntos de fijación (m)</label>
+          <input type="number" id="vientoSpacing" value="1.20" step="0.10" min="0.30">
+        </div>
+        <div class="form-group">
+          <label for="rolloAlambre">Rollo de alambre</label>
+          <select id="rolloAlambre">
+            <option value="5">Rollo 5 kg</option>
+            <option value="25">Rollo 25 kg</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cajaTornillos">Caja tornillos placa</label>
+          <select id="cajaTornillos">
+            <option value="100">Caja 100 u</option>
+            <option value="500">Caja 500 u</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="check-group">
+        <input type="checkbox" id="incluirRefuerzo">
+        <label for="incluirRefuerzo">Incluir vigas o bajadas de estructura perimetral</label>
+      </div>
+
+      <div id="refuerzoFields" class="form-grid" style="margin-top:12px; display:none;">
+        <div class="form-group">
+          <label for="refPerimetro">Perímetro de bajada (m)</label>
+          <input type="number" id="refPerimetro" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label for="refAltura">Altura de bajada (m)</label>
+          <input type="number" id="refAltura" step="0.01" min="0" placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="form-grid" style="margin-top:16px;">
+        <div class="form-group">
+          <label>Puntos de viento</label>
+          <div class="calc-value" id="valPuntosViento">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/></svg>
+            <span>0</span><small>puntos</small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Bajada por punto</label>
+          <div class="calc-value" id="valBajada">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="8 18 12 22 16 18"/></svg>
+            <span>0.00</span><small>m</small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Total alambre</label>
+          <div class="calc-value" id="valTotalAlambre">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span>0.00</span><small>m</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MÓDULO 5: LISTA DE MATERIALES ===== -->
+  <section class="card" id="card5">
+    <div class="card-header" onclick="toggleCard('card5')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <h2>Lista de Materiales — COMPRAS</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="print-header">
+        <h2 id="printTitle">Cielorrasos — Lista de Materiales</h2>
+        <p id="printSubtitle"></p>
+      </div>
+      <div id="materialesContent">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          <p>Ingresá las dimensiones del ambiente para ver los materiales</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MÓDULO 6: LECTURA DE PLANO ===== -->
+  <section class="card" id="card6">
+    <div class="card-header" onclick="toggleCard('card6')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <h2>Lectura de Plano (Opcional)</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p style="font-size:0.84rem;color:var(--muted);margin-bottom:12px;">Cargá una imagen de plano para calibrar la escala y medir distancias.</p>
+      <input type="file" id="planoFile" accept="image/png,image/jpeg,image/webp" style="font-size:0.85rem;margin-bottom:12px;">
+      <div class="plano-container" id="planoContainer">
+        <div class="plano-placeholder" id="planoPlaceholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <p>Cargá una imagen para comenzar</p>
+        </div>
+        <canvas id="planoCanvas" style="display:none;"></canvas>
+      </div>
+      <div class="plano-toolbar" id="planoToolbar" style="display:none;">
+        <button class="btn active" id="btnCalibrar" onclick="setPlanoMode('calibrar')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="4"/><circle cx="4" cy="20" r="2"/><circle cx="20" cy="4" r="2"/></svg>
+          Calibrar
+        </button>
+        <button class="btn" id="btnMedir" onclick="setPlanoMode('medir')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M12 2v20"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+          Medir
+        </button>
+        <button class="btn" onclick="clearPlano()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          Limpiar
+        </button>
+        <span class="plano-info" id="planoInfo">Hacé clic en dos puntos para calibrar la escala</span>
+      </div>
+      <div class="scale-input-row" id="scaleInputRow" style="display:none;">
+        <label style="font-size:0.82rem;font-weight:600;">Distancia real (m):</label>
+        <input type="number" id="scaleDistance" step="0.01" min="0" placeholder="Ej: 5.00">
+        <button class="btn primary" onclick="confirmScale()" style="padding:7px 14px;border-radius:6px;font-size:0.82rem;cursor:pointer;">Confirmar</button>
+      </div>
+      <div class="plano-measure" id="planoMeasure">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M12 2v20"/></svg>
+        <span id="planoMeasureVal">0.00 m</span>
+        <button class="transfer-btn" onclick="transferToField('largo')">Usar como Largo</button>
+        <button class="transfer-btn" onclick="transferToField('ancho')">Usar como Ancho</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ============================================================
+   CONSTANTES Y DATOS DE REFERENCIA
+   ============================================================ */
+const SISTEMAS = {
+  drywall: {
+    nombre: 'Placa de Yeso (Drywall)',
+    placaArea: 2.88,            // 1.20×2.40 m
+    placaLargo: 2.40,
+    placaAncho: 1.20,
+    perfilOmegaLargo: 3,        // metros por barra
+    perfilHatLargo: 3,
+    anguloLargo: 3,
+    tornPorM2: 17,              // tornillos placa por m²
+    wastePerfil: 0.05,
+    cintaPorM2: 1.5,           // m de cinta por m²
+    masillaPorMCinta: 0.3,     // kg de masilla por m de cinta
+  },
+  pvc: {
+    nombre: 'Panel de PVC (Machimbre)',
+    panelLargo: 6,
+    panelAnchos: [0.10, 0.20, 0.25],
+    listonLargo: 3,
+    anguloLargo: 3,
+    wastePerfil: 0.10,
+  },
+  fibrocemento: {
+    nombre: 'Placa de Fibrocemento / OSB',
+    placaArea: 2.9768,          // 1.22×2.44 m
+    placaLargo: 2.44,
+    placaAncho: 1.22,
+    perfilOmegaLargo: 3,
+    perfilHatLargo: 3,
+    anguloLargo: 3,
+    tornPorM2: 12,
+    wastePerfil: 0.05,
+  }
+};
+
+// Peso del alambre galvanizado en kg/m
+const ALAMBRE_PESO = { 12: 0.054, 14: 0.034 };
+
+/* ============================================================
+   SISTEMA ACTIVO
+   ============================================================ */
+let sistemaActivo = 'drywall';
+
+function selectSistema(sys) {
+  sistemaActivo = sys;
+  document.querySelectorAll('.sistema-opt').forEach(el => {
+    el.classList.toggle('active', el.dataset.sys === sys);
+  });
+  document.querySelectorAll('.param-section').forEach(el => el.classList.add('hidden'));
+  const params = document.getElementById('params-' + sys);
+  if (params) params.classList.remove('hidden');
+  calcularTodo();
+}
+
+/* ============================================================
+   COLAPSAR TARJETAS
+   ============================================================ */
+function toggleCard(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+/* ============================================================
+   LECTURA DE INPUTS
+   ============================================================ */
+function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function getStr(id) { return document.getElementById(id).value; }
+
+/* ============================================================
+   CÁLCULO PRINCIPAL
+   ============================================================ */
+function calcularTodo() {
+  const L = getVal('largo');
+  const W = getVal('ancho');
+  const hLocal = getVal('alturaLocal');
+  const hCielo = getVal('alturaCielo');
+
+  const superficie = L * W;
+  const perimetro = 2 * (L + W);
+  const alturaBajada = Math.max(0, hLocal - hCielo);
+
+  // Actualizar valores calculados del módulo 1
+  setCalcValue('valSuperficie', superficie.toFixed(2));
+  setCalcValue('valPerimetro', perimetro.toFixed(2));
+
+  // Módulo 3
+  setCalcValue('valPerimetro3', perimetro.toFixed(2));
+  const termTipo = getStr('terminacionTipo');
+  let termMl = 0;
+  if (termTipo !== 'sin') termMl = perimetro;
+  setCalcValue('valTerminacion', termMl.toFixed(2));
+  const termBarras = termMl > 0 ? Math.ceil(termMl * 1.05 / 3) : 0;
+  setCalcValue('valBarrasTerm', termBarras);
+
+  // Módulo 4
+  const vientoSpacing = Math.max(0.30, getVal('vientoSpacing'));
+  const calibre = getStr('vientoCalibre');
+  const incluirRef = document.getElementById('incluirRefuerzo').checked;
+  const refPerim = incluirRef ? getVal('refPerimetro') : 0;
+  const refAlt = incluirRef ? getVal('refAltura') : 0;
+
+  // Calcular puntos de viento según sistema
+  let puntosViento = 0;
+  let numMainLines = 0;
+
+  if (sistemaActivo === 'drywall' || sistemaActivo === 'fibrocemento') {
+    const sp = sistemaActivo === 'drywall' ? getVal('dw-spacingMain') : getVal('fc-spacingMain');
+    numMainLines = Math.max(2, Math.ceil(W / sp));
+    const ptsPorLinea = Math.max(2, Math.ceil(L / vientoSpacing));
+    puntosViento = numMainLines * ptsPorLinea;
+  } else {
+    // PVC: vientos en los listones de soporte
+    const spListon = getVal('pvc-spacingListon');
+    const numListones = Math.max(2, Math.ceil(L / spListon));
+    const ptsPorListon = Math.max(2, Math.ceil(W / vientoSpacing));
+    puntosViento = numListones * ptsPorListon;
+  }
+
+  // Refuerzo perimetral
+  let puntosRef = 0;
+  if (incluirRef && refPerim > 0) {
+    puntosRef = Math.max(2, Math.ceil(refPerim / vientoSpacing));
+  }
+
+  const totalPuntos = puntosViento + puntosRef;
+  const bajadaPorPunto = alturaBajada + 0.30;
+  const totalAlambreM = totalPuntos * bajadaPorPunto;
+
+  setCalcValue('valPuntosViento', totalPuntos);
+  setCalcValue('valBajada', bajadaPorPunto.toFixed(2));
+  setCalcValue('valTotalAlambre', totalAlambreM.toFixed(2));
+
+  // ---- Construir lista de materiales ----
+  let materiales = [];
+
+  if (superficie <= 0) {
+    renderMateriales([]);
+    return;
+  }
+
+  switch (sistemaActivo) {
+    case 'drywall':
+      materiales = calcularDrywall(L, W, superficie, perimetro, numMainLines, puntosViento, totalPuntos, totalAlambreM, termTipo, termBarras, bajadaPorPunto, incluirRef, refPerim, refAlt);
+      break;
+    case 'pvc':
+      materiales = calcularPVC(L, W, superficie, perimetro, puntosViento, totalPuntos, totalAlambreM, termTipo, termBarras, bajadaPorPunto, incluirRef, refPerim, refAlt);
+      break;
+    case 'fibrocemento':
+      materiales = calcularFibrocemento(L, W, superficie, perimetro, numMainLines, puntosViento, totalPuntos, totalAlambreM, termTipo, termBarras, bajadaPorPunto, incluirRef, refPerim, refAlt);
+      break;
+  }
+
+  renderMateriales(materiales);
+}
+
+/* ============================================================
+   CÁLCULO DRYWALL
+   ============================================================ */
+function calcularDrywall(L, W, S, P, numMain, ptsViento, totalPts, totalAlambre, termTipo, termBarras, bajadaPunto, incluirRef, refPerim, refAlt) {
+  const cfg = SISTEMAS.drywall;
+  const spMain = getVal('dw-spacingMain');
+  const spHat = getVal('dw-spacingHat');
+  const tipoPlaca = getStr('dw-tipoPlaca');
+  const wastePlaca = getVal('dw-wastePlaca') / 100;
+  const cajaTor = parseInt(getStr('cajaTornillos'));
+  const rolloKg = parseInt(getStr('rolloAlambre'));
+  const calibre = getStr('vientoCalibre');
+
+  // Placas
+  const placaLabels = { STD: 'Standard 12.5mm', RH: 'Resistente Humedad (RH)', RF: 'Resistente Fuego (RF)' };
+  const areaNeta = S;
+  const areaBruta = areaNeta * (1 + wastePlaca);
+  const cantPlacas = Math.ceil(areaBruta / cfg.placaArea);
+
+  // Perfiles principales (Omega)
+  const totalMainM = numMain * L;
+  const mainBruto = totalMainM * (1 + cfg.wastePerfil);
+  const barrasMain = Math.ceil(mainBruto / cfg.perfilOmegaLargo);
+
+  // Perfiles secundarios (Hat)
+  const numHat = Math.max(2, Math.ceil(L / spHat));
+  const totalHatM = numHat * W;
+  const hatBruto = totalHatM * (1 + cfg.wastePerfil);
+  const barrasHat = Math.ceil(hatBruto / cfg.perfilHatLargo);
+
+  // Terminación perimetral
+  const termBarrasFinal = termTipo !== 'sin' ? termBarras : 0;
+
+  // Alambre viento
+  const alambreKg = totalAlambre * ALAMBRE_PESO[calibre];
+  const rollosAlambre = Math.ceil(alambreKg / rolloKg);
+
+  // Tarugos
+  const tarugosViento = totalPts;
+  const tarugosPerim = Math.ceil(P / 0.60);
+  const totalTarugos = tarugosViento + tarugosPerim;
+  const bolsasTarugos = Math.ceil(totalTarugos / 100);
+
+  // Tornillos de placa
+  const tornPlaca = Math.ceil(S * cfg.tornPorM2);
+  const cajasTornPlaca = Math.ceil(tornPlaca / cajaTor);
+
+  // Tornillos de estructura (empalmes)
+  const empalmesMain = numMain * Math.max(0, Math.ceil(L / cfg.perfilOmegaLargo) - 1);
+  const empalmesHat = numHat * Math.max(0, Math.ceil(W / cfg.perfilHatLargo) - 1);
+  const tornEstruct = (empalmesMain + empalmesHat) * 4;
+  const cajasTornEstruct = Math.ceil(tornEstruct / 100);
+
+  // Cinta de juntas
+  const totalCinta = S * cfg.cintaPorM2;
+  const rollosCinta = Math.ceil(totalCinta / 50); // rollos de 50m
+
+  // Masilla
+  const masillaKg = totalCinta * cfg.masillaPorMCinta;
+  const bolsasMasilla = Math.ceil(masillaKg / 25);
+
+  const mats = [];
+  mats.push({
+    nombre: 'Placa de yeso ' + placaLabels[tipoPlaca] + ' (1.20×2.40m)',
+    qtyNeta: areaNeta.toFixed(2), desperdicio: Math.round(wastePlaca * 100) + '%',
+    qtyBruta: areaBruta.toFixed(2), unidadCom: 'Placa', cantComprar: cantPlacas
+  });
+  mats.push({
+    nombre: 'Perfil Omega / Canal principal (' + cfg.perfilOmegaLargo + 'm)',
+    qtyNeta: totalMainM.toFixed(2), desperdicio: Math.round(cfg.wastePerfil * 100) + '%',
+    qtyBruta: mainBruto.toFixed(2), unidadCom: 'Barra', cantComprar: barrasMain
+  });
+  mats.push({
+    nombre: 'Perfil Hat / F secundario (' + cfg.perfilHatLargo + 'm)',
+    qtyNeta: totalHatM.toFixed(2), desperdicio: Math.round(cfg.wastePerfil * 100) + '%',
+    qtyBruta: hatBruto.toFixed(2), unidadCom: 'Barra', cantComprar: barrasHat
+  });
+
+  if (termTipo !== 'sin') {
+    const termLabels = { angulo25: 'Ángulo L 25×25mm', angulo38: 'Ángulo L 38×38mm', molduraYeso: 'Moldura yeso en L' };
+    mats.push({
+      nombre: termLabels[termTipo] + ' (' + cfg.anguloLargo + 'm)',
+      qtyNeta: P.toFixed(2), desperdicio: '5%',
+      qtyBruta: (P * 1.05).toFixed(2), unidadCom: 'Barra', cantComprar: termBarrasFinal
+    });
+  }
+
+  mats.push({
+    nombre: 'Alambre viento galvanizado N°' + calibre,
+    qtyNeta: totalAlambre.toFixed(2) + ' m', desperdicio: '—',
+    qtyBruta: alambreKg.toFixed(2) + ' kg', unidadCom: 'Rollo ' + rolloKg + 'kg', cantComprar: rollosAlambre
+  });
+  mats.push({
+    nombre: 'Tarugos expansivos',
+    qtyNeta: totalTarugos + ' u', desperdicio: '—',
+    qtyBruta: totalTarugos + ' u', unidadCom: 'Bolsa 100u', cantComprar: bolsasTarugos
+  });
+  mats.push({
+    nombre: 'Tornillos placa drywall',
+    qtyNeta: tornPlaca + ' u', desperdicio: '—',
+    qtyBruta: tornPlaca + ' u', unidadCom: 'Caja ' + cajaTor + 'u', cantComprar: cajasTornPlaca
+  });
+  mats.push({
+    nombre: 'Tornillos autoperforantes estructura',
+    qtyNeta: tornEstruct + ' u', desperdicio: '—',
+    qtyBruta: tornEstruct + ' u', unidadCom: 'Caja 100u', cantComprar: cajasTornEstruct
+  });
+  mats.push({
+    nombre: 'Cinta de juntas',
+    qtyNeta: totalCinta.toFixed(1) + ' m', desperdicio: '—',
+    qtyBruta: totalCinta.toFixed(1) + ' m', unidadCom: 'Rollo 50m', cantComprar: rollosCinta
+  });
+  mats.push({
+    nombre: 'Masilla / Compuesto para juntas',
+    qtyNeta: masillaKg.toFixed(1) + ' kg', desperdicio: '—',
+    qtyBruta: masillaKg.toFixed(1) + ' kg', unidadCom: 'Bolsa 25kg', cantComprar: bolsasMasilla
+  });
+
+  if (incluirRef && refPerim > 0) {
+    const refBarras = Math.ceil(refPerim * 1.05 / cfg.perfilOmegaLargo);
+    const refVientos = Math.max(2, Math.ceil(refPerim / 1.20));
+    const refAlambreM = refVientos * (refAlt + 0.30);
+    const refAlambreKg = refAlambreM * ALAMBRE_PESO[calibre];
+    mats.push({
+      nombre: 'Perfil Omega refuerzo perimetral (' + cfg.perfilOmegaLargo + 'm)',
+      qtyNeta: refPerim.toFixed(2), desperdicio: '5%',
+      qtyBruta: (refPerim * 1.05).toFixed(2), unidadCom: 'Barra', cantComprar: refBarras
+    });
+    mats.push({
+      nombre: 'Alambre viento adicional refuerzo',
+      qtyNeta: refAlambreM.toFixed(2) + ' m', desperdicio: '—',
+      qtyBruta: refAlambreKg.toFixed(2) + ' kg', unidadCom: 'Rollo ' + rolloKg + 'kg', cantComprar: Math.ceil(refAlambreKg / rolloKg)
+    });
+  }
+
+  return mats;
+}
+
+/* ============================================================
+   CÁLCULO PVC
+   ============================================================ */
+function calcularPVC(L, W, S, P, ptsViento, totalPts, totalAlambre, termTipo, termBarras, bajadaPunto, incluirRef, refPerim, refAlt) {
+  const cfg = SISTEMAS.pvc;
+  const panelAncho = getVal('pvc-anchoPanel');
+  const spListon = getVal('pvc-spacingListon');
+  const tipoSoporte = getStr('pvc-tipoSoporte');
+  const waste = getVal('pvc-waste') / 100;
+  const rolloKg = parseInt(getStr('rolloAlambre'));
+  const calibre = getStr('vientoCalibre');
+
+  const dirLargo = L >= W;
+  const panelRun = dirLargo ? L : W;
+  const panelCross = dirLargo ? W : L;
+
+  const numRows = Math.max(1, Math.ceil(panelCross / panelAncho));
+  const mlPaneles = numRows * panelRun;
+  const mlBruto = mlPaneles * (1 + waste);
+  const cantPaneles = Math.ceil(mlBruto / cfg.panelLargo);
+
+  const numListones = Math.max(2, Math.ceil(panelRun / spListon));
+  const totalListonM = numListones * panelCross;
+  const listonBruto = totalListonM * (1 + cfg.wastePerfil);
+  const barrasListon = Math.ceil(listonBruto / cfg.listonLargo);
+
+  const termBarrasFinal = termTipo !== 'sin' ? termBarras : 0;
+
+  const alambreKg = totalAlambre * ALAMBRE_PESO[calibre];
+  const rollosAlambre = Math.ceil(alambreKg / rolloKg);
+
+  const tarugosViento = totalPts;
+  const tarugosPerim = Math.ceil(P / 0.60);
+  const totalTarugos = tarugosViento + tarugosPerim;
+  const bolsasTarugos = Math.ceil(totalTarugos / 100);
+
+  const clipsPanel = numRows * Math.max(2, Math.ceil(panelRun / 0.50));
+  const cajasClips = Math.ceil(clipsPanel / 100);
+
+  const soporteLabel = tipoSoporte === 'madera' ? 'Listón de madera' : 'Perfil de aluminio';
+
+  const mats = [];
+  mats.push({
+    nombre: 'Panel de PVC ' + panelAncho + 'm × 6m',
+    qtyNeta: mlPaneles.toFixed(2) + ' ml', desperdicio: Math.round(waste * 100) + '%',
+    qtyBruta: mlBruto.toFixed(2) + ' ml', unidadCom: 'Panel 6m', cantComprar: cantPaneles
+  });
+  mats.push({
+    nombre: soporteLabel + ' (' + cfg.listonLargo + 'm)',
+    qtyNeta: totalListonM.toFixed(2), desperdicio: Math.round(cfg.wastePerfil * 100) + '%',
+    qtyBruta: listonBruto.toFixed(2), unidadCom: 'Barra', cantComprar: barrasListon
+  });
+
+  if (termTipo !== 'sin') {
+    const termLabels = { angulo25: 'Ángulo L 25×25mm', angulo38: 'Ángulo L 38×38mm', molduraYeso: 'Moldura yeso en L' };
+    mats.push({
+      nombre: termLabels[termTipo] + ' (3m)',
+      qtyNeta: P.toFixed(2), desperdicio: '5%',
+      qtyBruta: (P * 1.05).toFixed(2), unidadCom: 'Barra', cantComprar: termBarrasFinal
+    });
+  }
+
+  mats.push({
+    nombre: 'Alambre viento galvanizado N°' + calibre,
+    qtyNeta: totalAlambre.toFixed(2) + ' m', desperdicio: '—',
+    qtyBruta: alambreKg.toFixed(2) + ' kg', unidadCom: 'Rollo ' + rolloKg + 'kg', cantComprar: rollosAlambre
+  });
+  mats.push({
+    nombre: 'Tarugos expansivos',
+    qtyNeta: totalTarugos + ' u', desperdicio: '—',
+    qtyBruta: totalTarugos + ' u', unidadCom: 'Bolsa 100u', cantComprar: bolsasTarugos
+  });
+  mats.push({
+    nombre: 'Clips / Tornillos fijación panel',
+    qtyNeta: clipsPanel + ' u', desperdicio: '—',
+    qtyBruta: clipsPanel + ' u', unidadCom: 'Caja 100u', cantComprar: cajasClips
+  });
+
+  if (incluirRef && refPerim > 0) {
+    const refBarras = Math.ceil(refPerim * 1.05 / cfg.listonLargo);
+    mats.push({
+      nombre: soporteLabel + ' refuerzo perimetral (3m)',
+      qtyNeta: refPerim.toFixed(2), desperdicio: '5%',
+      qtyBruta: (refPerim * 1.05).toFixed(2), unidadCom: 'Barra', cantComprar: refBarras
+    });
+  }
+
+  return mats;
+}
+
+/* ============================================================
+   CÁLCULO FIBROCEMENTO / OSB
+   ============================================================ */
+function calcularFibrocemento(L, W, S, P, numMain, ptsViento, totalPts, totalAlambre, termTipo, termBarras, bajadaPunto, incluirRef, refPerim, refAlt) {
+  const cfg = SISTEMAS.fibrocemento;
+  const spMain = getVal('fc-spacingMain');
+  const spHat = getVal('fc-spacingHat');
+  const tipoPlaca = getStr('fc-tipoPlaca');
+  const wastePlaca = getVal('fc-wastePlaca') / 100;
+  const cajaTor = parseInt(getStr('cajaTornillos'));
+  const rolloKg = parseInt(getStr('rolloAlambre'));
+  const calibre = getStr('vientoCalibre');
+
+  const placaLabels = { FIBRO: 'Fibrocemento', OSB: 'OSB' };
+
+  const areaNeta = S;
+  const areaBruta = areaNeta * (1 + wastePlaca);
+  const cantPlacas = Math.ceil(areaBruta / cfg.placaArea);
+
+  const totalMainM = numMain * L;
+  const mainBruto = totalMainM * (1 + cfg.wastePerfil);
+  const barrasMain = Math.ceil(mainBruto / cfg.perfilOmegaLargo);
+
+  const numHat = Math.max(2, Math.ceil(L / spHat));
+  const totalHatM = numHat * W;
+  const hatBruto = totalHatM * (1 + cfg.wastePerfil);
+  const barrasHat = Math.ceil(hatBruto / cfg.perfilHatLargo);
+
+  const termBarrasFinal = termTipo !== 'sin' ? termBarras : 0;
+
+  const alambreKg = totalAlambre * ALAMBRE_PESO[calibre];
+  const rollosAlambre = Math.ceil(alambreKg / rolloKg);
+
+  const tarugosViento = totalPts;
+  const tarugosPerim = Math.ceil(P / 0.60);
+  const totalTarugos = tarugosViento + tarugosPerim;
+  const bolsasTarugos = Math.ceil(totalTarugos / 100);
+
+  const tornPlaca = Math.ceil(S * cfg.tornPorM2);
+  const cajasTornPlaca = Math.ceil(tornPlaca / cajaTor);
+
+  const empalmesMain = numMain * Math.max(0, Math.ceil(L / cfg.perfilOmegaLargo) - 1);
+  const empalmesHat = numHat * Math.max(0, Math.ceil(W / cfg.perfilHatLargo) - 1);
+  const tornEstruct = (empalmesMain + empalmesHat) * 4;
+  const cajasTornEstruct = Math.ceil(tornEstruct / 100);
+
+  const mats = [];
+  mats.push({
+    nombre: 'Placa ' + placaLabels[tipoPlaca] + ' (1.22×2.44m)',
+    qtyNeta: areaNeta.toFixed(2), desperdicio: Math.round(wastePlaca * 100) + '%',
+    qtyBruta: areaBruta.toFixed(2), unidadCom: 'Placa', cantComprar: cantPlacas
+  });
+  mats.push({
+    nombre: 'Perfil Omega / Canal principal (' + cfg.perfilOmegaLargo + 'm)',
+    qtyNeta: totalMainM.toFixed(2), desperdicio: Math.round(cfg.wastePerfil * 100) + '%',
+    qtyBruta: mainBruto.toFixed(2), unidadCom: 'Barra', cantComprar: barrasMain
+  });
+  mats.push({
+    nombre: 'Perfil Hat / F secundario (' + cfg.perfilHatLargo + 'm)',
+    qtyNeta: totalHatM.toFixed(2), desperdicio: Math.round(cfg.wastePerfil * 100) + '%',
+    qtyBruta: hatBruto.toFixed(2), unidadCom: 'Barra', cantComprar: barrasHat
+  });
+
+  if (termTipo !== 'sin') {
+    const termLabels = { angulo25: 'Ángulo L 25×25mm', angulo38: 'Ángulo L 38×38mm', molduraYeso: 'Moldura yeso en L' };
+    mats.push({
+      nombre: termLabels[termTipo] + ' (3m)',
+      qtyNeta: P.toFixed(2), desperdicio: '5%',
+      qtyBruta: (P * 1.05).toFixed(2), unidadCom: 'Barra', cantComprar: termBarrasFinal
+    });
+  }
+
+  mats.push({
+    nombre: 'Alambre viento galvanizado N°' + calibre,
+    qtyNeta: totalAlambre.toFixed(2) + ' m', desperdicio: '—',
+    qtyBruta: alambreKg.toFixed(2) + ' kg', unidadCom: 'Rollo ' + rolloKg + 'kg', cantComprar: rollosAlambre
+  });
+  mats.push({
+    nombre: 'Tarugos expansivos',
+    qtyNeta: totalTarugos + ' u', desperdicio: '—',
+    qtyBruta: totalTarugos + ' u', unidadCom: 'Bolsa 100u', cantComprar: bolsasTarugos
+  });
+  mats.push({
+    nombre: 'Tornillos placa fibrocemento/OSB',
+    qtyNeta: tornPlaca + ' u', desperdicio: '—',
+    qtyBruta: tornPlaca + ' u', unidadCom: 'Caja ' + cajaTor + 'u', cantComprar: cajasTornPlaca
+  });
+  mats.push({
+    nombre: 'Tornillos autoperforantes estructura',
+    qtyNeta: tornEstruct + ' u', desperdicio: '—',
+    qtyBruta: tornEstruct + ' u', unidadCom: 'Caja 100u', cantComprar: cajasTornEstruct
+  });
+
+  if (incluirRef && refPerim > 0) {
+    const refBarras = Math.ceil(refPerim * 1.05 / cfg.perfilOmegaLargo);
+    mats.push({
+      nombre: 'Perfil Omega refuerzo perimetral (' + cfg.perfilOmegaLargo + 'm)',
+      qtyNeta: refPerim.toFixed(2), desperdicio: '5%',
+      qtyBruta: (refPerim * 1.05).toFixed(2), unidadCom: 'Barra', cantComprar: refBarras
+    });
+  }
+
+  return mats;
+}
+
+/* ============================================================
+   ACTUALIZAR VALORES CALCULADOS EN UI
+   ============================================================ */
+function setCalcValue(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const span = el.querySelector('span');
+  if (span && span.textContent !== String(val)) {
+    span.textContent = val;
+    el.classList.remove('pulse');
+    void el.offsetWidth;
+    el.classList.add('pulse');
+  }
+}
+
+/* ============================================================
+   RENDERIZAR TABLA DE MATERIALES
+   ============================================================ */
+function renderMateriales(materiales) {
+  const container = document.getElementById('materialesContent');
+  const printTitle = document.getElementById('printTitle');
+  const printSub = document.getElementById('printSubtitle');
+
+  const nombre = getStr('nombre') || 'Sin nombre';
+  const L = getVal('largo');
+  const W = getVal('ancho');
+  const now = new Date();
+  const fecha = now.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  printTitle.textContent = 'Cielorrasos — ' + nombre;
+  printSub.textContent = 'Largo: ' + L + 'm × Ancho: ' + W + 'm | Superficie: ' + (L * W).toFixed(2) + ' m² | Fecha: ' + fecha;
+
+  if (materiales.length === 0) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><p>Ingresá las dimensiones del ambiente para ver los materiales</p></div>';
+    return;
+  }
+
+  let html = '<div class="mat-table-wrap"><table class="mat-table"><thead><tr>';
+  html += '<th>Material</th><th>Qty neta</th><th>Desperdicio</th><th>Qty bruta</th><th>Unidad comercial</th><th>Cant. a comprar</th>';
+  html += '</tr></thead><tbody>';
+
+  materiales.forEach(m => {
+    html += '<tr>';
+    html += '<td class="mat-name">' + m.nombre + '</td>';
+    html += '<td>' + m.qtyNeta + '</td>';
+    html += '<td>' + m.desperdicio + '</td>';
+    html += '<td>' + m.qtyBruta + '</td>';
+    html += '<td>' + m.unidadCom + '</td>';
+    html += '<td class="qty-buy">' + m.cantComprar + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+/* ============================================================
+   EXPORTAR PDF
+   ============================================================ */
+function exportarPDF() {
+  window.print();
+}
+
+/* ============================================================
+   MÓDULO 6 — LECTURA DE PLANO
+   ============================================================ */
+const plano = {
+  img: null, canvas: null, ctx: null,
+  scale: null, mode: 'calibrar',
+  points: [], lines: [],
+  imgW: 0, imgH: 0, calibDist: 0,
+};
+
+function initPlano() {
+  document.getElementById('planoFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const img = new Image();
+      img.onload = function() { plano.img = img; setupCanvas(img); };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function setupCanvas(img) {
+  const container = document.getElementById('planoContainer');
+  const canvas = document.getElementById('planoCanvas');
+  const maxW = Math.min(container.clientWidth, 800);
+  const maxH = 500;
+  let w = img.width, h = img.height;
+  const ratio = Math.min(maxW / w, maxH / h, 1);
+  w = Math.round(w * ratio);
+  h = Math.round(h * ratio);
+  canvas.width = w; canvas.height = h;
+  canvas.style.display = 'block'; canvas.style.maxWidth = '100%';
+  document.getElementById('planoPlaceholder').style.display = 'none';
+  document.getElementById('planoToolbar').style.display = 'flex';
+  plano.canvas = canvas; plano.ctx = canvas.getContext('2d');
+  plano.imgW = w; plano.imgH = h;
+  plano.scale = null; plano.points = []; plano.lines = [];
+  drawPlano();
+  canvas.onclick = function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width;
+    const sy = canvas.height / rect.height;
+    handlePlanoClick((e.clientX - rect.left) * sx, (e.clientY - rect.top) * sy);
+  };
+}
+
+function handlePlanoClick(x, y) {
+  plano.points.push({ x, y });
+  if (plano.points.length === 1) {
+    drawPlano(); drawAllLines();
+    plano.ctx.fillStyle = plano.mode === 'calibrar' ? '#C0392B' : '#2980B9';
+    plano.ctx.beginPath(); plano.ctx.arc(x, y, 5, 0, Math.PI * 2); plano.ctx.fill();
+  }
+  if (plano.points.length === 2) {
+    const p1 = plano.points[0], p2 = plano.points[1];
+    const dist = Math.sqrt((p2.x-p1.x)**2 + (p2.y-p1.y)**2);
+    if (plano.mode === 'calibrar') {
+      drawPlano(); drawAllLines(); drawLine(p1, p2, '#C0392B', 2);
+      plano.calibDist = dist;
+      document.getElementById('scaleInputRow').style.display = 'flex';
+      document.getElementById('planoInfo').textContent = 'Ingresá la distancia real entre los dos puntos';
+    } else if (plano.mode === 'medir' && plano.scale) {
+      const realDist = dist * plano.scale;
+      plano.lines.push({ p1, p2, dist: realDist, color: '#2980B9' });
+      plano.points = [];
+      drawPlano(); drawAllLines();
+      document.getElementById('planoMeasureVal').textContent = realDist.toFixed(2) + ' m';
+      document.getElementById('planoMeasure').classList.add('show');
+      document.getElementById('planoInfo').textContent = 'Medida: ' + realDist.toFixed(2) + ' m';
+    } else {
+      plano.points = [];
+      document.getElementById('planoInfo').textContent = 'Primero calibrá la escala';
+    }
+  }
+}
+
+function confirmScale() {
+  const dist = parseFloat(document.getElementById('scaleDistance').value);
+  if (!dist || dist <= 0 || !plano.calibDist) return;
+  plano.scale = dist / plano.calibDist;
+  plano.lines.push({ p1: plano.points[0], p2: plano.points[1], dist, color: '#C0392B' });
+  plano.points = [];
+  document.getElementById('scaleInputRow').style.display = 'none';
+  document.getElementById('scaleDistance').value = '';
+  drawPlano(); drawAllLines();
+  setPlanoMode('medir');
+  document.getElementById('planoInfo').textContent = 'Escala calibrada. Hacé clic en dos puntos para medir.';
+}
+
+function setPlanoMode(mode) {
+  plano.mode = mode; plano.points = [];
+  document.getElementById('btnCalibrar').classList.toggle('active', mode === 'calibrar');
+  document.getElementById('btnMedir').classList.toggle('active', mode === 'medir');
+  document.getElementById('planoInfo').textContent = mode === 'calibrar'
+    ? 'Hacé clic en dos puntos para calibrar la escala'
+    : (plano.scale ? 'Hacé clic en dos puntos para medir' : 'Primero calibrá la escala');
+  drawPlano(); drawAllLines();
+}
+
+function clearPlano() {
+  plano.points = []; plano.lines = []; plano.scale = null;
+  document.getElementById('scaleInputRow').style.display = 'none';
+  document.getElementById('planoMeasure').classList.remove('show');
+  setPlanoMode('calibrar');
+  drawPlano();
+}
+
+function drawPlano() {
+  if (!plano.ctx || !plano.img) return;
+  plano.ctx.clearRect(0, 0, plano.imgW, plano.imgH);
+  plano.ctx.drawImage(plano.img, 0, 0, plano.imgW, plano.imgH);
+}
+
+function drawLine(p1, p2, color, width) {
+  const ctx = plano.ctx;
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(p1.x, p1.y, 4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(p2.x, p2.y, 4, 0, Math.PI*2); ctx.fill();
+}
+
+function drawAllLines() {
+  plano.lines.forEach(l => {
+    drawLine(l.p1, l.p2, l.color, 2);
+    const ctx = plano.ctx;
+    const mx = (l.p1.x + l.p2.x) / 2, my = (l.p1.y + l.p2.y) / 2;
+    const label = l.dist.toFixed(2) + ' m';
+    ctx.font = 'bold 13px -apple-system, sans-serif';
+    const tw = ctx.measureText(label).width;
+    ctx.fillStyle = l.color; ctx.globalAlpha = 0.9;
+    ctx.fillRect(mx - tw/2 - 4, my - 18, tw + 8, 22);
+    ctx.globalAlpha = 1; ctx.fillStyle = '#fff';
+    ctx.fillText(label, mx - tw/2, my - 1);
+  });
+}
+
+function transferToField(field) {
+  const val = document.getElementById('planoMeasureVal').textContent.replace(' m', '');
+  document.getElementById(field).value = val;
+  calcularTodo();
+}
+
+/* ============================================================
+   CHECKBOX REFUERZO
+   ============================================================ */
+function initRefuerzoToggle() {
+  const cb = document.getElementById('incluirRefuerzo');
+  const fields = document.getElementById('refuerzoFields');
+  cb.addEventListener('change', function() {
+    fields.style.display = this.checked ? 'grid' : 'none';
+    calcularTodo();
+  });
+}
+
+/* ============================================================
+   LOCALSTORAGE
+   ============================================================ */
+const STATE_IDS = ['nombre','largo','ancho','alturaLocal','alturaCielo',
+  'dw-spacingMain','dw-spacingHat','dw-tipoPlaca','dw-wastePlaca',
+  'pvc-anchoPanel','pvc-spacingListon','pvc-tipoSoporte','pvc-waste',
+  'fc-spacingMain','fc-spacingHat','fc-tipoPlaca','fc-wastePlaca',
+  'terminacionTipo','vientoCalibre','vientoSpacing','rolloAlambre',
+  'cajaTornillos','incluirRefuerzo','refPerimetro','refAltura'];
+
+function saveState() {
+  try {
+    const data = { sistemaActivo };
+    STATE_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    localStorage.setItem('cielorraso_state', JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('cielorraso_state');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    STATE_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && data[id] !== undefined) {
+        if (el.type === 'checkbox') el.checked = data[id];
+        else el.value = data[id];
+      }
+    });
+    if (data.sistemaActivo) selectSistema(data.sistemaActivo);
+    if (data.incluirRefuerzo) document.getElementById('refuerzoFields').style.display = 'grid';
+  } catch(e) {}
+}
+
+/* ============================================================
+   INICIALIZACIÓN
+   ============================================================ */
+function init() {
+  loadState();
+  document.querySelectorAll('input:not([type="file"]), select').forEach(el => {
+    el.addEventListener('input', () => { calcularTodo(); saveState(); });
+    el.addEventListener('change', () => { calcularTodo(); saveState(); });
+  });
+  initRefuerzoToggle();
+  initPlano();
+  calcularTodo();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
