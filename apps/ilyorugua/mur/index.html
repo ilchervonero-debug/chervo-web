@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MUR — Muros Drywall · iLYorugua</title>
+<meta name="description" content="Calculadora de materiales para tabiques y cerramientos drywall">
+<meta name="theme-color" content="#2C2C2C">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MUR">
+<link rel="manifest" href="manifest.json">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F7F7F7; --card: #FFFFFF; --dark: #2C2C2C; --accent: #C0392B;
+    --accent-light: #E74C3C; --border: #E0E0E0; --muted: #777777;
+    --input-bg: #FAFAFA; --calc-bg: #FFF8F0; --calc-border: #E8A87C;
+    --radius: 10px; --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: var(--bg); color: var(--dark); line-height: 1.55;
+    min-height: 100vh; padding-bottom: 60px;
+  }
+  header {
+    background: var(--dark); color: #fff; padding: 18px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-left svg { flex-shrink: 0; }
+  .header-left h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+  .header-left span { font-size: 0.78rem; opacity: 0.55; font-weight: 400; }
+  .btn-pdf {
+    background: var(--accent); color: #fff; border: none; padding: 9px 18px;
+    border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 7px; transition: background 0.2s;
+  }
+  .btn-pdf:hover { background: var(--accent-light); }
+  .btn-pdf svg { width: 16px; height: 16px; }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 16px; }
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden;
+    border: 1px solid var(--border);
+    animation: cardIn 0.45s ease-out both;
+  }
+  .card:nth-child(2) { animation-delay: 0.06s; }
+  .card:nth-child(3) { animation-delay: 0.12s; }
+  .card:nth-child(4) { animation-delay: 0.18s; }
+  .card:nth-child(5) { animation-delay: 0.24s; }
+  .card:nth-child(6) { animation-delay: 0.30s; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  .card-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  .card-header:hover { background: #FAFAFA; }
+  .card-header svg { color: var(--accent); flex-shrink: 0; width: 20px; height: 20px; }
+  .card-header h2 { font-size: 1rem; font-weight: 700; flex: 1; }
+  .card-header .chevron { color: var(--muted); transition: transform 0.3s; width: 18px; height: 18px; }
+  .card.collapsed .card-header .chevron { transform: rotate(-90deg); }
+  .card-body { padding: 20px; transition: max-height 0.35s ease, padding 0.35s ease, opacity 0.25s; }
+  .card.collapsed .card-body { max-height: 0; padding: 0 20px; opacity: 0; overflow: hidden; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.78rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.04em; }
+  input[type="text"], input[type="number"], select {
+    padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 7px;
+    font-size: 0.92rem; background: var(--input-bg); color: var(--dark);
+    transition: border-color 0.2s, box-shadow 0.2s; outline: none; width: 100%;
+    font-family: inherit;
+  }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(192,57,43,0.10); }
+  .calc-value {
+    background: var(--calc-bg); border: 1.5px solid var(--calc-border);
+    border-radius: 7px; padding: 10px 12px; font-size: 0.95rem;
+    font-weight: 700; color: #B8651A; display: flex; align-items: center; gap: 6px;
+  }
+  .calc-value svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .calc-value small { font-weight: 400; font-size: 0.75rem; color: #999; }
+  .check-group { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .check-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+  .check-group label { text-transform: none; font-size: 0.88rem; cursor: pointer; }
+  .face-group {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 14px; margin-top: 10px;
+  }
+  .face-group h3 { font-size: 0.85rem; margin-bottom: 10px; color: var(--accent); }
+  .face-group.disabled { opacity: 0.4; pointer-events: none; }
+  .mat-table-wrap { overflow-x: auto; }
+  .mat-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .mat-table th {
+    background: var(--dark); color: #fff; padding: 10px 12px;
+    text-align: left; font-weight: 600; white-space: nowrap; position: sticky; top: 0;
+  }
+  .mat-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .mat-table tr:nth-child(even) td { background: #FAFAFA; }
+  .mat-table tr:hover td { background: #F0F0F0; }
+  .mat-table .mat-name { font-weight: 600; min-width: 160px; }
+  .mat-table .qty-buy { font-weight: 700; color: var(--accent); font-size: 0.95rem; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state p { font-size: 0.9rem; }
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .card-body { padding: 14px; }
+    .card-header { padding: 12px 14px; }
+    header { padding: 14px 16px; }
+    .btn-pdf { padding: 7px 12px; font-size: 0.75rem; }
+    .mat-table { font-size: 0.75rem; }
+    .mat-table th, .mat-table td { padding: 7px 8px; }
+  }
+  @media (max-width: 380px) { .form-grid { grid-template-columns: 1fr; } }
+  @media print {
+    body { background: #fff; }
+    header, .card:nth-child(-n+4), .card:nth-child(6) { display: none !important; }
+    .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+    .card-body { max-height: none !important; opacity: 1 !important; padding: 10px !important; }
+    .card.collapsed .card-body { max-height: none !important; opacity: 1 !important; }
+    .mat-table th { background: #333 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    main { padding: 0; max-width: 100%; }
+    .print-header { display: block !important; }
+  }
+  .print-header { display: none; margin-bottom: 16px; }
+  .print-header h2 { font-size: 1.1rem; }
+  .print-header p { font-size: 0.82rem; color: #666; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+  .pulse { animation: pulseAnim 0.6s ease; }
+  @keyframes pulseAnim { 0%{background:rgba(192,57,43,0.12)} 100%{background:transparent} }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    <div>
+      <h1>Muros Drywall</h1>
+      <span>Calculadora de Tabiques y Cerramientos</span>
+    </div>
+  </div>
+  <button class="btn-pdf" onclick="window.print()" aria-label="Exportar PDF">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    Exportar PDF
+  </button>
+</header>
+
+<main>
+
+  <!-- MÓDULO 1: DATOS DEL MURO -->
+  <section class="card" id="card1">
+    <div class="card-header" onclick="toggleCard('card1')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="1"/><line x1="1" y1="12" x2="23" y2="12"/></svg>
+      <h2>Datos del Muro / Tabique</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="nombre">Nombre del ambiente / muro</label>
+          <input type="text" id="nombre" placeholder="Ej: Tabique M04 - Oficinas">
+        </div>
+        <div class="form-group">
+          <label for="longitud">Longitud del muro (m)</label>
+          <input type="number" id="longitud" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label for="altura">Altura del muro (m)</label>
+          <input type="number" id="altura" step="0.01" min="0" placeholder="2.70">
+        </div>
+        <div class="form-group">
+          <label>Superficie (m²)</label>
+          <div class="calc-value" id="valSuperficie">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            <span>0.00</span><small>m²</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MÓDULO 2: ESTRUCTURA -->
+  <section class="card" id="card2">
+    <div class="card-header" onclick="toggleCard('card2')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="2" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="22"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      <h2>Estructura y Espesor</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="espesor">Espesor del tabique (mm)</label>
+          <select id="espesor">
+            <option value="35">35 mm (PGU/PGC 35)</option>
+            <option value="70" selected>70 mm (PGU/PGC 70)</option>
+            <option value="100">100 mm (PGU/PGC 100)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="spacingMontantes">Distancia entre montantes (m)</label>
+          <select id="spacingMontantes">
+            <option value="0.40">0.40 m</option>
+            <option value="0.61" selected>0.61 m</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="wasteEstructura">Desperdicio estructura (%)</label>
+          <input type="number" id="wasteEstructura" value="5" min="0" max="20" step="1">
+        </div>
+      </div>
+      <div class="check-group">
+        <input type="checkbox" id="dobleEstructura">
+        <label for="dobleEstructura">Estructura reforzada (Doble PGC / Caja y travesaño)</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- MÓDULO 3: CARAS Y PLACAS -->
+  <section class="card" id="card3">
+    <div class="card-header" onclick="toggleCard('card3')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+      <h2>Caras y Placas</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="form-grid" style="margin-bottom: 12px;">
+        <div class="form-group">
+          <label for="wastePlaca">Desperdicio placas (%)</label>
+          <input type="number" id="wastePlaca" value="12" min="0" max="30" step="1">
+        </div>
+      </div>
+
+      <div class="face-group" id="faceA">
+        <h3>Cara A (Lado 1)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="capasA">Cantidad de capas</label>
+            <select id="capasA">
+              <option value="1">1 capa</option>
+              <option value="2">2 capas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tipoPlacaA">Tipo de placa</label>
+            <select id="tipoPlacaA">
+              <option value="yesoEst">Yeso Estándar 12.5mm</option>
+              <option value="yesoRH">Yeso RH 12.5mm</option>
+              <option value="yesoRF">Yeso RF 12.5mm</option>
+              <option value="osb">OSB 18mm</option>
+              <option value="cementicia">Cementicia 15mm</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="check-group">
+        <input type="checkbox" id="incluirCaraB" checked>
+        <label for="incluirCaraB">Incluir Cara B (Muro doble cara / Tabique)</label>
+      </div>
+
+      <div class="face-group" id="faceB">
+        <h3>Cara B (Lado 2)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="capasB">Cantidad de capas</label>
+            <select id="capasB">
+              <option value="1">1 capa</option>
+              <option value="2">2 capas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tipoPlacaB">Tipo de placa</label>
+            <select id="tipoPlacaB">
+              <option value="yesoEst">Yeso Estándar 12.5mm</option>
+              <option value="yesoRH" selected>Yeso RH 12.5mm</option>
+              <option value="yesoRF">Yeso RF 12.5mm</option>
+              <option value="osb">OSB 18mm</option>
+              <option value="cementicia">Cementicia 15mm</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MÓDULO 4: AISLACIÓN Y CANTOS -->
+  <section class="card" id="card4">
+    <div class="card-header" onclick="toggleCard('card4')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <h2>Aislación y Cantos</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="tipoAislante">Aislante interior</label>
+          <select id="tipoAislante">
+            <option value="ninguno">Sin aislante</option>
+            <option value="lanaVidrio" selected>Lana de vidrio</option>
+            <option value="lanaRoca">Lana de roca</option>
+            <option value="poliestireno">Poliestireno expandido</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cantosExpuestos">Cantos expuestos (ml)</label>
+          <input type="number" id="cantosExpuestos" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label for="esquinasInternas">Esquinas internas (ml)</label>
+          <input type="number" id="esquinasInternas" step="0.01" min="0" placeholder="0.00">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MÓDULO 5: LISTA DE MATERIALES -->
+  <section class="card" id="card5">
+    <div class="card-header" onclick="toggleCard('card5')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <h2>Lista de Materiales — COMPRAS</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <div class="print-header">
+        <h2 id="printTitle">Muros Drywall — Lista de Materiales</h2>
+        <p id="printSubtitle"></p>
+      </div>
+      <div id="materialesContent">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          <p>Ingresá las dimensiones del muro para ver los materiales</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MÓDULO 6: PLANO -->
+  <section class="card" id="card6">
+    <div class="card-header" onclick="toggleCard('card6')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <h2>Lectura de Plano (Opcional)</h2>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p style="font-size:0.84rem;color:var(--muted);margin-bottom:12px;">Cargá una imagen de plano para calibrar la escala y medir distancias.</p>
+      <input type="file" id="planoFile" accept="image/png,image/jpeg,image/webp" style="font-size:0.85rem;margin-bottom:12px;">
+      <div style="position:relative;background:#eee;border-radius:8px;overflow:hidden;min-height:200px;display:flex;align-items:center;justify-content:center;" id="planoContainer">
+        <div class="empty-state" id="planoPlaceholder" style="padding:30px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <p>Cargá una imagen para comenzar</p>
+        </div>
+        <canvas id="planoCanvas" style="display:none;cursor:crosshair;"></canvas>
+      </div>
+      <div style="display:none;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center;" id="planoToolbar">
+        <button class="btn-pdf" id="btnCalibrar" onclick="setPlanoMode('calibrar')" style="font-size:0.8rem;padding:7px 12px;">Calibrar</button>
+        <button class="btn-pdf" id="btnMedir" onclick="setPlanoMode('medir')" style="font-size:0.8rem;padding:7px 12px;background:#2C2C2C;">Medir</button>
+        <span id="planoInfo" style="font-size:0.78rem;color:var(--muted);">Hacé clic en dos puntos para calibrar la escala</span>
+      </div>
+      <div style="display:none;gap:8px;align-items:center;margin-top:10px;" id="scaleInputRow">
+        <label style="font-size:0.82rem;font-weight:600;">Distancia real (m):</label>
+        <input type="number" id="scaleDistance" step="0.01" min="0" style="max-width:120px;" placeholder="Ej: 5.00">
+        <button onclick="confirmScale()" style="padding:7px 14px;border-radius:6px;font-size:0.82rem;cursor:pointer;background:var(--accent);color:#fff;border:none;font-weight:600;">Confirmar</button>
+      </div>
+      <div id="planoMeasure" style="display:none;background:var(--calc-bg);border:1.5px solid var(--calc-border);border-radius:7px;padding:8px 14px;margin-top:10px;font-weight:600;color:#B8651A;align-items:center;gap:10px;">
+        <span id="planoMeasureVal">0.00 m</span>
+        <button onclick="transferToField('longitud')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--calc-border);background:#fff;font-size:0.75rem;cursor:pointer;font-weight:600;color:var(--accent);">Usar como Longitud</button>
+        <button onclick="transferToField('altura')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--calc-border);background:#fff;font-size:0.75rem;cursor:pointer;font-weight:600;color:var(--accent);">Usar como Altura</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const PLACAS = {
+  yesoEst:    { nombre: 'Placa Yeso Estándar 12.5mm', area: 2.88, masilla: 0.45, enduido: 0.3, pintura: 2 },
+  yesoRH:     { nombre: 'Placa Yeso RH 12.5mm',       area: 2.88, masilla: 0.45, enduido: 0.3, pintura: 2 },
+  yesoRF:     { nombre: 'Placa Yeso RF 12.5mm',        area: 2.88, masilla: 0.45, enduido: 0.3, pintura: 2 },
+  osb:        { nombre: 'Placa OSB 18mm',              area: 2.88, masilla: 0,    enduido: 0,   pintura: 0 },
+  cementicia: { nombre: 'Placa Cementicia 15mm',       area: 2.88, masilla: 0,    enduido: 0,   pintura: 0 }
+};
+
+const AISLANTES = {
+  lanaVidrio:   { nombre: 'Lana de vidrio',        m2PorRollo: 15 },
+  lanaRoca:     { nombre: 'Lana de roca',           m2PorRollo: 12 },
+  poliestireno: { nombre: 'Poliestireno expandido', m2PorRollo: 9.6 }
+};
+
+function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function getStr(id) { return document.getElementById(id).value; }
+function toggleCard(id) { document.getElementById(id).classList.toggle('collapsed'); }
+
+function setCalcValue(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const span = el.querySelector('span');
+  if (span && span.textContent !== String(val)) {
+    span.textContent = val;
+    el.classList.remove('pulse');
+    void el.offsetWidth;
+    el.classList.add('pulse');
+  }
+}
+
+document.getElementById('incluirCaraB').addEventListener('change', function() {
+  document.getElementById('faceB').classList.toggle('disabled', !this.checked);
+  calcularTodo();
+});
+
+function calcularTodo() {
+  const L = getVal('longitud');
+  const H = getVal('altura');
+  const S = L * H;
+
+  setCalcValue('valSuperficie', S.toFixed(2));
+
+  if (S <= 0) { renderMateriales([]); return; }
+
+  const espesor = getStr('espesor');
+  const spacing = getVal('spacingMontantes');
+  const dobleEstructura = document.getElementById('dobleEstructura').checked;
+  const wasteE = getVal('wasteEstructura') / 100;
+  const wasteP = getVal('wastePlaca') / 100;
+
+  const incluirB = document.getElementById('incluirCaraB').checked;
+  const capasA = parseInt(getStr('capasA'));
+  const tipoA = getStr('tipoPlacaA');
+  const capasB = incluirB ? parseInt(getStr('capasB')) : 0;
+  const tipoB = incluirB ? getStr('tipoPlacaB') : null;
+
+  const tipoAislante = getStr('tipoAislante');
+  const cantosExp = getVal('cantosExpuestos');
+  const esquinasInt = getVal('esquinasInternas');
+
+  let materiales = [];
+
+  // Rieles PGU
+  const factor = dobleEstructura ? 2 : 1;
+  const totalPGU = 2 * L * factor;
+  materiales.push({
+    nombre: 'Perfil PGU ' + espesor + ' — Riel (3m)',
+    qtyNeta: totalPGU.toFixed(2), desperdicio: Math.round(wasteE * 100) + '%',
+    qtyBruta: (totalPGU * (1 + wasteE)).toFixed(2),
+    unidadCom: 'Barra', cantComprar: Math.ceil(totalPGU * (1 + wasteE) / 3)
+  });
+
+  // Montantes PGC
+  const numMontantes = (Math.max(2, Math.ceil(L / spacing) + 1)) * factor;
+  const totalPGC = numMontantes * H;
+  materiales.push({
+    nombre: 'Perfil PGC ' + espesor + ' — Montante (3m)',
+    qtyNeta: totalPGC.toFixed(2), desperdicio: Math.round(wasteE * 100) + '%',
+    qtyBruta: (totalPGC * (1 + wasteE)).toFixed(2),
+    unidadCom: 'Barra', cantComprar: Math.ceil(totalPGC * (1 + wasteE) / 3)
+  });
+
+  // Placas agrupadas por tipo
+  const placasQty = {};
+  function addPlaca(tipo, capas, sup) {
+    if (!tipo || capas <= 0 || sup <= 0) return;
+    if (!placasQty[tipo]) placasQty[tipo] = 0;
+    placasQty[tipo] += capas * sup;
+  }
+  addPlaca(tipoA, capasA, S);
+  addPlaca(tipoB, capasB, S);
+
+  let totalSupRevestida = 0;
+  let totalMasilla = 0, totalEnduido = 0, totalPintura = 0;
+
+  Object.keys(placasQty).forEach(tipo => {
+    const data = PLACAS[tipo];
+    const areaNeta = placasQty[tipo];
+    const areaBruta = areaNeta * (1 + wasteP);
+    materiales.push({
+      nombre: data.nombre,
+      qtyNeta: areaNeta.toFixed(2), desperdicio: Math.round(wasteP * 100) + '%',
+      qtyBruta: areaBruta.toFixed(2), unidadCom: 'Placa',
+      cantComprar: Math.ceil(areaBruta / data.area)
+    });
+    totalSupRevestida += areaNeta;
+    totalMasilla += areaNeta * data.masilla;
+    totalEnduido  += areaNeta * data.enduido;
+    totalPintura  += areaNeta * data.pintura;
+  });
+
+  // Aislante
+  if (tipoAislante !== 'ninguno') {
+    const ad = AISLANTES[tipoAislante];
+    const areaBruta = S * 1.10;
+    materiales.push({
+      nombre: ad.nombre,
+      qtyNeta: S.toFixed(2), desperdicio: '10%',
+      qtyBruta: areaBruta.toFixed(2), unidadCom: 'Rollo',
+      cantComprar: Math.ceil(areaBruta / ad.m2PorRollo)
+    });
+  }
+
+  // Cantoneras y cinta metal
+  if (cantosExp > 0) {
+    materiales.push({
+      nombre: 'Cantonera metálica (3m)',
+      qtyNeta: cantosExp.toFixed(2), desperdicio: '5%',
+      qtyBruta: (cantosExp * 1.05).toFixed(2), unidadCom: 'Barra',
+      cantComprar: Math.ceil(cantosExp * 1.05 / 3)
+    });
+  }
+  if (esquinasInt > 0) {
+    materiales.push({
+      nombre: 'Cinta papel-metal esquinas (30m)',
+      qtyNeta: esquinasInt.toFixed(2), desperdicio: '5%',
+      qtyBruta: (esquinasInt * 1.05).toFixed(2), unidadCom: 'Rollo',
+      cantComprar: Math.ceil(esquinasInt * 1.05 / 30)
+    });
+  }
+
+  // Cinta de papel juntas
+  if (totalSupRevestida > 0) {
+    const mlCinta = totalSupRevestida * 1.2;
+    materiales.push({
+      nombre: 'Cinta de papel juntas (75m)',
+      qtyNeta: mlCinta.toFixed(1) + ' m', desperdicio: '—',
+      qtyBruta: mlCinta.toFixed(1) + ' m', unidadCom: 'Rollo',
+      cantComprar: Math.ceil(mlCinta / 75)
+    });
+  }
+
+  // Masilla, enduido, pintura
+  if (totalMasilla > 0) {
+    materiales.push({
+      nombre: 'Masilla para juntas (25kg)',
+      qtyNeta: totalMasilla.toFixed(2) + ' kg', desperdicio: '—',
+      qtyBruta: totalMasilla.toFixed(2) + ' kg', unidadCom: 'Bolsa',
+      cantComprar: Math.ceil(totalMasilla / 25)
+    });
+  }
+  if (totalEnduido > 0) {
+    materiales.push({
+      nombre: 'Enduido (25kg)',
+      qtyNeta: totalEnduido.toFixed(2) + ' kg', desperdicio: '—',
+      qtyBruta: totalEnduido.toFixed(2) + ' kg', unidadCom: 'Bolsa',
+      cantComprar: Math.ceil(totalEnduido / 25)
+    });
+  }
+  if (totalPintura > 0) {
+    const litros = totalPintura / 4;
+    materiales.push({
+      nombre: 'Pintura interior (Galón 4L)',
+      qtyNeta: totalPintura.toFixed(2) + ' m²', desperdicio: '—',
+      qtyBruta: litros.toFixed(2) + ' L', unidadCom: 'Galón',
+      cantComprar: Math.ceil(litros / 4)
+    });
+  }
+
+  // Tornillos placa
+  const tornPlaca = Math.ceil(totalSupRevestida * 17);
+  if (tornPlaca > 0) {
+    materiales.push({
+      nombre: 'Tornillos placa drywall (Caja 100u)',
+      qtyNeta: tornPlaca + ' u', desperdicio: '—',
+      qtyBruta: tornPlaca + ' u', unidadCom: 'Caja',
+      cantComprar: Math.ceil(tornPlaca / 100)
+    });
+  }
+
+  // Tornillos estructura
+  const empalmesPGC = Math.max(0, Math.ceil(H / 3) - 1) * numMontantes;
+  const tornEstruct = (numMontantes * 2 * 2) + (empalmesPGC * 4);
+  if (tornEstruct > 0) {
+    materiales.push({
+      nombre: 'Tornillos autoperforantes estructura (Caja 100u)',
+      qtyNeta: tornEstruct + ' u', desperdicio: '—',
+      qtyBruta: tornEstruct + ' u', unidadCom: 'Caja',
+      cantComprar: Math.ceil(tornEstruct / 100)
+    });
+  }
+
+  // Tarugos rieles
+  const tarugos = Math.ceil((2 * L) / 0.60);
+  if (tarugos > 0) {
+    materiales.push({
+      nombre: 'Tarugos expansivos (Bolsa 100u)',
+      qtyNeta: tarugos + ' u', desperdicio: '—',
+      qtyBruta: tarugos + ' u', unidadCom: 'Bolsa',
+      cantComprar: Math.ceil(tarugos / 100)
+    });
+  }
+
+  renderMateriales(materiales);
+}
+
+function renderMateriales(materiales) {
+  const container = document.getElementById('materialesContent');
+  const nombre = getStr('nombre') || 'Sin nombre';
+  const L = getVal('longitud'), H = getVal('altura');
+  const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  document.getElementById('printTitle').textContent = 'Muros Drywall — ' + nombre;
+  document.getElementById('printSubtitle').textContent = 'Longitud: ' + L + 'm × Altura: ' + H + 'm | Superficie: ' + (L*H).toFixed(2) + ' m² | Fecha: ' + fecha;
+
+  if (materiales.length === 0) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><p>Ingresá las dimensiones del muro para ver los materiales</p></div>';
+    return;
+  }
+
+  let html = '<div class="mat-table-wrap"><table class="mat-table"><thead><tr><th>Material</th><th>Qty neta</th><th>Desperdicio</th><th>Qty bruta</th><th>Unidad comercial</th><th>Cant. a comprar</th></tr></thead><tbody>';
+  materiales.forEach(m => {
+    html += '<tr><td class="mat-name">' + m.nombre + '</td><td>' + m.qtyNeta + '</td><td>' + m.desperdicio + '</td><td>' + m.qtyBruta + '</td><td>' + m.unidadCom + '</td><td class="qty-buy">' + m.cantComprar + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+/* ============================================================
+   MÓDULO 6 — LECTURA DE PLANO
+   ============================================================ */
+const plano = { img: null, canvas: null, ctx: null, scale: null, mode: 'calibrar', points: [], lines: [], imgW: 0, imgH: 0, calibDist: 0 };
+
+document.getElementById('planoFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => { plano.img = img; setupCanvas(img); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function setupCanvas(img) {
+  const container = document.getElementById('planoContainer');
+  const canvas = document.getElementById('planoCanvas');
+  const maxW = Math.min(container.clientWidth, 800);
+  let w = img.width, h = img.height;
+  const ratio = Math.min(maxW / w, 500 / h, 1);
+  w = Math.round(w * ratio); h = Math.round(h * ratio);
+  canvas.width = w; canvas.height = h;
+  canvas.style.display = 'block'; canvas.style.maxWidth = '100%';
+  document.getElementById('planoPlaceholder').style.display = 'none';
+  document.getElementById('planoToolbar').style.display = 'flex';
+  plano.canvas = canvas; plano.ctx = canvas.getContext('2d');
+  plano.imgW = w; plano.imgH = h; plano.scale = null; plano.points = []; plano.lines = [];
+  drawPlano();
+  canvas.onclick = e => {
+    const rect = canvas.getBoundingClientRect();
+    handlePlanoClick((e.clientX - rect.left) * canvas.width / rect.width, (e.clientY - rect.top) * canvas.height / rect.height);
+  };
+}
+
+function handlePlanoClick(x, y) {
+  plano.points.push({x, y});
+  if (plano.points.length === 1) {
+    drawPlano(); drawAllLines();
+    plano.ctx.fillStyle = plano.mode === 'calibrar' ? '#C0392B' : '#2980B9';
+    plano.ctx.beginPath(); plano.ctx.arc(x, y, 5, 0, Math.PI*2); plano.ctx.fill();
+  }
+  if (plano.points.length === 2) {
+    const p1 = plano.points[0], p2 = plano.points[1];
+    const dist = Math.sqrt((p2.x-p1.x)**2 + (p2.y-p1.y)**2);
+    if (plano.mode === 'calibrar') {
+      drawPlano(); drawAllLines(); drawLine(p1, p2, '#C0392B', 2);
+      plano.calibDist = dist;
+      document.getElementById('scaleInputRow').style.display = 'flex';
+      document.getElementById('planoInfo').textContent = 'Ingresá la distancia real entre los dos puntos';
+    } else if (plano.mode === 'medir' && plano.scale) {
+      const realDist = dist * plano.scale;
+      plano.lines.push({p1, p2, dist: realDist, color: '#2980B9'});
+      plano.points = [];
+      drawPlano(); drawAllLines();
+      document.getElementById('planoMeasureVal').textContent = realDist.toFixed(2) + ' m';
+      document.getElementById('planoMeasure').style.display = 'flex';
+      document.getElementById('planoInfo').textContent = 'Medida: ' + realDist.toFixed(2) + ' m';
+    } else { plano.points = []; }
+  }
+}
+
+function confirmScale() {
+  const dist = parseFloat(document.getElementById('scaleDistance').value);
+  if (!dist || dist <= 0 || !plano.calibDist) return;
+  plano.scale = dist / plano.calibDist;
+  plano.lines.push({p1: plano.points[0], p2: plano.points[1], dist, color: '#C0392B'});
+  plano.points = [];
+  document.getElementById('scaleInputRow').style.display = 'none';
+  document.getElementById('scaleDistance').value = '';
+  drawPlano(); drawAllLines();
+  setPlanoMode('medir');
+}
+
+function setPlanoMode(mode) {
+  plano.mode = mode; plano.points = [];
+  document.getElementById('btnCalibrar').style.background = mode === 'calibrar' ? 'var(--accent)' : 'var(--dark)';
+  document.getElementById('btnMedir').style.background = mode === 'medir' ? 'var(--accent)' : 'var(--dark)';
+  document.getElementById('planoInfo').textContent = mode === 'calibrar' ? 'Hacé clic en dos puntos para calibrar la escala' : (plano.scale ? 'Hacé clic en dos puntos para medir' : 'Primero calibrá la escala');
+  drawPlano(); drawAllLines();
+}
+
+function drawPlano() { if (plano.ctx && plano.img) { plano.ctx.clearRect(0,0,plano.imgW,plano.imgH); plano.ctx.drawImage(plano.img,0,0,plano.imgW,plano.imgH); } }
+
+function drawLine(p1, p2, color, width) {
+  const ctx = plano.ctx;
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(p1.x, p1.y, 4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(p2.x, p2.y, 4, 0, Math.PI*2); ctx.fill();
+}
+
+function drawAllLines() {
+  plano.lines.forEach(l => {
+    drawLine(l.p1, l.p2, l.color, 2);
+    const ctx = plano.ctx;
+    const mx = (l.p1.x+l.p2.x)/2, my = (l.p1.y+l.p2.y)/2;
+    const label = l.dist.toFixed(2) + ' m';
+    ctx.font = 'bold 13px -apple-system, sans-serif';
+    const tw = ctx.measureText(label).width;
+    ctx.fillStyle = l.color; ctx.globalAlpha = 0.9;
+    ctx.fillRect(mx-tw/2-4, my-18, tw+8, 22);
+    ctx.globalAlpha = 1; ctx.fillStyle = '#fff';
+    ctx.fillText(label, mx-tw/2, my-1);
+  });
+}
+
+function transferToField(field) {
+  const val = document.getElementById('planoMeasureVal').textContent.replace(' m', '');
+  document.getElementById(field).value = val;
+  calcularTodo();
+}
+
+/* ============================================================
+   LOCALSTORAGE
+   ============================================================ */
+const STATE_IDS = ['nombre','longitud','altura','espesor','spacingMontantes','wasteEstructura',
+  'dobleEstructura','wastePlaca','capasA','tipoPlacaA','incluirCaraB','capasB','tipoPlacaB',
+  'tipoAislante','cantosExpuestos','esquinasInternas'];
+
+function saveState() {
+  try {
+    const data = {};
+    STATE_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    localStorage.setItem('mur_state', JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('mur_state');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    STATE_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && data[id] !== undefined) {
+        if (el.type === 'checkbox') el.checked = data[id];
+        else el.value = data[id];
+      }
+    });
+    if (data.incluirCaraB === false) document.getElementById('faceB').classList.add('disabled');
+  } catch(e) {}
+}
+
+function init() {
+  loadState();
+  document.querySelectorAll('input:not([type="file"]), select').forEach(el => {
+    el.addEventListener('input', () => { calcularTodo(); saveState(); });
+    el.addEventListener('change', () => { calcularTodo(); saveState(); });
+  });
+  calcularTodo();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
+</html>
