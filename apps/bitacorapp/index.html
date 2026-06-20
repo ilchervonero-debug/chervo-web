@@ -87,40 +87,19 @@
         .empty-state h3 { font-size: 1rem; color: var(--ink-2); margin-bottom: 6px; }
         .empty-state p { font-size: 0.82rem; color: var(--ink-3); }
 
-        /* ===== FAB PILL ===== */
-        .fab-wrap {
-            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-            z-index: 800; display: flex; justify-content: center;
-        }
-        .fab-wrap.hidden { display: none; }
-        .fab-pill {
-            background: var(--red); border-radius: 20px; height: 58px; width: 58px;
-            display: flex; align-items: center; justify-content: center; overflow: hidden;
-            box-shadow: 0 4px 20px rgba(192,57,43,.45);
-            transition: width .38s cubic-bezier(.34,1.3,.64,1), box-shadow .2s;
-        }
-        .fab-pill.open { width: min(304px, calc(100vw - 48px)); box-shadow: 0 8px 36px rgba(192,57,43,.5); }
-        .fab-main {
-            width: 58px; height: 58px; border: none; background: transparent; color: white;
+        /* ===== FAB ===== */
+        .fab {
+            position: fixed; bottom: 28px; right: 24px;
+            width: 56px; height: 56px; border-radius: 16px;
+            background: #1c1c1e; color: white; border: none;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; transition: transform .36s cubic-bezier(.34,1.5,.64,1);
+            box-shadow: 0 2px 16px rgba(0,0,0,.22); z-index: 800;
+            transition: transform .18s cubic-bezier(.34,1.5,.64,1), box-shadow .18s;
         }
-        .fab-main svg { width: 26px; height: 26px; }
-        .fab-pill.open .fab-main { transform: rotate(45deg); }
-        .fab-act {
-            width: 0; height: 58px; border: none; background: transparent; color: white;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; opacity: 0; overflow: hidden;
-            transition: width .32s cubic-bezier(.34,1.3,.64,1), opacity .18s;
-        }
-        .fab-act svg { width: 22px; height: 22px; }
-        .fab-pill.open .fab-act { width: 60px; opacity: 1; }
-        .fab-pill.open .fab-act:nth-child(1) { transition-delay: .08s; }
-        .fab-pill.open .fab-act:nth-child(2) { transition-delay: .04s; }
-        .fab-pill.open .fab-act:nth-child(5) { transition-delay: .04s; }
-        .fab-pill.open .fab-act:nth-child(6) { transition-delay: .08s; }
-        .fab-sep { width: 0; height: 28px; background: rgba(255,255,255,.25); flex-shrink: 0; transition: width .3s; }
-        .fab-pill.open .fab-sep { width: 1px; }
+        .fab:hover { transform: scale(1.07); box-shadow: 0 4px 24px rgba(0,0,0,.3); }
+        .fab:active { transform: scale(0.91); }
+        .fab svg { width: 24px; height: 24px; }
+        .fab.hidden { display: none; }
 
         /* ===== PROYECTO HEADER ===== */
         .proyecto-header-bar {
@@ -160,26 +139,32 @@
             display: flex; align-items: center; justify-content: space-between;
             padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--bg);
         }
-        .bloque-meta { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; color: var(--ink-3); font-weight: 600; }
-        .bloque-badge {
-            display: flex; align-items: center; gap: 4px;
-            font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 20px;
-            text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid var(--border);
-            background: var(--surface); color: var(--ink-2);
-        }
-        .bloque-badge svg { width: 10px; height: 10px; }
+        .bloque-meta { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--ink-3); font-weight: 500; }
         .bloque-acciones { display: flex; gap: 2px; }
         .btn-bloque {
-            width: 28px; height: 28px; border-radius: 7px; border: none;
+            width: 30px; height: 30px; border-radius: 8px; border: none;
             background: transparent; color: var(--ink-3);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             transition: all .15s;
         }
         .btn-bloque svg { width: 14px; height: 14px; }
         .btn-bloque:hover { background: var(--accent-soft); color: var(--ink); }
-        .btn-bloque.eliminar:hover { background: var(--red); color: white; }
+        .btn-bloque.eliminar:hover { background: #fee2e2; color: #c0392b; }
         .bloque-contenido { padding: 14px 16px; }
-        .bloque-foto-img { width: 100%; border-radius: 8px; display: block; max-height: 400px; object-fit: contain; background: #000; }
+        .nota-fotos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .nota-foto-img { border-radius: 8px; object-fit: cover; cursor: pointer; aspect-ratio: 4/3; flex: 1 1 calc(50% - 3px); max-width: calc(50% - 3px); display: block; }
+        .nota-foto-img:only-child { flex: none; width: 100%; max-width: 100%; max-height: 320px; object-fit: contain; background: #000; }
+
+        /* ===== FOTO STRIP EDITOR ===== */
+        .foto-strip { display: flex; gap: 8px; padding: 8px 10px; overflow-x: auto; background: var(--bg); border: 1px solid var(--border); border-top: none; min-height: 0; }
+        .foto-strip:empty { display: none; }
+        .foto-thumb-wrap { position: relative; flex-shrink: 0; }
+        .foto-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; display: block; }
+        .foto-thumb-del {
+            position: absolute; top: -5px; right: -5px; width: 18px; height: 18px;
+            border-radius: 50%; background: #1c1c1e; color: white; border: none;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
 
         /* ===== MARKDOWN ===== */
         .md-render { line-height: 1.75; font-size: 0.93rem; color: var(--ink); }
@@ -344,34 +329,10 @@
     <div class="bloques-timeline" id="bloques-timeline"></div>
 </div>
 
-<!-- FAB PILL -->
-<div class="fab-wrap" id="fab-wrap">
-    <div class="fab-pill" id="fab-pill">
-        <!-- izquierda: galería, cámara -->
-        <button class="fab-act" onclick="abrirFoto('galeria')" title="Galería">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </button>
-        <button class="fab-act" onclick="abrirFoto('camara')" title="Cámara">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </button>
-        <div class="fab-sep"></div>
-        <!-- centro: botón principal -->
-        <button class="fab-main" id="fab-main" onclick="onFab()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
-        <div class="fab-sep"></div>
-        <!-- derecha: nota, audio -->
-        <button class="fab-act" onclick="abrirModalBloque('texto')" title="Nota">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </button>
-        <button class="fab-act" onclick="abrirModalBloque('voz')" title="Audio">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        </button>
-    </div>
-</div>
-<input type="file" id="input-foto-galeria" accept="image/*" multiple onchange="onFotosSeleccionadas(event,'galeria')">
-<input type="file" id="input-foto-camara" accept="image/*" capture="environment" onchange="onFotosSeleccionadas(event,'camara')">
-
+<!-- FAB -->
+<button class="fab" id="fab" onclick="onFab()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
 <!-- MODAL: NUEVO PROYECTO -->
 <div class="modal-overlay" id="modal-nuevo-proyecto">
     <div class="modal">
@@ -435,7 +396,7 @@
     </div>
 </div>
 
-<!-- MODAL: EDITOR BLOQUE (texto / voz) -->
+<!-- MODAL: EDITOR NOTA (unificado: texto + fotos + voz) -->
 <div class="modal-overlay" id="modal-bloque">
     <div class="modal">
         <div class="modal-handle"></div>
@@ -454,40 +415,41 @@
                 <button class="tbtn" onclick="ins('- ','',true)" title="Lista">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                 </button>
-                <button class="tbtn" onclick="ins('\`\`\`\n','\n\`\`\`')" title="Bloque código">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                </button>
                 <button class="tbtn" onclick="ins('> ','',true)" title="Cita">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>
                 </button>
-                <button class="tbtn" onclick="ins('---\n','',true)" title="Separador">—</button>
+                <div class="tbtn-sep"></div>
+                <button class="tbtn" onclick="adjuntarFoto('galeria')" title="Adjuntar foto">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </button>
+                <button class="tbtn" onclick="adjuntarFoto('camara')" title="Cámara">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </button>
                 <div class="tbtn-sep"></div>
                 <button class="tbtn" onclick="togglePreview()" id="btn-prev" title="Vista previa">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
-                <button class="tbtn" onclick="copiarEditor()" title="Copiar todo">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                </button>
                 <span class="voz-ind" id="voz-ind">● REC</span>
                 <button class="tbtn mic" id="btn-mic" onclick="toggleVoz()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
-                        <path d="M19 10v2a7 7 0 01-14 0v-2"/>
-                    </svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
                 </button>
             </div>
-            <textarea class="editor-ta" id="editor-ta" placeholder="Escribe en Markdown o dictá con el micrófono&#10;&#10;# Título&#10;## Subtítulo&#10;**negrita** | *cursiva*&#10;- lista&#10;&#96;&#96;&#96;&#10;bloque de código copiable&#10;&#96;&#96;&#96;&#10;&gt; cita destacada"></textarea>
+            <textarea class="editor-ta" id="editor-ta" placeholder="Escribí tu nota... podés dictar con el micrófono y adjuntar fotos"></textarea>
             <div class="editor-preview-box md-render" id="editor-preview"></div>
+            <div class="foto-strip" id="foto-strip"></div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-secundario" onclick="cerrarModalBloque()">Cancelar</button>
-            <button class="btn btn-primario" onclick="guardarBloque()">
+            <button class="btn btn-primario" onclick="guardarNota()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                 Guardar
             </button>
         </div>
     </div>
 </div>
+
+<input type="file" id="input-foto-galeria" accept="image/*" multiple onchange="onFotoNota(event)">
+<input type="file" id="input-foto-camara" accept="image/*" capture="environment" onchange="onFotoNota(event)">
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -497,6 +459,7 @@
 let proyectos = JSON.parse(localStorage.getItem('bita_proyectos') || '[]');
 let proyectoIdx = null;
 let bloqueEditIdx = null;
+let notaFotos = [];
 let recognition = null;
 let grabando = false;
 let previewing = false;
@@ -599,20 +562,18 @@ function renderDashboard() {
     }).join('');
 }
 
-// ===== FAB PILL =====
+// ===== FAB =====
 function onFab() {
     if (proyectoIdx === null) {
         document.getElementById('nuevo-nombre').value = '';
         abrirModal('modal-nuevo-proyecto');
         setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
     } else {
-        document.getElementById('fab-pill').classList.toggle('open');
+        abrirNota(null);
     }
 }
 
-function cerrarFab() {
-    document.getElementById('fab-pill').classList.remove('open');
-}
+function cerrarFab() {}
 
 // ===== PROYECTOS =====
 function crearProyecto() {
@@ -678,10 +639,10 @@ function renderBloques() {
     const p = proyectos[proyectoIdx];
     const container = document.getElementById('bloques-timeline');
     if (!p.bloques || p.bloques.length === 0) {
-        container.innerHTML = `<div style="text-align:center;padding:50px 20px;color:var(--ink-3);">
-            ${SVG_FOLDER.replace('<svg ', '<svg style="width:40px;height:40px;margin-bottom:14px;opacity:0.4;" ')}
-            <p style="font-weight:700;color:var(--ink-2);">Sin entradas aún</p>
-            <p style="font-size:0.8rem;margin-top:6px;">Usá los botones de abajo para agregar notas, fotos o voz</p>
+        container.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--ink-3);">
+            ${SVG_FOLDER.replace('<svg ', '<svg style="width:40px;height:40px;margin-bottom:14px;opacity:0.3;" ')}
+            <p style="font-weight:700;color:var(--ink-2);margin-bottom:4px;">Sin notas aún</p>
+            <p style="font-size:0.82rem;">Tocá + para agregar tu primera nota</p>
         </div>`;
         return;
     }
@@ -689,29 +650,23 @@ function renderBloques() {
 }
 
 function renderBloque(b, i) {
-    const tipo = b.tipo;
-    const badgeIcon = tipo==='texto'?SVG_NOTE:tipo==='foto'?SVG_PHOTO:SVG_MIC;
-    const badgeLabel = tipo==='texto'?'Nota':tipo==='foto'?'Foto':'Voz';
-    let contenido = '';
-    if (tipo === 'foto') {
-        contenido = `<img class="bloque-foto-img" src="${b.img}" alt="Foto">`;
-    } else {
-        contenido = `<div class="md-render">${md(b.texto)}</div>`;
-    }
+    const textoHtml = b.texto ? `<div class="md-render">${md(b.texto)}</div>` : '';
+    const fotos = b.fotos || (b.img ? [b.img] : []);
+    const fotosHtml = fotos.length ? `<div class="nota-fotos">${fotos.map(src=>`<img class="nota-foto-img" src="${src}" loading="lazy">`).join('')}</div>` : '';
     return `
-    <div class="bloque tipo-${tipo}" id="bloque-${i}" style="animation-delay:${i*0.05}s">
+    <div class="bloque" id="bloque-${i}" style="animation-delay:${i*0.04}s">
         <div class="bloque-header">
             <div class="bloque-meta">
-                <span class="bloque-badge">${badgeIcon}${badgeLabel}</span>
                 <span>${fechaCorta(b.fecha)}</span>
+                ${b.editado?'<span>· editado</span>':''}
             </div>
             <div class="bloque-acciones">
-                ${tipo!=='foto'?`<button class="btn-bloque" onclick="copiarBloque(${i})" title="Copiar contenido">${SVG_COPY}</button>`:''}
-                <button class="btn-bloque" onclick="editarBloque(${i})" title="Editar">${SVG_EDIT}</button>
+                ${b.texto?`<button class="btn-bloque" onclick="copiarBloque(${i})" title="Copiar">${SVG_COPY}</button>`:''}
+                <button class="btn-bloque" onclick="abrirNota(${i})" title="Editar">${SVG_EDIT}</button>
                 <button class="btn-bloque eliminar" onclick="eliminarBloque(${i})" title="Eliminar">${SVG_TRASH}</button>
             </div>
         </div>
-        <div class="bloque-contenido">${contenido}</div>
+        <div class="bloque-contenido">${textoHtml}${fotosHtml}</div>
     </div>`;
 }
 
@@ -721,7 +676,7 @@ function copiarBloque(i) {
 }
 
 function eliminarBloque(i) {
-    confirmar('Eliminar entrada', '¿Eliminás esta entrada?', () => {
+    confirmar('Eliminar nota', '¿Eliminás esta nota?', () => {
         proyectos[proyectoIdx].bloques.splice(i,1);
         guardar();
         renderBloques();
@@ -729,83 +684,70 @@ function eliminarBloque(i) {
     });
 }
 
-function editarBloque(i) {
-    const b = proyectos[proyectoIdx].bloques[i];
-    if (b.tipo === 'foto') {
-        toast('Para cambiar la foto, eliminá este bloque y agregá uno nuevo','err');
-        return;
+// ===== EDITOR DE NOTA =====
+function abrirNota(idx) {
+    bloqueEditIdx = idx;
+    notaFotos = [];
+    if (idx !== null) {
+        const b = proyectos[proyectoIdx].bloques[idx];
+        document.getElementById('editor-ta').value = b.texto || '';
+        notaFotos = [...(b.fotos || (b.img ? [b.img] : []))];
+        document.getElementById('modal-bloque-titulo').innerHTML = 'Editar <span>nota</span>';
+    } else {
+        document.getElementById('editor-ta').value = '';
+        document.getElementById('modal-bloque-titulo').innerHTML = 'Nueva <span>nota</span>';
     }
-    bloqueEditIdx = i;
-    document.getElementById('modal-bloque-titulo').innerHTML = 'Editar <span>bloque</span>';
-    document.getElementById('editor-ta').value = b.texto || '';
     previewing = false;
     document.getElementById('editor-preview').classList.remove('on');
     document.getElementById('editor-ta').style.display = '';
-    cerrarFab();
+    renderFotoStrip();
     abrirModal('modal-bloque');
+    setTimeout(() => document.getElementById('editor-ta').focus(), 300);
 }
 
-// ===== AGREGAR BLOQUES =====
-function abrirModalBloque(tipo) {
-    bloqueEditIdx = null;
-    const titulo = tipo==='texto' ? 'Nueva <span>nota</span>' : 'Nueva <span>nota de voz</span>';
-    document.getElementById('modal-bloque-titulo').innerHTML = titulo;
-    document.getElementById('editor-ta').value = '';
-    previewing = false;
-    document.getElementById('editor-preview').classList.remove('on');
-    document.getElementById('editor-ta').style.display = '';
-    cerrarFab();
-    abrirModal('modal-bloque');
-    setTimeout(() => document.getElementById('editor-ta').focus(), 350);
-    if (tipo === 'voz' && recognition && !grabando) {
-        setTimeout(toggleVoz, 500);
-    }
+function renderFotoStrip() {
+    document.getElementById('foto-strip').innerHTML = notaFotos.map((src,i) => `
+        <div class="foto-thumb-wrap">
+            <img class="foto-thumb" src="${src}">
+            <button class="foto-thumb-del" onclick="quitarFoto(${i})">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="9" height="9"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>`).join('');
 }
 
-function guardarBloque() {
+function quitarFoto(i) { notaFotos.splice(i,1); renderFotoStrip(); }
+
+function adjuntarFoto(origen) {
+    document.getElementById(origen==='camara'?'input-foto-camara':'input-foto-galeria').click();
+}
+
+function onFotoNota(event) {
+    const files = Array.from(event.target.files);
+    let done = 0;
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => { notaFotos.push(e.target.result); done++; if(done===files.length) renderFotoStrip(); };
+        reader.readAsDataURL(file);
+    });
+    event.target.value = '';
+}
+
+function guardarNota() {
     const texto = document.getElementById('editor-ta').value.trim();
-    if (!texto) { toast('El bloque está vacío','err'); return; }
+    if (!texto && notaFotos.length === 0) { toast('La nota está vacía','err'); return; }
     const p = proyectos[proyectoIdx];
     if (bloqueEditIdx !== null) {
         p.bloques[bloqueEditIdx].texto = texto;
+        p.bloques[bloqueEditIdx].fotos = [...notaFotos];
         p.bloques[bloqueEditIdx].editado = new Date().toISOString();
+        delete p.bloques[bloqueEditIdx].img;
     } else {
-        p.bloques.push({ tipo:'texto', texto, fecha: new Date().toISOString() });
+        p.bloques.push({ texto, fotos: [...notaFotos], fecha: new Date().toISOString() });
     }
     guardar();
     cerrarModalBloque();
     renderBloques();
     toast('Guardado');
-}
-
-function abrirFoto(origen) {
-    cerrarFab();
-    if (origen === 'camara') {
-        document.getElementById('input-foto-camara').click();
-    } else {
-        document.getElementById('input-foto-galeria').click();
-    }
-}
-
-function onFotosSeleccionadas(event, origen) {
-    const files = Array.from(event.target.files);
-    if (!files.length) return;
-    const p = proyectos[proyectoIdx];
-    let done = 0;
-    files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = e => {
-            p.bloques.push({ tipo:'foto', img: e.target.result, fecha: new Date().toISOString() });
-            done++;
-            if (done === files.length) {
-                guardar();
-                renderBloques();
-                toast(`${files.length} foto${files.length>1?'s':''} agregada${files.length>1?'s':''}`);
-            }
-        };
-        reader.readAsDataURL(file);
-    });
-    event.target.value = '';
 }
 
 // ===== EDITOR MARKDOWN =====
