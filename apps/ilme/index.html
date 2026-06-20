@@ -619,22 +619,24 @@ function habilitarArrastre(row, lista, selectorGrupo, onReorden, handleEl){
   }
 
   // ── Táctil: drag inmediato desde grip (touch-action:none evita que el scroll lo cancele) ──
+  // Los eventos touch se despachan al elemento que recibió touchstart, no burbujean al padre.
+  // Por eso touchmove/end/cancel deben estar en el mismo triggerEl.
   const triggerEl = handleEl || row;
   triggerEl.addEventListener('touchstart', e=>{
     if(!handleEl && e.target.closest('.chk,.acc,.acciones,.accs,a,[contenteditable]')) return;
     const t=e.touches[0]; sx=t.clientX; sy=t.clientY;
     drag=true; row.classList.add('arrastrando');
-  },{passive:true});
+  },{passive:false});
 
-  row.addEventListener('touchmove', e=>{
+  triggerEl.addEventListener('touchmove', e=>{
     if(!drag) return;
     const t=Array.from(e.touches)[0]; if(!t) return;
     e.preventDefault();
     reordenar(t.clientY);
   },{passive:false});
 
-  row.addEventListener('touchend', ()=>finDrag(), {passive:true});
-  row.addEventListener('touchcancel', ()=>{ drag=false; row.classList.remove('arrastrando'); },{passive:true});
+  triggerEl.addEventListener('touchend', ()=>finDrag(), {passive:true});
+  triggerEl.addEventListener('touchcancel', ()=>{ drag=false; row.classList.remove('arrastrando'); },{passive:true});
 
   // ── Mouse: drag desde cualquier punto salvo botones de acción ──
   row.addEventListener('mousedown', e=>{
