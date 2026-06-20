@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cielorrasos — Calculadora de Materiales</title>
+<title>CLR — Cielorrasos · iLYorugua</title>
+<meta name="description" content="Calculadora de materiales para cielorrasos — drywall, PVC, fibrocemento">
+<meta name="theme-color" content="#2C2C2C">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CLR">
+<link rel="manifest" href="manifest.json">
 <style>
   /* ===== RESET Y BASE ===== */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1363,6 +1370,10 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
 </script>
 </body>
 </html>
