@@ -1065,21 +1065,47 @@ async function respaldo(){
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 
-// ── Auth: Supabase + Google OAuth (sin SDK, REST directo) ──
+// ── Auth: Supabase + Google OAuth — PKCE flow ──
 const SUPA_URL='https://ujsqtrbftksnjxnefpwf.supabase.co';
 const SUPA_KEY='sb_publishable_EPAkyXO8dwo8o2_PLCQ_hw_xdeIkdNP';
 
-(function parsearHash(){
+function _b64url(buf){ return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function _verifier(){ const a=new Uint8Array(32); crypto.getRandomValues(a); return _b64url(a); }
+async function _challenge(v){ return _b64url(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v))); }
+
+async function _parsearCallback(){
+  // PKCE: code en query string
+  const q=new URLSearchParams(location.search);
+  const code=q.get('code'), errQ=q.get('error_description')||q.get('error');
+  if(errQ){ history.replaceState(null,'',location.pathname); setTimeout(()=>toast('Login: '+decodeURIComponent(errQ.replace(/\+/g,' ')),true),400); return; }
+  if(code){
+    history.replaceState(null,'',location.pathname);
+    const verifier=sessionStorage.getItem('_pkce'); sessionStorage.removeItem('_pkce');
+    if(!verifier) return;
+    try{
+      const r=await fetch(SUPA_URL+'/auth/v1/token?grant_type=pkce',{
+        method:'POST', headers:{'apikey':SUPA_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({auth_code:code,code_verifier:verifier})
+      });
+      if(!r.ok){ toast('Error al iniciar sesión',true); return; }
+      const d=await r.json();
+      localStorage.setItem('_iat',d.access_token);
+      if(d.refresh_token) localStorage.setItem('_irt',d.refresh_token);
+    }catch(e){ toast('Sin conexión',true); }
+    return;
+  }
+  // Implicit (fallback): token en hash
   const h=location.hash.slice(1); if(!h) return;
   const p=new URLSearchParams(h);
-  const err=p.get('error_description')||p.get('error');
+  const errH=p.get('error_description')||p.get('error');
   const at=p.get('access_token'), rt=p.get('refresh_token');
-  history.replaceState(null,'',location.pathname+location.search);
-  if(err){ setTimeout(()=>toast('Login Google: '+decodeURIComponent(err.replace(/\+/g,' ')),true),600); return; }
+  history.replaceState(null,'',location.pathname);
+  if(errH){ setTimeout(()=>toast('Login: '+decodeURIComponent(errH.replace(/\+/g,' ')),true),400); return; }
   if(at){ localStorage.setItem('_iat',at); if(rt) localStorage.setItem('_irt',rt); }
-})();
+}
 
 async function obtenerSesion(){
+  await _parsearCallback();
   const at=localStorage.getItem('_iat'); if(!at) return null;
   try{
     let r=await fetch(SUPA_URL+'/auth/v1/user',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+at}});
@@ -1097,9 +1123,12 @@ async function obtenerSesion(){
 
 function limpiarSesion(){ localStorage.removeItem('_iat'); localStorage.removeItem('_irt'); sesion=null; }
 
-function loginGoogle(){
-  const red=encodeURIComponent(location.href.split('#')[0]);
-  location.href=SUPA_URL+'/auth/v1/authorize?provider=google&redirect_to='+red;
+async function loginGoogle(){
+  const verifier=_verifier();
+  sessionStorage.setItem('_pkce',verifier);
+  const challenge=await _challenge(verifier);
+  const red=encodeURIComponent(location.href.split('#')[0].split('?')[0]);
+  location.href=SUPA_URL+'/auth/v1/authorize?provider=google&redirect_to='+red+'&code_challenge='+challenge+'&code_challenge_method=s256';
 }
 
 async function cerrarSesion(){
