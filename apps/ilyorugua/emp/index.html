@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>EMPLACADO — iLYorugua</title>
+<meta name="theme-color" content="#1E1E1E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EMPLACADO">
+<link rel="manifest" href="manifest.json">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1A1A1A;--surface:#242424;--card:#2C2C2C;--border:#363636;
+  --text:#F0F0F0;--muted:#8A8A8A;--accent:#C0392B;--accent2:#E74C3C;
+  --green:#27AE60;--blue:#2980B9;--yellow:#F39C12;
+  --r:10px;--r2:6px;--fs:14px;--fss:12px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--fs)}
+a{color:inherit;text-decoration:none}
+input,select,button{font:inherit;color:inherit}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ─── Layout ─────────────────────────────────────────── */
+#app{display:flex;flex-direction:column;min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px 0;position:sticky;top:0;z-index:100}
+.header-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.logo{width:28px;height:28px;flex-shrink:0}
+.app-name{font-size:18px;font-weight:700;letter-spacing:.04em;color:var(--text)}
+.app-sub{font-size:10px;color:var(--muted);font-weight:400;margin-top:1px}
+.tabs{display:flex;gap:0}
+.tab{padding:8px 18px;font-size:13px;font-weight:600;letter-spacing:.03em;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab svg{width:13px;height:13px;vertical-align:-2px;margin-right:4px}
+
+main{flex:1;padding:16px;max-width:640px;width:100%;margin:0 auto}
+.panel{display:none}
+.panel.active{display:block}
+
+/* ─── Cards & surfaces ───────────────────────────────── */
+.card{background:var(--card);border-radius:var(--r);padding:14px;border:1px solid var(--border);margin-bottom:12px}
+.card-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+input[type=number],select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:9px 10px;font-size:15px;-webkit-appearance:none}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+select option{background:var(--card)}
+
+/* ─── Type selector ──────────────────────────────────── */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:4px}
+@media(min-width:400px){.type-grid{grid-template-columns:repeat(4,1fr)}}
+.type-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;text-align:left;transition:border-color .15s,background .15s;display:flex;flex-direction:column;gap:2px}
+.type-btn:hover{border-color:var(--muted)}
+.type-btn.selected{border-color:var(--accent);background:rgba(192,57,43,.12)}
+.type-code{font-size:13px;font-weight:800;color:var(--accent);letter-spacing:.02em}
+.type-mm{font-size:9px;color:var(--muted);font-weight:600}
+.type-desc{font-size:9px;color:var(--muted);line-height:1.3;margin-top:1px}
+
+/* ─── Results table ──────────────────────────────────── */
+.result-table{width:100%;border-collapse:collapse;font-size:13px}
+.result-table th{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
+.result-table th:last-child,.result-table td:last-child{text-align:right}
+.result-table td{padding:8px 8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.result-table tr:last-child td{border-bottom:none}
+.result-table tr:hover td{background:rgba(255,255,255,.03)}
+.qty-buy{font-weight:700;font-size:15px;color:var(--text)}
+.unit-lbl{font-size:10px;color:var(--muted)}
+.group-sep td{padding:4px 8px 2px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(192,57,43,.07);border-bottom:1px solid var(--border)}
+.zero-row{opacity:.35}
+
+/* ─── Summary band ───────────────────────────────────── */
+.summary{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:var(--r2);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:13px}
+.summary strong{color:var(--accent);font-size:18px;font-weight:800}
+
+/* ─── PRO mode ───────────────────────────────────────── */
+.pro-section{margin-bottom:16px}
+.pro-title{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--yellow);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.pro-title svg{width:13px;height:13px}
+.waste-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.waste-item label{font-size:10px;margin-bottom:4px}
+.waste-item input{font-size:14px;padding:7px 8px}
+.coef-table{width:100%;border-collapse:collapse;font-size:11px;overflow-x:auto;display:block}
+.coef-table th{background:var(--surface);padding:6px 5px;text-align:center;font-weight:700;color:var(--muted);border:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
+.coef-table th:first-child{text-align:left;min-width:130px;position:sticky;left:0;z-index:10;background:var(--card)}
+.coef-table td{padding:4px 5px;border:1px solid rgba(255,255,255,.06);text-align:center;background:var(--surface)}
+.coef-table td:first-child{text-align:left;background:var(--card);position:sticky;left:0;color:var(--muted);font-weight:600;padding-left:8px}
+.coef-table td input{width:52px;background:transparent;border:none;text-align:center;color:var(--text);font-size:11px;padding:2px}
+.coef-table td input:focus{background:rgba(192,57,43,.2);border-radius:3px}
+.coef-table .zero{color:var(--border)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border:none;border-radius:var(--r2);cursor:pointer;font-weight:600;font-size:13px;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-red{background:var(--accent);color:#fff}
+.btn-muted{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.btn-sm{padding:6px 12px;font-size:11px}
+
+/* ─── Empty state ────────────────────────────────────── */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty svg{width:40px;height:40px;opacity:.3;margin-bottom:10px}
+.empty p{font-size:13px}
+
+/* ─── Misc ───────────────────────────────────────────── */
+.chip{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.04em}
+.chip-red{background:rgba(192,57,43,.25);color:var(--accent2)}
+.chip-green{background:rgba(39,174,96,.2);color:var(--green)}
+.flex-end{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.divider{height:1px;background:var(--border);margin:10px 0}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.info-txt{font-size:11px;color:var(--muted);line-height:1.5}
+.m2-badge{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.m2-val{font-size:22px;font-weight:800;color:var(--text)}
+.m2-lbl{font-size:11px;color:var(--muted)}
+hr.sep{border:none;border-top:1px solid var(--border);margin:12px 0}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="header-top">
+    <svg class="logo" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#C0392B"/>
+      <rect x="4" y="9" width="2" height="10" fill="white"/>
+      <rect x="8" y="6" width="3" height="16" fill="white"/>
+      <rect x="13" y="9" width="2" height="10" fill="white"/>
+      <rect x="17" y="6" width="3" height="16" fill="white"/>
+      <rect x="22" y="9" width="2" height="10" fill="white"/>
+    </svg>
+    <div>
+      <div class="app-name">EMPLACADO</div>
+      <div class="app-sub">iLYorugua · Calculadora APU</div>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="muros" onclick="switchTab('muros')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="4" height="18" rx="1"/><rect x="10" y="3" width="4" height="18" rx="1"/><rect x="16" y="3" width="4" height="18" rx="1"/></svg>Muros
+    </button>
+    <button class="tab" data-tab="cielos" onclick="switchTab('cielos')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>Cielorrasos
+    </button>
+    <button class="tab" data-tab="pro" onclick="switchTab('pro')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>PRO
+    </button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ════════════════════════════════ MUROS ═══════════════════════════════ -->
+<div id="panel-muros" class="panel active">
+  <div class="card">
+    <div class="card-title">Tipo de tabique</div>
+    <div class="type-grid" id="mur-types"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dimensiones</div>
+    <div class="row">
+      <div><label>Longitud (m)</label><input type="number" id="mur-l" value="" min="0" step="0.01" placeholder="0.00" oninput="calcMur()"></div>
+      <div><label>Altura (m)</label><input type="number" id="mur-h" value="" min="0" step="0.01" placeholder="0.00" oninput="calcMur()"></div>
+    </div>
+    <hr class="sep">
+    <div class="row">
+      <div><label>Cantos exp. (ml)</label><input type="number" id="mur-cantos" value="0" min="0" step="0.1" placeholder="0" oninput="calcMur()"></div>
+      <div><label>Aislante extra</label>
+        <select id="mur-aisl" onchange="calcMur()">
+          <option value="0">Sin aislante</option>
+          <option value="1">+ Lana de vidrio</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="mur-summary" style="display:none">
+    <div class="m2-badge" id="mur-m2-badge">
+      <div><div class="m2-val" id="mur-m2-val">—</div><div class="m2-lbl">m² de muro</div></div>
+      <div style="text-align:right"><div id="mur-type-badge"></div><div class="m2-lbl" style="margin-top:4px" id="mur-type-name"></div></div>
+    </div>
+  </div>
+
+  <div id="mur-result" class="card" style="display:none;padding:0;overflow:hidden">
+    <table class="result-table" id="mur-table"></table>
+  </div>
+  <div id="mur-empty" class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="4" height="18" rx="1"/><rect x="10" y="3" width="4" height="18" rx="1"/><rect x="16" y="3" width="4" height="18" rx="1"/></svg>
+    <p>Seleccioná tipo y dimensiones<br>para calcular materiales</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ CIELOS ══════════════════════════════ -->
+<div id="panel-cielos" class="panel">
+  <div class="card">
+    <div class="card-title">Sistema de cielorraso</div>
+    <div class="type-grid" id="clr-types"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dimensiones del ambiente</div>
+    <div class="row">
+      <div><label>Largo (m)</label><input type="number" id="clr-l" value="" min="0" step="0.01" placeholder="0.00" oninput="calcClr()"></div>
+      <div><label>Ancho (m)</label><input type="number" id="clr-w" value="" min="0" step="0.01" placeholder="0.00" oninput="calcClr()"></div>
+    </div>
+    <hr class="sep">
+    <div class="row">
+      <div><label>Separac. struct. (m)</label>
+        <select id="clr-spacing" onchange="calcClr()">
+          <option value="0.61">0.61 m (estándar)</option>
+          <option value="0.40">0.40 m (reforzado)</option>
+          <option value="1.00">1.00 m (poca carga)</option>
+        </select>
+      </div>
+      <div><label>Term. perimetral</label>
+        <select id="clr-term" onchange="calcClr()">
+          <option value="0">Sin terminación</option>
+          <option value="1">Ángulo L perimetral</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="clr-summary" style="display:none">
+    <div class="m2-badge" id="clr-m2-badge">
+      <div><div class="m2-val" id="clr-m2-val">—</div><div class="m2-lbl">m² de cielorraso</div></div>
+      <div style="text-align:right"><div id="clr-type-badge"></div><div class="m2-lbl" style="margin-top:4px" id="clr-type-name"></div></div>
+    </div>
+  </div>
+
+  <div id="clr-result" class="card" style="display:none;padding:0;overflow:hidden">
+    <table class="result-table" id="clr-table"></table>
+  </div>
+  <div id="clr-empty" class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
+    <p>Seleccioná sistema y dimensiones<br>para calcular materiales</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PRO ═════════════════════════════════ -->
+<div id="panel-pro" class="panel">
+  <div class="card">
+    <div class="card-title" style="color:var(--yellow)">⚙ Modo PRO — CORE APU</div>
+    <p class="info-txt">Editá los coeficientes por m² que usa el motor de cálculo. Los cambios se guardan automáticamente en localStorage. Los coeficientes base vienen del APU · Tabiques Enkel-ODM.</p>
+  </div>
+
+  <div class="card">
+    <div class="pro-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Factores de desperdicio
+    </div>
+    <div class="waste-grid" id="waste-grid"></div>
+  </div>
+
+  <div class="card">
+    <div class="pro-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+      Coeficientes — Muros (unidad/m²)
+    </div>
+    <div class="scroll-x"><table class="coef-table" id="coef-mur"></table></div>
+    <p class="info-txt" style="margin-top:8px">* Perfiles en barras/m², placas en unidades/m², masilla/enduido en kg/m², cinta en ml/m², tornillos en cajas·100u/m².</p>
+  </div>
+
+  <div class="card">
+    <div class="pro-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+      Coeficientes — Cielorrasos (unidad/m²)
+    </div>
+    <div class="scroll-x"><table class="coef-table" id="coef-clr"></table></div>
+  </div>
+
+  <div class="flex-end">
+    <button class="btn btn-muted btn-sm" onclick="exportCore()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Exportar JSON
+    </button>
+    <button class="btn btn-red btn-sm" onclick="resetCore()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      Reset defaults
+    </button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// DEFAULT CORE — Motor de cálculo APU
+// Coeficientes basados en Enkel-ODM / APU_Tabiques_v2
+// Cada valor = cantidad de la unidad por m² de muro/cielorraso
+// ═══════════════════════════════════════════════════════════════════
+
+const MAT_DEF = {
+  // Estructura
+  PGC35:    { g:'est', label:'Perf. PGC 35mm',          unit:'Barra 3m',    pack:1   },
+  PGC70:    { g:'est', label:'Perf. PGC 70mm',          unit:'Barra 3m',    pack:1   },
+  PGC100:   { g:'est', label:'Perf. PGC 100mm',         unit:'Barra 3m',    pack:1   },
+  PGU35:    { g:'est', label:'Perf. PGU 35mm (riel)',   unit:'Barra 3m',    pack:1   },
+  PGU70:    { g:'est', label:'Perf. PGU 70mm (riel)',   unit:'Barra 3m',    pack:1   },
+  PGU100:   { g:'est', label:'Perf. PGU 100mm (riel)',  unit:'Barra 3m',    pack:1   },
+  OMEGA:    { g:'est', label:'Perf. Omega / Furring',   unit:'Barra 3m',    pack:1   },
+  HAT_CH:   { g:'est', label:'Perf. Hat / F canal',     unit:'Barra 3m',    pack:1   },
+  LISTON:   { g:'est', label:'Listón de soporte',       unit:'Barra 3m',    pack:1   },
+  // Placas
+  PLACA_STD:{ g:'pla', label:'Placa Yeso STD 12.5mm',  unit:'Placa 1.2×2.4', pack:1 },
+  PLACA_RH: { g:'pla', label:'Placa Yeso RH 12.5mm',   unit:'Placa 1.2×2.4', pack:1 },
+  PLACA_RF: { g:'pla', label:'Placa Yeso RF 12.5mm',   unit:'Placa 1.2×2.4', pack:1 },
+  PLACA_OSB:{ g:'pla', label:'Placa OSB 18mm',          unit:'Placa 1.2×2.4', pack:1 },
+  PLACA_CEM:{ g:'pla', label:'Placa Cementicia 15mm',  unit:'Placa 1.2×2.4', pack:1 },
+  PLACA_FC: { g:'pla', label:'Placa Fibrocemento',      unit:'Placa 1.22×2.44', pack:1 },
+  PANEL_PVC:{ g:'pla', label:'Panel PVC 0.20m × 6m',   unit:'Panel',         pack:1  },
+  // Aislante
+  LANA_VID: { g:'ais', label:'Lana de vidrio',          unit:'Rollo 15m²',   pack:15  },
+  // Terminación
+  MASILLA:  { g:'ter', label:'Masilla para juntas',     unit:'Bolsa 25kg',   pack:25  },
+  ENDUIDO:  { g:'ter', label:'Enduido',                 unit:'Bolsa 25kg',   pack:25  },
+  PINTURA:  { g:'ter', label:'Pintura interior',        unit:'Galón ~40m²',  pack:40  },
+  CINTA_P:  { g:'ter', label:'Cinta papel (ml/m²)',     unit:'Rollo 75m',    pack:75  },
+  CINTA_PM: { g:'ter', label:'Cinta papel-metal (ml/m²)',unit:'Rollo 30m',   pack:30  },
+  CANTONERA:{ g:'ter', label:'Cantonera metálica',      unit:'Barra 3m',     pack:3   },
+  ANG_L:    { g:'ter', label:'Ángulo L 25mm',           unit:'Barra 3m',     pack:3   },
+  // Fijación
+  TORN_S:   { g:'fij', label:'Tornillos placa',         unit:'Caja 100u',    pack:1   },
+  TORN_W:   { g:'fij', label:'Tornillos estructura',    unit:'Caja 100u',    pack:1   },
+  TARUGOS:  { g:'fij', label:'Tarugos expansivos',      unit:'Bolsa 100u',   pack:1   },
+  ALAMBRE:  { g:'fij', label:'Alambre viento galv.',    unit:'Rollo 5kg',    pack:5   },
+};
+
+const GROUP_LABEL = { est:'Estructura', pla:'Placas', ais:'Aislante', ter:'Terminación', fij:'Fijación' };
+const GROUP_ORDER = ['est','pla','ais','ter','fij'];
+
+// Tipos de muro — etiqueta, espesor mm, descripción
+const MUR_TYPES = {
+  M04:{ label:'M04', mm:'100', desc:'PGC100 · 2STD|STD',
+    coef:{ PGC100:0.4501, PGU100:0.0725, PLACA_STD:0.4166, PLACA_RH:0.2834, MASILLA:1.2960, ENDUIDO:1.2960, PINTURA:3.2960, CINTA_P:0.031, CINTA_PM:0.0063, CANTONERA:0.3295, TORN_S:0.134, TARUGOS:0.015 }},
+  M05:{ label:'M05', mm:'100', desc:'PGC100 · STD+RH|RH',
+    coef:{ PGC100:0.4501, PGU100:0.0726, PLACA_STD:0.2143, PLACA_RH:0.1359, MASILLA:0.6625, ENDUIDO:0.6625, PINTURA:1.3249, CINTA_P:0.031, CINTA_PM:0.0063, CANTONERA:0.6047, TORN_S:0.134, TARUGOS:0.015 }},
+  M06:{ label:'M06', mm:'70',  desc:'PGC70 · OSB|OSB',
+    coef:{ PGC70:0.4500, PGU70:0.0724, PLACA_OSB:0.2193, TORN_S:0.067, TARUGOS:0.015 }},
+  M07:{ label:'M07', mm:'100', desc:'PGC100 · RF|CEM',
+    coef:{ PGC100:0.4500, PGU100:0.0726, PLACA_RF:0.6997, PLACA_CEM:0.3499, TORN_S:0.200, TARUGOS:0.015 }},
+  M08:{ label:'M08', mm:'35',  desc:'PGC35 · STD|STD',
+    coef:{ PGC35:0.4500, PGU35:0.0725, PLACA_STD:0.3500, MASILLA:1.0228, ENDUIDO:1.0228, PINTURA:2.0456, CINTA_P:0.0317, TORN_S:0.134, TARUGOS:0.015 }},
+  M10:{ label:'M10', mm:'70',  desc:'PGC70 · STD|STD',
+    coef:{ PGC70:0.4500, PGU70:0.0724, PLACA_STD:0.2813, MASILLA:0.8035, ENDUIDO:0.8035, PINTURA:1.6070, CINTA_P:0.031, CINTA_PM:0.0039, CANTONERA:0.0497, TORN_S:0.067, TARUGOS:0.015 }},
+  M11:{ label:'M11', mm:'70',  desc:'PGC70 · OSB|OSB×2',
+    coef:{ PGC70:0.4498, PGU70:0.0723, PLACA_OSB:0.6998, TORN_S:0.200, TARUGOS:0.015 }},
+  M12:{ label:'M12', mm:'35',  desc:'PGC35 · OSB|—',
+    coef:{ PGC35:0.4502, PGU35:0.0726, PLACA_OSB:0.3501, TORN_S:0.067, TARUGOS:0.015 }},
+  M14:{ label:'M14', mm:'100', desc:'PGC100×2 · OSB|OSB',
+    coef:{ PGC100:0.9000, PGU100:0.1449, PLACA_OSB:0.7005, TORN_S:0.200, TARUGOS:0.015 }},
+  M70:{ label:'M70', mm:'70',  desc:'PGC70 · STD c/cara básico',
+    coef:{ PGC70:0.4500, PGU70:0.0724, PLACA_STD:0.6944, MASILLA:0.9000, ENDUIDO:0.6600, PINTURA:1.6500, CINTA_P:0.0620, TORN_S:0.090, TARUGOS:0.015 }},
+  MCW:{ label:'MCW', mm:'—',   desc:'Contra pared · Omega+STD',
+    coef:{ OMEGA:0.9000, PLACA_STD:0.3472, MASILLA:0.4500, ENDUIDO:0.3000, PINTURA:0.9000, CINTA_P:0.0310, CANTONERA:0.1000, TORN_S:0.045, TARUGOS:0.050 }},
+};
+
+// Sistemas de cielorraso — coeficientes por m² de superficie
+// Los perfiles struct se calculan geometricamente (no por coef)
+const CLR_TYPES = {
+  'DW-STD':{ label:'DW-STD', sysLabel:'Drywall STD', desc:'Omega+Hat · Placa yeso STD',
+    coef:{ OMEGA:0, HAT_CH:0, PLACA_STD:0.3889, MASILLA:0.4500, ENDUIDO:0.3000, PINTURA:1.0000, CINTA_P:0.52, TORN_S:0.060, ALAMBRE:0.054, TARUGOS:0.040 }, struct:true },
+  'DW-RH': { label:'DW-RH', sysLabel:'Drywall RH', desc:'Omega+Hat · Placa yeso RH',
+    coef:{ OMEGA:0, HAT_CH:0, PLACA_RH:0.3889, MASILLA:0.4500, ENDUIDO:0.3000, PINTURA:1.0000, CINTA_P:0.52, TORN_S:0.060, ALAMBRE:0.054, TARUGOS:0.040 }, struct:true },
+  'FC':    { label:'FC', sysLabel:'Fibrocemento', desc:'Omega+Hat · Placa fibrocemento',
+    coef:{ OMEGA:0, HAT_CH:0, PLACA_FC:0.3367, TORN_S:0.050, ALAMBRE:0.054, TARUGOS:0.040 }, struct:true },
+  'PVC':   { label:'PVC', sysLabel:'PVC paneles', desc:'Listón · Panel PVC machimbrado',
+    coef:{ LISTON:0, PANEL_PVC:0.8333, TORN_S:0.040 }, struct:false },
+};
+
+const DEFAULT_WASTE = { est:0.05, pla:0.12, ais:0.10, ter:0.05, fij:0 };
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+let state = {
+  tab: 'muros',
+  mur: { type: null },
+  clr: { type: null },
+  core: {
+    waste: { ...DEFAULT_WASTE },
+    mur_coef: Object.fromEntries(Object.entries(MUR_TYPES).map(([k,v]) => [k, { ...v.coef }])),
+    clr_coef: Object.fromEntries(Object.entries(CLR_TYPES).map(([k,v]) => [k, { ...v.coef }])),
+  }
+};
+
+function saveState() {
+  try { localStorage.setItem('emp_state', JSON.stringify(state)); } catch(e) {}
+}
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('emp_state') || 'null');
+    if (s) {
+      state.mur = s.mur || state.mur;
+      state.clr = s.clr || state.clr;
+      if (s.core) {
+        state.core.waste = { ...DEFAULT_WASTE, ...s.core.waste };
+        // Merge coefs (keep defaults for missing keys)
+        if (s.core.mur_coef) {
+          for (const t of Object.keys(state.core.mur_coef)) {
+            if (s.core.mur_coef[t]) state.core.mur_coef[t] = { ...state.core.mur_coef[t], ...s.core.mur_coef[t] };
+          }
+        }
+        if (s.core.clr_coef) {
+          for (const t of Object.keys(state.core.clr_coef)) {
+            if (s.core.clr_coef[t]) state.core.clr_coef[t] = { ...state.core.clr_coef[t], ...s.core.clr_coef[t] };
+          }
+        }
+      }
+    }
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  state.tab = name;
+  if (name === 'pro') renderPro();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CALCULATION ENGINE
+// ═══════════════════════════════════════════════════════════════════
+function calcMaterials(coefObj, m2, extraCoef, waste) {
+  const rows = [];
+  for (const [matKey, rawCoef] of Object.entries(coefObj)) {
+    if (!MAT_DEF[matKey]) continue;
+    const extra = extraCoef[matKey] || 0;
+    const totalCoef = rawCoef + extra;
+    if (totalCoef === 0) continue;
+    const mat = MAT_DEF[matKey];
+    const w = waste[mat.g] || 0;
+    const rawQty = totalCoef * m2;
+    const bruto = rawQty * (1 + w);
+    const packs = Math.ceil(bruto / mat.pack);
+    rows.push({ key: matKey, mat, rawQty, bruto, packs });
+  }
+  return rows;
+}
+
+function renderResultTable(rows, tableEl, m2) {
+  const grouped = {};
+  for (const row of rows) {
+    const g = row.mat.g;
+    if (!grouped[g]) grouped[g] = [];
+    grouped[g].push(row);
+  }
+  let html = '<thead><tr><th>Material</th><th>Bruto</th><th>Comprar</th></tr></thead><tbody>';
+  for (const g of GROUP_ORDER) {
+    if (!grouped[g]) continue;
+    html += `<tr class="group-sep"><td colspan="3">${GROUP_LABEL[g]}</td></tr>`;
+    for (const row of grouped[g]) {
+      const brutoFmt = row.mat.pack === 1 ? row.bruto.toFixed(2) : row.bruto.toFixed(2);
+      html += `<tr>
+        <td>${row.mat.label}</td>
+        <td><span style="font-size:12px;color:var(--muted)">${brutoFmt}</span></td>
+        <td><span class="qty-buy">${row.packs}</span><br><span class="unit-lbl">${row.mat.unit}</span></td>
+      </tr>`;
+    }
+  }
+  html += '</tbody>';
+  tableEl.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MUROS
+// ═══════════════════════════════════════════════════════════════════
+function buildMurTypes() {
+  const el = document.getElementById('mur-types');
+  el.innerHTML = Object.entries(MUR_TYPES).map(([k, t]) =>
+    `<button class="type-btn${state.mur.type === k ? ' selected':''}" onclick="selectMurType('${k}')">
+      <span class="type-code">${t.label}</span>
+      <span class="type-mm">${t.mm !== '—' ? t.mm+'mm' : 'Cw'}</span>
+      <span class="type-desc">${t.desc}</span>
+    </button>`
+  ).join('');
+}
+
+function selectMurType(k) {
+  state.mur.type = k;
+  saveState();
+  buildMurTypes();
+  calcMur();
+}
+
+function calcMur() {
+  const L = parseFloat(document.getElementById('mur-l').value) || 0;
+  const H = parseFloat(document.getElementById('mur-h').value) || 0;
+  const cantos = parseFloat(document.getElementById('mur-cantos').value) || 0;
+  const aislExtra = parseInt(document.getElementById('mur-aisl').value) || 0;
+  const t = state.mur.type;
+
+  const m2 = L * H;
+  const hasInput = t && m2 > 0;
+
+  document.getElementById('mur-summary').style.display = hasInput ? 'block' : 'none';
+  document.getElementById('mur-result').style.display = hasInput ? 'block' : 'none';
+  document.getElementById('mur-empty').style.display = hasInput ? 'none' : 'block';
+
+  if (!hasInput) return;
+
+  const def = MUR_TYPES[t];
+  document.getElementById('mur-m2-val').textContent = m2.toFixed(2);
+  document.getElementById('mur-type-badge').innerHTML = `<span class="chip chip-red">${def.label}</span>`;
+  document.getElementById('mur-type-name').textContent = def.mm !== '—' ? def.mm + 'mm' : 'Cw';
+
+  // Build coef from live CORE
+  const coef = { ...state.core.mur_coef[t] };
+
+  // Extra: cantoneras para cantos expuestos
+  const extraCoef = {};
+  if (cantos > 0) {
+    extraCoef.CANTONERA = (cantos * 1.05 / 3) / m2; // barras por m2
+  }
+  // Extra: lana de vidrio si se agrega
+  if (aislExtra && !coef.LANA_VID) {
+    extraCoef.LANA_VID = 1.10 / 15; // 1.1 m2 de lana por m2 de muro / pack 15m2
+  }
+
+  const waste = state.core.waste;
+  const rows = calcMaterials(coef, m2, extraCoef, waste);
+  renderResultTable(rows, document.getElementById('mur-table'), m2);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CIELORRASOS
+// ═══════════════════════════════════════════════════════════════════
+function buildClrTypes() {
+  const el = document.getElementById('clr-types');
+  el.innerHTML = Object.entries(CLR_TYPES).map(([k, t]) =>
+    `<button class="type-btn${state.clr.type === k ? ' selected':''}" onclick="selectClrType('${k}')">
+      <span class="type-code">${t.label}</span>
+      <span class="type-mm" style="color:var(--blue)">${t.struct ? '0.61m' : 'Listn'}</span>
+      <span class="type-desc">${t.desc}</span>
+    </button>`
+  ).join('');
+}
+
+function selectClrType(k) {
+  state.clr.type = k;
+  saveState();
+  buildClrTypes();
+  calcClr();
+}
+
+function calcClr() {
+  const L = parseFloat(document.getElementById('clr-l').value) || 0;
+  const W = parseFloat(document.getElementById('clr-w').value) || 0;
+  const spacing = parseFloat(document.getElementById('clr-spacing').value) || 0.61;
+  const term = parseInt(document.getElementById('clr-term').value) || 0;
+  const t = state.clr.type;
+
+  const m2 = L * W;
+  const perim = 2 * (L + W);
+  const hasInput = t && m2 > 0;
+
+  document.getElementById('clr-summary').style.display = hasInput ? 'block' : 'none';
+  document.getElementById('clr-result').style.display = hasInput ? 'block' : 'none';
+  document.getElementById('clr-empty').style.display = hasInput ? 'none' : 'block';
+
+  if (!hasInput) return;
+
+  const def = CLR_TYPES[t];
+  document.getElementById('clr-m2-val').textContent = m2.toFixed(2);
+  document.getElementById('clr-type-badge').innerHTML = `<span class="chip chip-green">${def.label}</span>`;
+  document.getElementById('clr-type-name').textContent = def.sysLabel;
+
+  const coef = { ...state.core.clr_coef[t] };
+  const waste = state.core.waste;
+  const extraCoef = {};
+
+  if (def.struct) {
+    // Calcular perfiles estructurales geométricamente
+    // Omega: lineas en dirección L, espaciadas por spacing a lo largo de W
+    const omegaLines = Math.ceil(W / spacing) + 1;
+    const omegaMl = omegaLines * L;
+    const omegaBarras = Math.ceil(omegaMl * (1 + waste.est) / 3);
+    // Hat: lineas en dirección W, espaciadas por spacing a lo largo de L
+    const hatLines = Math.ceil(L / spacing) + 1;
+    const hatMl = hatLines * W;
+    const hatBarras = Math.ceil(hatMl * (1 + waste.est) / 3);
+    // Expresar como coef por m2 para el motor
+    coef.OMEGA = omegaBarras / m2;
+    coef.HAT_CH = hatBarras / m2;
+  } else {
+    // PVC: listones
+    const listonLines = Math.ceil(L / spacing) + 1;
+    const listonMl = listonLines * W;
+    coef.LISTON = Math.ceil(listonMl * (1 + waste.est) / 3) / m2;
+  }
+
+  // Terminación perimetral
+  if (term) {
+    const angBarras = Math.ceil(perim * 1.05 / 3);
+    extraCoef.ANG_L = angBarras / m2;
+  }
+
+  const rows = calcMaterials(coef, m2, extraCoef, waste);
+  renderResultTable(rows, document.getElementById('clr-table'), m2);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PRO MODE
+// ═══════════════════════════════════════════════════════════════════
+function renderPro() {
+  // Waste sliders
+  const wg = document.getElementById('waste-grid');
+  const wLabels = { est:'Estructura', pla:'Placas', ais:'Aislante', ter:'Terminac.', fij:'Fijación' };
+  wg.innerHTML = Object.entries(wLabels).map(([g, lbl]) =>
+    `<div class="waste-item">
+      <label>${lbl}</label>
+      <input type="number" min="0" max="50" step="1" value="${Math.round((state.core.waste[g]||0)*100)}"
+        oninput="setWaste('${g}',this.value)">
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">%</div>
+    </div>`
+  ).join('');
+
+  // Muro coef table
+  renderCoefTable('coef-mur', MUR_TYPES, state.core.mur_coef, 'mur');
+  // CLR coef table
+  renderCoefTable('coef-clr', CLR_TYPES, state.core.clr_coef, 'clr');
+}
+
+function renderCoefTable(elId, typeDef, coefData, prefix) {
+  const typeKeys = Object.keys(typeDef);
+  // Collect all mat keys used
+  const matKeys = [];
+  for (const k of typeKeys) {
+    for (const m of Object.keys(coefData[k] || {})) {
+      if (!matKeys.includes(m) && MAT_DEF[m]) matKeys.push(m);
+    }
+  }
+
+  let html = '<thead><tr><th>Material</th>';
+  for (const t of typeKeys) html += `<th>${typeDef[t].label}</th>`;
+  html += '</tr></thead><tbody>';
+
+  // Group by material group
+  for (const g of GROUP_ORDER) {
+    const gMats = matKeys.filter(m => MAT_DEF[m]?.g === g);
+    if (!gMats.length) continue;
+    html += `<tr><td colspan="${typeKeys.length + 1}" style="background:var(--surface);color:var(--yellow);font-weight:700;font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px">${GROUP_LABEL[g]}</td></tr>`;
+    for (const m of gMats) {
+      html += `<tr><td>${MAT_DEF[m].label}</td>`;
+      for (const t of typeKeys) {
+        const v = (coefData[t] || {})[m] || 0;
+        const cls = v === 0 ? ' class="zero"' : '';
+        html += `<td${cls}><input type="number" step="0.0001" min="0"
+          value="${v || ''}" placeholder="—"
+          oninput="setCoreCoef('${prefix}','${t}','${m}',this.value)"></td>`;
+      }
+      html += '</tr>';
+    }
+  }
+  html += '</tbody>';
+  document.getElementById(elId).innerHTML = html;
+}
+
+function setWaste(g, val) {
+  state.core.waste[g] = Math.max(0, parseFloat(val) || 0) / 100;
+  saveState();
+}
+
+function setCoreCoef(prefix, type, mat, val) {
+  const v = parseFloat(val) || 0;
+  if (prefix === 'mur') state.core.mur_coef[type][mat] = v;
+  else state.core.clr_coef[type][mat] = v;
+  saveState();
+  // Recalculate active tab
+  if (state.tab === 'muros') calcMur();
+  else if (state.tab === 'cielos') calcClr();
+}
+
+function exportCore() {
+  const json = JSON.stringify(state.core, null, 2);
+  const a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+  a.download = 'emplacado-core.json';
+  a.click();
+}
+
+function resetCore() {
+  if (!confirm('¿Resetear todos los coeficientes a valores por defecto APU?')) return;
+  state.core.waste = { ...DEFAULT_WASTE };
+  state.core.mur_coef = Object.fromEntries(Object.entries(MUR_TYPES).map(([k,v]) => [k, { ...v.coef }]));
+  state.core.clr_coef = Object.fromEntries(Object.entries(CLR_TYPES).map(([k,v]) => [k, { ...v.coef }]));
+  saveState();
+  renderPro();
+  calcMur();
+  calcClr();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+loadState();
+buildMurTypes();
+buildClrTypes();
+
+// Restore inputs from state if any (simple: we don't persist input values, only type selection)
+if (state.mur.type) calcMur();
+if (state.clr.type) calcClr();
+
+// PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
