@@ -512,14 +512,10 @@ function drawDim2Obj(obj){
   const mx=(sA.x+sB.x)/2,my=(sA.y+sB.y)/2;
   const fs=Math.max(6,(obj.fontSize||10)*vpZ);
   ctx.font=`600 ${fs}px -apple-system,sans-serif`;
-  // Offset perpendicular so text sits clearly above/below the line
-  const textOff=fs*0.65+7;
-  const ox=Math.cos(ang+Math.PI/2)*textOff,oy=Math.sin(ang+Math.PI/2)*textOff;
-  let textAng=ang;
-  if(textAng>Math.PI/2||textAng<-Math.PI/2) textAng+=Math.PI;
-  ctx.save();ctx.translate(mx+ox,my+oy);ctx.rotate(textAng);
+  // Texto horizontal fijo, desplazado hacia arriba del punto medio (sin rotación)
+  ctx.save();
   ctx.fillStyle=obj.color||'#1c1c1e';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(label,0,0);
+  ctx.fillText(label,mx,my-(fs+6));
   ctx.restore();
   ctx.restore();
 }
