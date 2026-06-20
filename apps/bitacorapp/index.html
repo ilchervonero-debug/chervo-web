@@ -610,25 +610,14 @@ function onFab() {
         abrirModal('modal-nuevo-proyecto');
         setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
     } else {
-        const strip = document.getElementById('add-strip');
-        const abriendo = !strip.classList.contains('visible');
-        strip.classList.toggle('visible');
-        document.getElementById('fab').classList.toggle('hidden', abriendo);
+        document.getElementById('add-strip').classList.add('visible');
+        document.getElementById('fab').classList.add('hidden');
     }
 }
 
 function cerrarStrip() {
     document.getElementById('add-strip').classList.remove('visible');
-    if (proyectoIdx === null) {
-        document.getElementById('fab').classList.remove('hidden');
-    }
-}
-
-function abrirStrip() {
-    if (proyectoIdx !== null) {
-        document.getElementById('add-strip').classList.add('visible');
-        document.getElementById('fab').classList.add('hidden');
-    }
+    document.getElementById('fab').classList.remove('hidden');
 }
 
 // ===== PROYECTOS =====
@@ -652,8 +641,8 @@ function abrirProyecto(i) {
     renderBloques();
     document.getElementById('page-dashboard').classList.remove('active');
     document.getElementById('page-proyecto').classList.add('active');
-    document.getElementById('add-strip').classList.add('visible');
-    document.getElementById('fab').classList.add('hidden');
+    document.getElementById('add-strip').classList.remove('visible');
+    document.getElementById('fab').classList.remove('hidden');
     window.scrollTo(0,0);
 }
 
@@ -932,7 +921,6 @@ function cerrarModalBloque() {
     cerrarModal('modal-bloque');
     bloqueEditIdx = null;
     previewing = false;
-    abrirStrip();
 }
 
 document.querySelectorAll('.modal-overlay').forEach(o => {
