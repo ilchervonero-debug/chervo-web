@@ -4,12 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>iLDraw</title>
-<meta name="theme-color" content="#ffffff">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.svg">
 <style>
 :root{
   --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
@@ -1140,9 +1134,6 @@ window.addEventListener('keydown',e=>{
   }
 });
 resize();
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
 </script>
 </body>
 </html>
