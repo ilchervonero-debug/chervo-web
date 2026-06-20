@@ -508,9 +508,11 @@ function drawDim2Obj(obj){
   ctx.font=`600 ${fs}px -apple-system,sans-serif`;
   const off=fs+6;
   const ox=Math.cos(ang+Math.PI/2)*off,oy=Math.sin(ang+Math.PI/2)*off;
-  ctx.save();
+  let textAng=ang;
+  if(textAng>Math.PI/2||textAng<-Math.PI/2) textAng+=Math.PI;
+  ctx.save();ctx.translate(mx+ox,my+oy);ctx.rotate(textAng);
   ctx.fillStyle=obj.color||'#1c1c1e';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(label,mx+ox,my+oy);
+  ctx.fillText(label,0,0);
   ctx.restore();
   ctx.restore();
 }
