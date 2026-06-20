@@ -98,6 +98,7 @@
         .fab:hover { transform: scale(1.08) rotate(90deg); box-shadow: 0 8px 32px rgba(192,57,43,.55); }
         .fab:active { transform: scale(0.93); }
         .fab svg { width: 26px; height: 26px; transition: transform .2s; }
+        .fab.hidden { opacity: 0; pointer-events: none; transform: scale(0.7); }
 
         /* ===== PROYECTO HEADER ===== */
         .proyecto-header-bar {
@@ -593,12 +594,15 @@ function onFab() {
         setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
     } else {
         const strip = document.getElementById('add-strip');
+        const abriendo = !strip.classList.contains('visible');
         strip.classList.toggle('visible');
+        document.getElementById('fab').classList.toggle('hidden', abriendo);
     }
 }
 
 function cerrarStrip() {
     document.getElementById('add-strip').classList.remove('visible');
+    document.getElementById('fab').classList.remove('hidden');
 }
 
 // ===== PROYECTOS =====
@@ -623,6 +627,7 @@ function abrirProyecto(i) {
     document.getElementById('page-dashboard').classList.remove('active');
     document.getElementById('page-proyecto').classList.add('active');
     document.getElementById('add-strip').classList.add('visible');
+    document.getElementById('fab').classList.add('hidden');
     window.scrollTo(0,0);
 }
 
@@ -630,6 +635,7 @@ function irDashboard() {
     document.getElementById('page-proyecto').classList.remove('active');
     document.getElementById('page-dashboard').classList.add('active');
     document.getElementById('add-strip').classList.remove('visible');
+    document.getElementById('fab').classList.remove('hidden');
     proyectoIdx = null;
     renderDashboard();
 }
