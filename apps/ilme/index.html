@@ -626,6 +626,7 @@ function habilitarArrastre(row, lista, selectorGrupo, onReorden, handleEl){
     if(!handleEl && e.target.closest('.chk,.acc,.acciones,.accs,a,[contenteditable]')) return;
     const t=e.touches[0]; sx=t.clientX; sy=t.clientY;
     drag=true; row.classList.add('arrastrando');
+    e.preventDefault();
   },{passive:false});
 
   triggerEl.addEventListener('touchmove', e=>{
@@ -827,11 +828,20 @@ document.querySelectorAll('.tipo').forEach(b=>{
     document.querySelectorAll('.tipo').forEach(x=>x.classList.remove('sel'));
     b.classList.add('sel');
     tipoSel=b.dataset.t;
-    if(tipoSel==='recordatorio'){
+    if(tipoSel==='pago'){
       recInputs.classList.add('ver');
       recFechaRow.style.display='flex';
-      recRepetir.style.display='none';                             // recordatorio = puntual
-      if(!recFecha.value) recFecha.value=key(sel);                 // día que estás viendo
+      recRepetir.style.display='none';
+      recHora.style.display='none';
+      if(!recFecha.value) recFecha.value=key(sel);
+      sincronizarChips();
+      inpEl.placeholder='Nombre del pago…';
+    } else if(tipoSel==='recordatorio'){
+      recInputs.classList.add('ver');
+      recFechaRow.style.display='flex';
+      recRepetir.style.display='none';
+      recHora.style.display='';
+      if(!recFecha.value) recFecha.value=key(sel);
       if(!recHora.value){ const n=new Date(); recHora.value=String((n.getHours()+1)%24).padStart(2,'0')+':00'; }
       sincronizarChips();
       inpEl.placeholder='Recordatorio…';
@@ -843,6 +853,7 @@ document.querySelectorAll('.tipo').forEach(b=>{
       inpEl.placeholder='Rutina — elegí repetición y hora (opcional)';
     } else {
       recInputs.classList.remove('ver');
+      recHora.style.display='';
       inpEl.placeholder='Escribí o pegá un link…';
     }
   };
@@ -929,7 +940,15 @@ function agregar(){
   const tipo = esURL(v)&&tipoSel==='tarea' ? 'nota' : tipoSel;
   const k=key(sel);
   const nuevoItem={id,tipo,txt:v,hecho:false,rem:false};
-  if(tipo==='pago') nuevoItem.fecha=k;
+  if(tipo==='pago'){
+    const fechaPago = recFecha.value || k;
+    nuevoItem.fecha = fechaPago;
+    const kPago = fechaPago;
+    (data.dias[kPago]=data.dias[kPago]||[]).push(nuevoItem);
+    sel=new Date(fechaPago+'T00:00:00');
+    mesVista=new Date(sel.getFullYear(),sel.getMonth(),1);
+    save(); inp.value=''; recFecha.value=''; pintarTodo(); return;
+  }
   (data.dias[k]=data.dias[k]||[]).push(nuevoItem);
   save(); inp.value=''; pintarTodo();
 }
