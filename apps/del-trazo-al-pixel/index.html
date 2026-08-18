@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Del Trazo al Píxel · Guía Docente</title>
+<style>
+:root{
+  --red:#c83a2d;
+  --red2:#9f2e27;
+  --red3:#76231f;
+  --ink:#202124;
+  --muted:#6d7378;
+  --line:#d9dddf;
+  --soft:#f1f3f3;
+  --paper:#fff;
+  --warm:#f8eeeb;
+  --done:#9aa0a4;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f4f4;color:var(--ink)}
+button,input{font:inherit}
+.app{min-height:100vh}
+.topbar{
+  background:linear-gradient(100deg,var(--red) 0 28%,var(--red2) 28% 100%);
+  color:#fff;padding:18px 24px;display:grid;grid-template-columns:280px 1fr;align-items:center;gap:22px;
+  box-shadow:0 7px 22px rgba(0,0,0,.08)
+}
+.brand{font-weight:800;font-size:27px;line-height:.94}
+.brand small{display:block;font-size:11px;margin-top:7px;letter-spacing:.05em}
+.topbar h1{font-size:20px;margin:0 0 5px}
+.topbar p{margin:0;opacity:.9;font-size:13px}
+.main{max-width:1320px;margin:0 auto;padding:20px}
+.toolbar{display:grid;grid-template-columns:1fr auto;gap:14px;margin-bottom:14px;align-items:center}
+.progressbox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.progresshead{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.progress{height:9px;background:#e6e9ea;border-radius:999px;overflow:hidden;margin-top:9px}
+.progressfill{height:100%;background:var(--red);width:0%;transition:.2s}
+.legend{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.pill{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:var(--red)}
+.dot.done{background:var(--done)}
+.calendar{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.cal-head,.week-row{display:grid;grid-template-columns:110px repeat(3,minmax(0,1fr));}
+.cal-head{background:#eceff0;border-bottom:1px solid var(--line);font-size:12px;font-weight:800;color:#555}
+.cal-head div{padding:11px 12px;border-right:1px solid var(--line)}
+.week-row{min-height:128px;border-bottom:1px solid var(--line)}
+.week-row:last-child{border-bottom:0}
+.week-label{padding:14px 12px;background:#f7f8f8;border-right:1px solid var(--line)}
+.week-label b{display:block;color:var(--red);font-size:18px}
+.week-label span{font-size:11px;color:var(--muted)}
+.slot{padding:10px;border-right:1px solid var(--line);position:relative}
+.slot:last-child{border-right:0}
+.class-card{
+  width:100%;height:100%;min-height:106px;border:1px solid #e2c5bf;background:var(--warm);
+  border-radius:10px;padding:10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:5px;
+  transition:.15s;position:relative
+}
+.class-card:hover{transform:translateY(-1px);box-shadow:0 5px 13px rgba(0,0,0,.07)}
+.class-card.done{background:#eceeef;border-color:#d3d7d9;color:#73777a}
+.class-card.done .class-kicker,.class-card.done .date-edit{color:#73777a}
+.class-kicker{font-size:10px;font-weight:800;color:var(--red);letter-spacing:.05em}
+.class-title{font-weight:800;font-size:14px;line-height:1.15}
+.class-sub{font-size:11px;color:var(--muted);margin-top:auto}
+.date-edit{
+  display:flex;align-items:center;gap:5px;font-size:11px;color:var(--red2);margin-top:2px
+}
+.date-edit input{
+  border:0;border-bottom:1px dashed #c8a39d;background:transparent;color:inherit;padding:1px 0;width:116px;font-size:11px
+}
+.statusmark{
+  position:absolute;right:8px;top:8px;width:20px;height:20px;border:2px solid var(--red);
+  border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff;background:#fff
+}
+.class-card.done .statusmark{background:var(--done);border-color:var(--done)}
+.class-card.done .statusmark::after{content:"✓"}
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(20,20,20,.48);display:none;align-items:center;justify-content:center;
+  padding:18px;z-index:20
+}
+.modal-backdrop.open{display:flex}
+.modal{
+  width:min(880px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:14px;
+  box-shadow:0 24px 60px rgba(0,0,0,.25)
+}
+.modal-head{
+  background:linear-gradient(100deg,var(--red),var(--red2));color:#fff;padding:16px 18px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:14px;position:sticky;top:0;z-index:2
+}
+.modal-head .kicker{font-size:11px;opacity:.8;font-weight:800}
+.modal-head h2{margin:4px 0 0;font-size:20px}
+.close{border:0;background:rgba(255,255,255,.14);color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:20px}
+.modal-body{padding:18px}
+.complete-row{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;background:#f6f7f7;
+  border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:14px
+}
+.complete-row label{display:flex;gap:9px;align-items:center;font-weight:800}
+.complete-row input{width:20px;height:20px;accent-color:var(--red)}
+.callout{background:var(--warm);border-left:4px solid var(--red);padding:12px;border-radius:8px;margin-bottom:15px}
+.timeline{display:grid;gap:11px}
+.row{display:grid;grid-template-columns:68px 1fr;gap:12px;border-bottom:1px solid #eceeef;padding-bottom:10px}
+.time{font-weight:800;color:var(--red)}
+.commands span{display:inline-block;border:1px solid var(--line);background:#fafafa;border-radius:6px;padding:3px 7px;margin:4px 4px 0 0;font-family:Consolas,monospace;font-size:12px}
+.book{margin-top:14px;background:#f6f8f8;border:1px solid var(--line);padding:12px;border-radius:9px}
+.checks{margin-top:14px;display:grid;gap:8px}
+.checks label{display:flex;gap:9px;align-items:flex-start}
+.checks input{margin-top:2px;accent-color:var(--red)}
+.empty{color:var(--muted);font-size:13px}
+@media(max-width:850px){
+  .topbar{grid-template-columns:1fr;padding:16px}
+  .main{padding:12px}
+  .toolbar{grid-template-columns:1fr}
+  .legend{justify-content:flex-start}
+  .calendar{overflow:auto}
+  .cal-head,.week-row{grid-template-columns:90px repeat(3,240px);min-width:810px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">DEL TRAZO<br>AL PÍXEL
+      <small>SOFTWARE DE ARQUITECTURA</small>
+    </div>
+    <div>
+      <h1>Guía docente · Calendario de 12 semanas</h1>
+      <p>Cada clase funciona como enlace: abre su tarjeta, permite marcarla como realizada y conserva el avance.</p>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="toolbar">
+      <div class="progressbox">
+        <div class="progresshead">
+          <div><b>AVANCE DEL CURSO</b><div style="font-size:12px;color:#6d7378">Las clases terminadas quedan en gris.</div></div>
+          <div id="progressText">0 / 36</div>
+        </div>
+        <div class="progress"><div class="progressfill" id="progressFill"></div></div>
+      </div>
+      <div class="legend">
+        <div class="pill"><span class="dot"></span>Pendiente</div>
+        <div class="pill"><span class="dot done"></span>Realizada</div>
+      </div>
+    </div>
+
+    <section class="calendar">
+      <div class="cal-head">
+        <div>SEMANA</div>
+        <div>CLASE 1</div>
+        <div>CLASE 2</div>
+        <div>CLASE 3</div>
+      </div>
+      <div id="calendarBody"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <article class="modal" role="dialog" aria-modal="true">
+    <header class="modal-head">
+      <div><div class="kicker" id="modalKicker">CLASE</div><h2 id="modalTitle"></h2></div>
+      <button class="close" id="closeModal" aria-label="Cerrar">×</button>
+    </header>
+    <div class="modal-body" id="modalBody"></div>
+  </article>
+</div>
+
+<script>
+const lessons = {
+  "1-1":{
+    title:"Diseñar antes de dibujar",
+    sub:"Wong + AutoCAD",
+    objective:'Romper la asociación “dibujar = copiar”. AutoCAD se presenta como herramienta de exploración gráfica antes que como herramienta de documentación.',
+    blocks:[
+      ["0–15","Apertura.","Presentar el proyecto transversal de las 12 semanas. Diferenciar representar algo existente de diseñar algo que todavía no existe."],
+      ["15–35","Wucius Wong.","Punto → línea → plano → forma. Introducir módulo, repetición, proximidad, separación, contacto, superposición, escala, contraste y ritmo. Pregunta guía: ¿qué regla estás utilizando?"],
+      ["35–70","AutoCAD en acción.","Los comandos aparecen por necesidad, no como inventario.","LINE,PLINE,RECTANGLE,CIRCLE,MOVE,COPY,ROTATE,SCALE,MIRROR,TRIM"],
+      ["70–90","Ejercicio.","Cada alumno crea una figura bidimensional propia. No puede copiar una referencia. La convierte en módulo y genera una composición mediante una regla elegida."]
+    ],
+    book:"Wucius Wong · fundamentos del diseño bidimensional. Cada concepto se demuestra inmediatamente dentro del ejercicio.",
+    checks:["Diferenciar creación de representación/copia","Explicar punto, línea, plano y forma","Introducir módulo y reglas de composición","Aplicar comandos básicos dentro del ejercicio","Cerrar con Composición 01 · Módulo y repetición"]
+  },
+  "1-2":{
+    title:"Módulo, variación y macromódulo",
+    sub:"Wong + AutoCAD",
+    objective:"Descubrir que una composición puede adquirir complejidad sin perder una lógica interna.",
+    blocks:[
+      ["0–10","Lectura colectiva.","Revisar trabajos sin calificarlos como bonito/feo. Preguntar: ¿qué se repite?, ¿qué regla existe?, ¿dónde está la jerarquía?"],
+      ["10–30","Wong.","Módulo → submódulo → macromódulo. Repetición, semejanza, gradación, radiación, contraste, concentración y anomalía."],
+      ["30–65","AutoCAD.","Las capas nacen para organizar el sistema: forma base, módulo, macromódulo, vacío y ejes.","ARRAY,OFFSET,STRETCH,FILLET,CHAMFER,HATCH,LAYER"],
+      ["65–90","Ejercicio.","Transformar la composición anterior incorporando módulo original, variación, macromódulo, contraste y una anomalía intencional."]
+    ],
+    book:"Wucius Wong · módulo, estructura, repetición y variación.",
+    checks:["Revisar trabajos mediante reglas, no gusto personal","Explicar módulo, submódulo y macromódulo","Trabajar variación, contraste y anomalía","Introducir capas como estructura del archivo","Cerrar con Composición 02 · Sistema y variación"]
+  },
+  "1-3":{
+    title:"De la composición al espacio",
+    sub:"Wong → Ching → Neufert",
+    objective:"Tender el primer puente Wong → Ching: comprender que una relación gráfica puede comenzar a convertirse en una relación espacial.",
+    blocks:[
+      ["0–15","Provocación.","¿Qué ocurre si la composición deja de ser dibujo? ¿Qué es lleno? ¿Qué es vacío? ¿Qué podría recorrerse? ¿Qué puede convertirse en límite?"],
+      ["15–35","Ching.","Forma y espacio, figura/fondo, elementos que definen espacio, relaciones entre formas y organización espacial. Relacionar módulo → elemento; composición → organización; contraste → jerarquía; repetición → ritmo; vacío → espacio."],
+      ["35–55","Lenguaje técnico.","Planta, corte, elevación, línea, jerarquía de línea y escala. La computadora dibuja en tamaño real; la escala pertenece a la representación."],
+      ["55–75","Precisión en AutoCAD.","Introducir coordenadas y dimensión real.","UNITS,DIST,OSNAP,ORTHO,POLAR"],
+      ["75–90","Ejercicio.","Asignar escala física al macromódulo. Comparar qué sucede si una pieza mide 20 cm, 1 m, 3 m o 10 m. Introducir Neufert como diccionario dimensional."]
+    ],
+    book:"Ching · Forma, espacio y orden + Manual de dibujo técnico. Consulta: Neufert para cuerpo–objeto–espacio y dimensiones.",
+    checks:["Transformar lleno/vacío en preguntas espaciales","Conectar Wong con Forma, espacio y orden","Introducir planta, corte, elevación y escala","Trabajar precisión y dimensiones reales en AutoCAD","Presentar Neufert como diccionario dimensional"]
+  }
+};
+
+for(let w=2;w<=12;w++){
+  for(let c=1;c<=3;c++){
+    const id=`${w}-${c}`;
+    lessons[id]={
+      title:`Semana ${w} · Clase ${c}`,
+      sub:"Pendiente de desarrollar",
+      objective:"Esta clase se desarrollará sobre la misma estructura.",
+      blocks:[],
+      book:"",
+      checks:[]
+    };
+  }
+}
+
+function defaultDate(id){
+  return localStorage.getItem("dtp-date-"+id) || "";
+}
+function isDone(id){
+  return localStorage.getItem("dtp-done-"+id)==="1";
+}
+function renderCalendar(){
+  const body=document.getElementById("calendarBody");
+  body.innerHTML="";
+  for(let w=1;w<=12;w++){
+    const row=document.createElement("div");
+    row.className="week-row";
+    const label=document.createElement("div");
+    label.className="week-label";
+    label.innerHTML=`<b>${String(w).padStart(2,"0")}</b><span>SEMANA ${w}</span>`;
+    row.appendChild(label);
+    for(let c=1;c<=3;c++){
+      const id=`${w}-${c}`;
+      const data=lessons[id];
+      const slot=document.createElement("div");
+      slot.className="slot";
+      const btn=document.createElement("button");
+      btn.className="class-card"+(isDone(id)?" done":"");
+      btn.dataset.id=id;
+      btn.innerHTML=`
+        <span class="statusmark"></span>
+        <span class="class-kicker">CLASE ${String(c).padStart(2,"0")}</span>
+        <span class="class-title">${data.title}</span>
+        <span class="class-sub">${data.sub}</span>
+        <span class="date-edit">Fecha:
+          <input type="date" value="${defaultDate(id)}" aria-label="Fecha de la clase">
+        </span>`;
+      btn.addEventListener("click",(e)=>{
+        if(e.target.tagName==="INPUT") return;
+        openLesson(id);
+      });
+      const dateInput=btn.querySelector("input");
+      dateInput.addEventListener("click",e=>e.stopPropagation());
+      dateInput.addEventListener("change",e=>{
+        localStorage.setItem("dtp-date-"+id,e.target.value);
+      });
+      slot.appendChild(btn);
+      row.appendChild(slot);
+    }
+    body.appendChild(row);
+  }
+  updateProgress();
+}
+
+function openLesson(id){
+  const data=lessons[id];
+  document.getElementById("modalKicker").textContent=`SEMANA ${id.split("-")[0]} · CLASE ${id.split("-")[1]}`;
+  document.getElementById("modalTitle").textContent=data.title;
+  const checks=data.checks.map((x,i)=>{
+    const key=`dtp-check-${id}-${i}`;
+    const checked=localStorage.getItem(key)==="1"?"checked":"";
+    return `<label><input type="checkbox" data-checkkey="${key}" ${checked}> ${x}</label>`;
+  }).join("");
+  const blocks=data.blocks.map(b=>{
+    const cmds=b[3]?`<div class="commands">${b[3].split(",").map(x=>`<span>${x}</span>`).join("")}</div>`:"";
+    return `<div class="row"><div class="time">${b[0]}</div><div><b>${b[1]}</b> ${b[2]}${cmds}</div></div>`;
+  }).join("");
+
+  document.getElementById("modalBody").innerHTML=`
+    <div class="complete-row">
+      <div><b>Estado de la clase</b><div style="font-size:12px;color:#6d7378">Al marcarla como realizada, queda gris en el calendario.</div></div>
+      <label><input type="checkbox" id="doneToggle" ${isDone(id)?"checked":""}> REALIZADA</label>
+    </div>
+    <div class="callout"><b>Objetivo:</b> ${data.objective}</div>
+    ${blocks ? `<div class="timeline">${blocks}</div>` : `<p class="empty">Contenido pendiente de desarrollar.</p>`}
+    ${data.book ? `<div class="book"><b>Bibliografía activa:</b> ${data.book}</div>` : ""}
+    ${checks ? `<div class="checks"><b>Puntos de la clase</b>${checks}</div>` : ""}
+  `;
+  document.getElementById("doneToggle").addEventListener("change",e=>{
+    localStorage.setItem("dtp-done-"+id,e.target.checked?"1":"0");
+    renderCalendar();
+  });
+  document.querySelectorAll("[data-checkkey]").forEach(ch=>{
+    ch.addEventListener("change",e=>{
+      localStorage.setItem(e.target.dataset.checkkey,e.target.checked?"1":"0");
+    });
+  });
+  document.getElementById("modalBackdrop").classList.add("open");
+}
+
+function updateProgress(){
+  let done=0;
+  for(let w=1;w<=12;w++)for(let c=1;c<=3;c++)if(isDone(`${w}-${c}`))done++;
+  document.getElementById("progressText").textContent=`${done} / 36`;
+  document.getElementById("progressFill").style.width=`${done/36*100}%`;
+}
+
+document.getElementById("closeModal").addEventListener("click",()=>document.getElementById("modalBackdrop").classList.remove("open"));
+document.getElementById("modalBackdrop").addEventListener("click",e=>{
+  if(e.target.id==="modalBackdrop") e.currentTarget.classList.remove("open");
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") document.getElementById("modalBackdrop").classList.remove("open");
+});
+
+renderCalendar();
+</script>
+</body>
+</html>
